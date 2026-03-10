@@ -14,7 +14,13 @@
     <div class="nav-section">
         <a href="{{ route('admin.dashboard') }}">Dashboard</a>
         <a href="{{ route('coffee.index') }}" class="{{ request()->routeIs('coffee.*') ? 'active' : '' }}">Coffee Shops</a>
-        <a href="{{ route('admin.login.monitor') }}" class="{{ request()->routeIs('admin.login.monitor') ? 'active' : '' }}">Monitoring User</a>
+        <a href="{{ route('kecamatan.index') }}" class="{{ request()->routeIs('kecamatan.*') ? 'active' : '' }}">Kecamatan</a>
+        <a href="{{ route('komunitas.index') }}" class="{{ request()->routeIs('komunitas.*') ? 'active' : '' }}">Komunitas</a>
+        <a href="{{ route('community-posts.index') }}" class="{{ request()->routeIs('community-posts.*') ? 'active' : '' }}">Community Posts</a>
+        <a href="{{ route('gathering-requests.index') }}" class="{{ request()->routeIs('gathering-requests.*') ? 'active' : '' }}">Gathering Requests</a>
+        <a href="{{ route('coffee-shop-reviews.index') }}" class="{{ request()->routeIs('coffee-shop-reviews.*') ? 'active' : '' }}">Reviews</a>
+        <a href="{{ route('community-members.index') }}" class="{{ request()->routeIs('community-members.*') ? 'active' : '' }}">Community Members</a>
+        <a href="{{ route('admin.login.monitor') }}" class="{{ request()->routeIs('admin.login.monitor') || request()->routeIs('admin.user.*') ? 'active' : '' }}">Manajemen User</a>
     </div>
 </div>
 

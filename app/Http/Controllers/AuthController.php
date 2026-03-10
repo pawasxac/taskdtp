@@ -21,17 +21,32 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
-public function login(Request $request)
-{
-    $request->validate([
-        'login' => 'required',
-        'password' => 'required'
-    ]);
+    public function login(Request $request)
+    {
+        $request->validate([
+            'login' => 'required',
+            'password' => 'required'
+        ]);
 
-    $loginInput = $request->login;
-    $field = filter_var($loginInput, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+        $loginInput = $request->login;
+        
+        // Try to find user by email first, then by username
+        $userExists = User::where('email', $loginInput)->first();
+        if (!$userExists) {
+            $userExists = User::where('username', $loginInput)->first();
+        }
 
-    if (Auth::attempt([$field => $loginInput, 'password' => $request->password])) {
+        if (!$userExists) {
+            return back()->with('error', 'User tidak ditemukan: ' . $loginInput);
+        }
+
+        // Check password
+        if (!Hash::check($request->password, $userExists->password)) {
+            return back()->with('error', 'Password salah');
+        }
+
+        // Attempt login
+        Auth::login($userExists);
         $request->session()->regenerate();
 
         LoginLog::create([
@@ -47,9 +62,6 @@ public function login(Request $request)
 
         return redirect()->route('user.dashboard');
     }
-
-    return back()->with('error', 'Login gagal');
-}
 
     /*
     |--------------------------------------------------------------------------
@@ -156,3 +168,4 @@ public function login(Request $request)
         return back()->with('success', 'Profil berhasil diperbarui!');
     }
 }
+

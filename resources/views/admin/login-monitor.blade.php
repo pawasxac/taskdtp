@@ -1,53 +1,59 @@
 @extends('admin.layouts.main')
 
-@section('title', 'Monitoring User Login')
+@section('title', 'Daftar User Terdaftar')
 
 @section('content')
 
-<div class="page-title">Monitoring Login User</div>
+<div class="page-title">
+    <span>Daftar User Terdaftar</span>
+    <a href="{{ route('admin.user.create') }}" class="btn-add">Tambah User</a>
+</div>
 
 @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
+@endif
+
+@if(session('error'))
+    <div class="alert alert-danger">{{ session('error') }}</div>
 @endif
 
 <div class="table-wrapper">
     <table class="data-table">
         <thead>
             <tr>
-                <th>User</th>
+                <th>No</th>
+                <th>Username</th>
                 <th>Email</th>
-                <th>IP Address</th>
-                <th>Device</th>
-                <th>Waktu Login</th>
+                <th>Role</th>
                 <th>Aksi</th>
             </tr>
         </thead>
         <tbody>
-        @forelse($logs as $log)
+        @foreach($users as $index => $user)
             <tr>
-                <td>{{ $log->user->username }}</td>
-                <td>{{ $log->user->email }}</td>
-                <td>{{ $log->ip_address }}</td>
-                <td style="max-width:250px">{{ $log->user_agent }}</td>
-                <td>{{ $log->login_at }}</td>
+                <td>{{ $index + 1 + ($users->currentPage() - 1) * $users->perPage() }}</td>
+                <td>{{ $user->username }}</td>
+                <td>{{ $user->email }}</td>
                 <td>
-                    <form action="{{ route('admin.login.monitor.delete', $log->id) }}" method="POST">
+                    <span class="badge {{ $user->role === 'admin' ? 'badge-admin' : 'badge-user' }}">
+                        {{ $user->role }}
+                    </span>
+                </td>
+                <td>
+                    <a href="{{ route('admin.user.edit', $user->id) }}" class="btn-edit">Edit</a>
+                    <form action="{{ route('admin.user.destroy', $user->id) }}" method="POST" style="display:inline;">
                         @csrf
                         @method('DELETE')
-                        <button class="btn-delete">Hapus</button>
+                        <button type="submit" class="btn-delete" onclick="return confirm('Apakah Anda yakin ingin menghapus user ini?')">Hapus</button>
                     </form>
                 </td>
             </tr>
-        @empty
-            <tr>
-                <td colspan="6" class="empty">Belum ada log login</td>
-            </tr>
-        @endforelse
+        @endforeach
         </tbody>
     </table>
 
     <div class="table-footer">
-        {{ $logs->links() }}
+        {{ $users->links() }}
     </div>
 </div>
 

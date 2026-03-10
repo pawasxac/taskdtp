@@ -112,6 +112,13 @@ button {
     font-size: 26px;
     font-weight: 600;
     margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-title span {
+    display: block;
 }
 
 .table-wrapper {
@@ -171,6 +178,14 @@ textarea.form-input {
 .btn-edit {
     background: #e0f2fe;
     color: #0369a1;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: none;
+}
+
+.btn-view {
+    background: #dbeafe;
+    color: #1d4ed8;
     padding: 8px 12px;
     border-radius: 6px;
     border: none;
@@ -237,6 +252,69 @@ textarea.form-input {
     font-weight: 600;
     background: #ecfeff;
     color: #0369a1;
+}
+
+.badge-admin {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.badge-user {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.btn-add {
+    background: #10b981;
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: .2s;
+}
+
+.btn-add:hover {
+    background: #059669;
+}
+
+.btn-submit {
+    background: #2563eb;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.btn-submit:hover {
+    background: #1d4ed8;
+}
+
+.btn-cancel {
+    background: #6b7280;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: .2s;
+}
+
+.btn-cancel:hover {
+    background: #4b5563;
+}
+
+.error {
+    color: #dc2626;
+    font-size: 13px;
+    margin-top: 6px;
+    display: block;
 }
 
 .toolbar {
@@ -523,4 +601,46 @@ input[type="number"]::-webkit-outer-spin-button {
 
 input[type="number"] {
     -moz-appearance: textfield;
+}
+
+/* ========== DETAIL STYLES ========== */
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.detail-item {
+    background: #f9fafb;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.detail-item.full-width {
+    grid-column: span 2;
+}
+
+.detail-item label {
+    display: block;
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.detail-item p {
+    font-size: 16px;
+    color: #111827;
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .detail-item.full-width {
+        grid-column: span 1;
+    }
 }
