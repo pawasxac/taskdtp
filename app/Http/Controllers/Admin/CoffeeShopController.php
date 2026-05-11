@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CoffeeShop;
 use Illuminate\Http\Request;
-use App\Models\LoginLog;
 use App\Models\User;
 
 class CoffeeShopController extends Controller
@@ -18,7 +17,8 @@ class CoffeeShopController extends Controller
 
     public function create()
     {
-        return view('admin.coffee-shops.create');
+        $kecamatans = \App\Models\Kecamatan::all();
+        return view('admin.coffee-shops.create', compact('kecamatans'));
     }
 
     public function store(Request $request)
@@ -28,6 +28,7 @@ class CoffeeShopController extends Controller
             'nama' => 'required|string|max:255',
             'daerah' => 'required|string|max:255',
             'kecamatan' => 'required|string|max:255',
+            'kecamatan_id' => 'nullable|exists:kecamatans,id',
             'alamat' => 'required|string',
             'jam_buka' => 'required|string',
             'jam_tutup' => 'required|string',
@@ -48,7 +49,8 @@ class CoffeeShopController extends Controller
     public function edit($id)
     {
         $data = CoffeeShop::findOrFail($id);
-        return view('admin.coffee-shops.edit', compact('data'));
+        $kecamatans = \App\Models\Kecamatan::all();
+        return view('admin.coffee-shops.edit', compact('data', 'kecamatans'));
     }
 
     public function update(Request $request, $id)
@@ -105,14 +107,85 @@ class CoffeeShopController extends Controller
 
     public function loginMonitor()
     {
-        $logs = LoginLog::with('user')->latest()->paginate(10);
-        return view('admin.login-monitor', compact('logs'));
+        $users = User::latest()->paginate(10);
+        return view('admin.login-monitor', compact('users'));
     }
 
-    public function deleteLog($id)
+    /*
+    |--------------------------------------------------------------------------
+    | USER MANAGEMENT
+    |--------------------------------------------------------------------------
+    */
+
+    public function createUser()
     {
-        LoginLog::findOrFail($id)->delete();
-        return back()->with('success', 'Log berhasil dihapus');
+        return view('admin.users.create');
+    }
+
+    public function storeUser(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'username' => 'required|string|unique:users,username',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|min:6|confirmed',
+            'role' => 'required|in:admin,user',
+        ]);
+
+        User::create([
+            'name' => $validated['name'],
+            'username' => $validated['username'],
+            'email' => $validated['email'],
+            'password' => bcrypt($validated['password']),
+            'role' => $validated['role'],
+        ]);
+
+        return redirect()->route('admin.login.monitor')->with('success', 'User berhasil ditambahkan!');
+    }
+
+    public function editUser($id)
+    {
+        $user = User::findOrFail($id);
+        return view('admin.users.edit', compact('user'));
+    }
+
+    public function updateUser(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'username' => 'required|string|unique:users,username,' . $id,
+            'email' => 'required|email|unique:users,email,' . $id,
+            'password' => 'nullable|min:6|confirmed',
+            'role' => 'required|in:admin,user',
+        ]);
+
+        $user->name = $validated['name'];
+        $user->username = $validated['username'];
+        $user->email = $validated['email'];
+        $user->role = $validated['role'];
+
+        if ($validated['password']) {
+            $user->password = bcrypt($validated['password']);
+        }
+
+        $user->save();
+
+        return redirect()->route('admin.login.monitor')->with('success', 'User berhasil diperbarui!');
+    }
+
+    public function destroyUser($id)
+    {
+        $user = User::findOrFail($id);
+        
+        // Prevent deleting own account
+        if ($user->id === auth()->id()) {
+            return back()->with('error', 'Anda tidak dapat menghapus akun sendiri!');
+        }
+
+        $user->delete();
+        return redirect()->route('admin.login.monitor')->with('success', 'User berhasil dihapus!');
     }
 
 }

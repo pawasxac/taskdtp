@@ -21,17 +21,32 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
-public function login(Request $request)
-{
-    $request->validate([
-        'login' => 'required',
-        'password' => 'required'
-    ]);
+    public function login(Request $request)
+    {
+        $request->validate([
+            'login' => 'required',
+            'password' => 'required'
+        ]);
 
-    $loginInput = $request->login;
-    $field = filter_var($loginInput, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+        $loginInput = $request->login;
+        
+        // Try to find user by email first, then by username
+        $userExists = User::where('email', $loginInput)->first();
+        if (!$userExists) {
+            $userExists = User::where('username', $loginInput)->first();
+        }
 
-    if (Auth::attempt([$field => $loginInput, 'password' => $request->password])) {
+        if (!$userExists) {
+            return back()->with('error', 'User tidak ditemukan: ' . $loginInput);
+        }
+
+        // Check password
+        if (!Hash::check($request->password, $userExists->password)) {
+            return back()->with('error', 'Password salah');
+        }
+
+        // Attempt login
+        Auth::login($userExists);
         $request->session()->regenerate();
 
         LoginLog::create([
@@ -47,9 +62,6 @@ public function login(Request $request)
 
         return redirect()->route('user.dashboard');
     }
-
-    return back()->with('error', 'Login gagal');
-}
 
     /*
     |--------------------------------------------------------------------------
@@ -129,6 +141,7 @@ public function login(Request $request)
             'username' => 'required',
             'email' => 'required|email',
             'current_password' => 'required',
+            'profile_picture' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
         $user = Auth::user();
@@ -138,9 +151,31 @@ public function login(Request $request)
             return back()->with('error', 'Password lama salah!');
         }
 
+        // Handle profile picture upload
+        if ($request->hasFile('profile_picture')) {
+            // Delete old profile picture if exists
+            if ($user->profile_picture && file_exists(public_path('uploads/profile_pictures/' . $user->profile_picture))) {
+                unlink(public_path('uploads/profile_pictures/' . $user->profile_picture));
+            }
+
+            // Upload new profile picture
+            $file = $request->file('profile_picture');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('uploads/profile_pictures'), $filename);
+            $user->profile_picture = $filename;
+        }
+
         // update username & email
         $user->username = $request->username;
         $user->email = $request->email;
+        
+        // Update bio and phone number
+        if ($request->has('bio')) {
+            $user->bio = $request->bio;
+        }
+        if ($request->has('phone_number')) {
+            $user->phone_number = $request->phone_number;
+        }
 
         // jika ingin ganti password
         if ($request->new_password) {
@@ -155,4 +190,18 @@ public function login(Request $request)
 
         return back()->with('success', 'Profil berhasil diperbarui!');
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | VIEW PROFILE
+    |--------------------------------------------------------------------------
+    */
+
+    public function viewProfile()
+    {
+        return view('user.view-profile', [
+            'user' => Auth::user()
+        ]);
+    }
 }
+

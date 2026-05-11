@@ -19,7 +19,28 @@ class DatabaseSeeder extends Seeder
 
         User::factory()->create([
             'name' => 'Test User',
-            'email' => 'test@example.com',
+            'email' => 'user@example.com',
+            'username' => 'testuser',
         ]);
+
+        // Create Admin User
+        User::create([
+            'name' => 'Admin',
+            'email' => 'admin@dailycoffee.com',
+            'username' => 'admin',
+            'password' => bcrypt('admin123'),
+            'role' => 'admin',
+        ]);
+
+        // Seed dummy data for all tables
+        \App\Models\Kecamatan::factory(5)->create();
+        \App\Models\CoffeeShop::factory(5)->create();
+        \App\Models\CoffeeShopReview::factory(5)->create();
+        \App\Models\Komunitas::factory(5)->create();
+        \App\Models\CommunityMember::factory(5)->create();
+        \App\Models\GatheringRequest::factory(5)->create();
+        \App\Models\CommunityPost::factory(5)->create();
+        \App\Models\CommunityComment::factory(5)->create();
+        \App\Models\LoginLog::factory(5)->create();
     }
 }

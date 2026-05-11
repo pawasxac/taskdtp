@@ -127,6 +127,27 @@ input:focus{
     background:white;
 }
 
+/* TEXTAREA */
+textarea{
+    width:100%;
+    padding:12px 14px;
+    margin:8px 0 18px;
+    border:1px solid #d1d5db;
+    border-radius:10px;
+    font-size:14px;
+    transition:.2s;
+    background:#f9fafb;
+    font-family:"Poppins", sans-serif;
+    resize:vertical;
+}
+
+textarea:focus{
+    outline:none;
+    border-color:#2563eb;
+    box-shadow:0 0 0 4px rgba(37,99,235,.15);
+    background:white;
+}
+
 /* ALERT */
 .alert{
     padding:14px 16px;

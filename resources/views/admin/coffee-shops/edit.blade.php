@@ -22,7 +22,22 @@
 
         <div class="form-group">
             <label for="kecamatan">Kecamatan *</label>
-            <input type="text" id="kecamatan" name="kecamatan" value="{{ old('kecamatan', $data->kecamatan) }}" required>
+            <select id="kecamatan" name="kecamatan" required>
+                <option value="">Pilih Kecamatan</option>
+                @foreach($kecamatans as $kecamatan)
+                    <option value="{{ $kecamatan->name }}" {{ old('kecamatan', $data->kecamatan) == $kecamatan->name ? 'selected' : '' }}>{{ $kecamatan->name }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="kecamatan_id">Kecamatan (Link)</label>
+            <select id="kecamatan_id" name="kecamatan_id">
+                <option value="">Pilih Kecamatan (Opsional)</option>
+                @foreach($kecamatans as $kecamatan)
+                    <option value="{{ $kecamatan->id }}" {{ old('kecamatan_id', $data->kecamatan_id) == $kecamatan->id ? 'selected' : '' }}>{{ $kecamatan->name }}</option>
+                @endforeach
+            </select>
         </div>
 
         <div class="form-group">
