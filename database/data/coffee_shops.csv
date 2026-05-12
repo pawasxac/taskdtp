@@ -1,181 +1,181 @@
 osm_id,nama,daerah,kecamatan,alamat,jam_buka,jam_tutup,harga_min,harga_max,rating,deskripsi,kecamatan_id
-node/1000000,Indische 1931,Sidoarjo,Sidoarjo,Jl. Raya Sidoarjo No. 1,09:00:00,22:00:00,10000,25000,4.0,Tempat kopi populer di Sidoarjo Sidoarjo.,1
-node/1000001,The Rooster,Sidoarjo,Sidoarjo,Jl. Raya Sidoarjo No. 2,09:00:00,22:00:00,15000,45000,4.1,Tempat kopi populer di Sidoarjo Sidoarjo.,1
-node/1000002,Omah Oeti,Sidoarjo,Sidoarjo,Jl. Raya Sidoarjo No. 3,09:00:00,22:00:00,10000,25000,4.2,Tempat kopi populer di Sidoarjo Sidoarjo.,1
-node/1000003,VLOG CAFE,Sidoarjo,Sidoarjo,Jl. Raya Sidoarjo No. 4,09:00:00,22:00:00,15000,45000,4.3,Tempat kopi populer di Sidoarjo Sidoarjo.,1
-node/1000004,Jungkir Balik,Sidoarjo,Sidoarjo,Jl. Raya Sidoarjo No. 5,09:00:00,22:00:00,10000,25000,4.4,Tempat kopi populer di Sidoarjo Sidoarjo.,1
-node/1000005,Manakopi.sda,Sidoarjo,Sidoarjo,Jl. Raya Sidoarjo No. 6,09:00:00,22:00:00,15000,45000,4.5,Tempat kopi populer di Sidoarjo Sidoarjo.,1
-node/1000006,Crita Lama,Sidoarjo,Sidoarjo,Jl. Raya Sidoarjo No. 7,09:00:00,22:00:00,10000,25000,4.6,Tempat kopi populer di Sidoarjo Sidoarjo.,1
-node/1000007,De Jong Cafe,Sidoarjo,Sidoarjo,Jl. Raya Sidoarjo No. 8,09:00:00,22:00:00,15000,45000,4.7,Tempat kopi populer di Sidoarjo Sidoarjo.,1
-node/1000008,Fore Pahlawan,Sidoarjo,Sidoarjo,Jl. Raya Sidoarjo No. 9,09:00:00,22:00:00,10000,25000,4.8,Tempat kopi populer di Sidoarjo Sidoarjo.,1
-node/1000009,Labuda Kopi,Sidoarjo,Sidoarjo,Jl. Raya Sidoarjo No. 10,09:00:00,22:00:00,15000,45000,4.9,Tempat kopi populer di Sidoarjo Sidoarjo.,1
-node/1000010,Ame Coffee,Sidoarjo,Buduran,Jl. Raya Buduran No. 1,09:00:00,22:00:00,10000,25000,4.0,Tempat kopi populer di Buduran Sidoarjo.,2
-node/1000011,Taketama,Sidoarjo,Buduran,Jl. Raya Buduran No. 2,09:00:00,22:00:00,15000,45000,4.1,Tempat kopi populer di Buduran Sidoarjo.,2
-node/1000012,Kanagara,Sidoarjo,Buduran,Jl. Raya Buduran No. 3,09:00:00,22:00:00,10000,25000,4.2,Tempat kopi populer di Buduran Sidoarjo.,2
-node/1000013,Ekopilogi,Sidoarjo,Buduran,Jl. Raya Buduran No. 4,09:00:00,22:00:00,15000,45000,4.3,Tempat kopi populer di Buduran Sidoarjo.,2
-node/1000014,Semoga Makmur,Sidoarjo,Buduran,Jl. Raya Buduran No. 5,09:00:00,22:00:00,10000,25000,4.4,Tempat kopi populer di Buduran Sidoarjo.,2
-node/1000015,Little A,Sidoarjo,Buduran,Jl. Raya Buduran No. 6,09:00:00,22:00:00,15000,45000,4.5,Tempat kopi populer di Buduran Sidoarjo.,2
-node/1000016,Kopico,Sidoarjo,Buduran,Jl. Raya Buduran No. 7,09:00:00,22:00:00,10000,25000,4.6,Tempat kopi populer di Buduran Sidoarjo.,2
-node/1000017,Vox Populi,Sidoarjo,Buduran,Jl. Raya Buduran No. 8,09:00:00,22:00:00,15000,45000,4.7,Tempat kopi populer di Buduran Sidoarjo.,2
-node/1000018,Picnic Coffee,Sidoarjo,Buduran,Jl. Raya Buduran No. 9,09:00:00,22:00:00,10000,25000,4.8,Tempat kopi populer di Buduran Sidoarjo.,2
-node/1000019,Jenggolo Coffee,Sidoarjo,Buduran,Jl. Raya Buduran No. 10,09:00:00,22:00:00,15000,45000,4.9,Tempat kopi populer di Buduran Sidoarjo.,2
-node/1000020,KIRRIBILLI,Sidoarjo,Waru,Jl. Raya Waru No. 1,09:00:00,22:00:00,10000,25000,4.0,Tempat kopi populer di Waru Sidoarjo.,3
-node/1000021,Arek Lokal,Sidoarjo,Waru,Jl. Raya Waru No. 2,09:00:00,22:00:00,15000,45000,4.1,Tempat kopi populer di Waru Sidoarjo.,3
-node/1000022,Point Coffee Tropodo,Sidoarjo,Waru,Jl. Raya Waru No. 3,09:00:00,22:00:00,10000,25000,4.2,Tempat kopi populer di Waru Sidoarjo.,3
-node/1000023,Triton's Cafe,Sidoarjo,Waru,Jl. Raya Waru No. 4,09:00:00,22:00:00,15000,45000,4.3,Tempat kopi populer di Waru Sidoarjo.,3
-node/1000024,Janji Jiwa Waru,Sidoarjo,Waru,Jl. Raya Waru No. 5,09:00:00,22:00:00,10000,25000,4.4,Tempat kopi populer di Waru Sidoarjo.,3
-node/1000025,Excelso Cito,Sidoarjo,Waru,Jl. Raya Waru No. 6,09:00:00,22:00:00,15000,45000,4.5,Tempat kopi populer di Waru Sidoarjo.,3
-node/1000026,Coffee Toffee Jati,Sidoarjo,Waru,Jl. Raya Waru No. 7,09:00:00,22:00:00,10000,25000,4.6,Tempat kopi populer di Waru Sidoarjo.,3
-node/1000027,Seventeen Coffee,Sidoarjo,Waru,Jl. Raya Waru No. 8,09:00:00,22:00:00,15000,45000,4.7,Tempat kopi populer di Waru Sidoarjo.,3
-node/1000028,Arah Kopi,Sidoarjo,Waru,Jl. Raya Waru No. 9,09:00:00,22:00:00,10000,25000,4.8,Tempat kopi populer di Waru Sidoarjo.,3
-node/1000029,Lain Hati Nggriya,Sidoarjo,Waru,Jl. Raya Waru No. 10,09:00:00,22:00:00,15000,45000,4.9,Tempat kopi populer di Waru Sidoarjo.,3
-node/1000030,333 House,Sidoarjo,Gedangan,Jl. Raya Gedangan No. 1,09:00:00,22:00:00,10000,25000,4.0,Tempat kopi populer di Gedangan Sidoarjo.,4
-node/1000031,Fore Juanda,Sidoarjo,Gedangan,Jl. Raya Gedangan No. 2,09:00:00,22:00:00,15000,45000,4.1,Tempat kopi populer di Gedangan Sidoarjo.,4
-node/1000032,Kopi Kenangan,Sidoarjo,Gedangan,Jl. Raya Gedangan No. 3,09:00:00,22:00:00,10000,25000,4.2,Tempat kopi populer di Gedangan Sidoarjo.,4
-node/1000033,Jati Kopi,Sidoarjo,Gedangan,Jl. Raya Gedangan No. 4,09:00:00,22:00:00,15000,45000,4.3,Tempat kopi populer di Gedangan Sidoarjo.,4
-node/1000034,Semampir Coffee,Sidoarjo,Gedangan,Jl. Raya Gedangan No. 5,09:00:00,22:00:00,10000,25000,4.4,Tempat kopi populer di Gedangan Sidoarjo.,4
-node/1000035,Gedangan Roastery,Sidoarjo,Gedangan,Jl. Raya Gedangan No. 6,09:00:00,22:00:00,15000,45000,4.5,Tempat kopi populer di Gedangan Sidoarjo.,4
-node/1000036,Ruang Kopi,Sidoarjo,Gedangan,Jl. Raya Gedangan No. 7,09:00:00,22:00:00,10000,25000,4.6,Tempat kopi populer di Gedangan Sidoarjo.,4
-node/1000037,Kopi Chuseyo,Sidoarjo,Gedangan,Jl. Raya Gedangan No. 8,09:00:00,22:00:00,15000,45000,4.7,Tempat kopi populer di Gedangan Sidoarjo.,4
-node/1000038,Titik Temu,Sidoarjo,Gedangan,Jl. Raya Gedangan No. 9,09:00:00,22:00:00,10000,25000,4.8,Tempat kopi populer di Gedangan Sidoarjo.,4
-node/1000039,Starbucks Gedangan,Sidoarjo,Gedangan,Jl. Raya Gedangan No. 10,09:00:00,22:00:00,15000,45000,4.9,Tempat kopi populer di Gedangan Sidoarjo.,4
-node/1000040,Kopi Ruang Hati,Sidoarjo,Taman,Jl. Raya Taman No. 1,09:00:00,22:00:00,10000,25000,4.0,Tempat kopi populer di Taman Sidoarjo.,5
-node/1000041,Depot Kopi Sepanjang,Sidoarjo,Taman,Jl. Raya Taman No. 2,09:00:00,22:00:00,15000,45000,4.1,Tempat kopi populer di Taman Sidoarjo.,5
-node/1000042,Kalcer Coffee,Sidoarjo,Taman,Jl. Raya Taman No. 3,09:00:00,22:00:00,10000,25000,4.2,Tempat kopi populer di Taman Sidoarjo.,5
-node/1000043,Kopi nDalem,Sidoarjo,Taman,Jl. Raya Taman No. 4,09:00:00,22:00:00,15000,45000,4.3,Tempat kopi populer di Taman Sidoarjo.,5
-node/1000044,Kedai Kopi 77,Sidoarjo,Taman,Jl. Raya Taman No. 5,09:00:00,22:00:00,10000,25000,4.4,Tempat kopi populer di Taman Sidoarjo.,5
-node/1000045,Coffee Time,Sidoarjo,Taman,Jl. Raya Taman No. 6,09:00:00,22:00:00,15000,45000,4.5,Tempat kopi populer di Taman Sidoarjo.,5
-node/1000046,Janji Jiwa Taman,Sidoarjo,Taman,Jl. Raya Taman No. 7,09:00:00,22:00:00,10000,25000,4.6,Tempat kopi populer di Taman Sidoarjo.,5
-node/1000047,Kopi Joss,Sidoarjo,Taman,Jl. Raya Taman No. 8,09:00:00,22:00:00,15000,45000,4.7,Tempat kopi populer di Taman Sidoarjo.,5
-node/1000048,Teras Kopi,Sidoarjo,Taman,Jl. Raya Taman No. 9,09:00:00,22:00:00,10000,25000,4.8,Tempat kopi populer di Taman Sidoarjo.,5
-node/1000049,Kopi Persahabatan,Sidoarjo,Taman,Jl. Raya Taman No. 10,09:00:00,22:00:00,15000,45000,4.9,Tempat kopi populer di Taman Sidoarjo.,5
-node/1000050,Kopi Sae,Sidoarjo,Krian,Jl. Raya Krian No. 1,09:00:00,22:00:00,10000,25000,4.0,Tempat kopi populer di Krian Sidoarjo.,6
-node/1000051,Kopi nDalem Krian,Sidoarjo,Krian,Jl. Raya Krian No. 2,09:00:00,22:00:00,15000,45000,4.1,Tempat kopi populer di Krian Sidoarjo.,6
-node/1000052,Kedai Kopi Oei,Sidoarjo,Krian,Jl. Raya Krian No. 3,09:00:00,22:00:00,10000,25000,4.2,Tempat kopi populer di Krian Sidoarjo.,6
-node/1000053,Krian Coffee Lab,Sidoarjo,Krian,Jl. Raya Krian No. 4,09:00:00,22:00:00,15000,45000,4.3,Tempat kopi populer di Krian Sidoarjo.,6
-node/1000054,Ambyar Coffee,Sidoarjo,Krian,Jl. Raya Krian No. 5,09:00:00,22:00:00,10000,25000,4.4,Tempat kopi populer di Krian Sidoarjo.,6
-node/1000055,Kopi Sejiwa,Sidoarjo,Krian,Jl. Raya Krian No. 6,09:00:00,22:00:00,15000,45000,4.5,Tempat kopi populer di Krian Sidoarjo.,6
-node/1000056,Warkop Krian Bersatu,Sidoarjo,Krian,Jl. Raya Krian No. 7,09:00:00,22:00:00,10000,25000,4.6,Tempat kopi populer di Krian Sidoarjo.,6
-node/1000057,Kopi Soe,Sidoarjo,Krian,Jl. Raya Krian No. 8,09:00:00,22:00:00,15000,45000,4.7,Tempat kopi populer di Krian Sidoarjo.,6
-node/1000058,Coffee Break,Sidoarjo,Krian,Jl. Raya Krian No. 9,09:00:00,22:00:00,10000,25000,4.8,Tempat kopi populer di Krian Sidoarjo.,6
-node/1000059,Kopi Rakyat,Sidoarjo,Krian,Jl. Raya Krian No. 10,09:00:00,22:00:00,15000,45000,4.9,Tempat kopi populer di Krian Sidoarjo.,6
-node/1000060,Kopi Ombe,Sidoarjo,Sukodono,Jl. Raya Sukodono No. 1,09:00:00,22:00:00,10000,25000,4.0,Tempat kopi populer di Sukodono Sidoarjo.,7
-node/1000061,Latar Ombo,Sidoarjo,Sukodono,Jl. Raya Sukodono No. 2,09:00:00,22:00:00,15000,45000,4.1,Tempat kopi populer di Sukodono Sidoarjo.,7
-node/1000062,Sukodono Space,Sidoarjo,Sukodono,Jl. Raya Sukodono No. 3,09:00:00,22:00:00,10000,25000,4.2,Tempat kopi populer di Sukodono Sidoarjo.,7
-node/1000063,Kopi Srawung,Sidoarjo,Sukodono,Jl. Raya Sukodono No. 4,09:00:00,22:00:00,15000,45000,4.3,Tempat kopi populer di Sukodono Sidoarjo.,7
-node/1000064,Kopi Sawah,Sidoarjo,Sukodono,Jl. Raya Sukodono No. 5,09:00:00,22:00:00,10000,25000,4.4,Tempat kopi populer di Sukodono Sidoarjo.,7
-node/1000065,Ruang Temu,Sidoarjo,Sukodono,Jl. Raya Sukodono No. 6,09:00:00,22:00:00,15000,45000,4.5,Tempat kopi populer di Sukodono Sidoarjo.,7
-node/1000066,Warkop Berkah,Sidoarjo,Sukodono,Jl. Raya Sukodono No. 7,09:00:00,22:00:00,10000,25000,4.6,Tempat kopi populer di Sukodono Sidoarjo.,7
-node/1000067,Kopi Inspirasi,Sidoarjo,Sukodono,Jl. Raya Sukodono No. 8,09:00:00,22:00:00,15000,45000,4.7,Tempat kopi populer di Sukodono Sidoarjo.,7
-node/1000068,Rumah Kopi,Sidoarjo,Sukodono,Jl. Raya Sukodono No. 9,09:00:00,22:00:00,10000,25000,4.8,Tempat kopi populer di Sukodono Sidoarjo.,7
-node/1000069,Teras Ngopi,Sidoarjo,Sukodono,Jl. Raya Sukodono No. 10,09:00:00,22:00:00,15000,45000,4.9,Tempat kopi populer di Sukodono Sidoarjo.,7
-node/1000070,Pendopo Wetan,Sidoarjo,Candi,Jl. Raya Candi No. 1,09:00:00,22:00:00,10000,25000,4.0,Tempat kopi populer di Candi Sidoarjo.,8
-node/1000071,Candi Coffee House,Sidoarjo,Candi,Jl. Raya Candi No. 2,09:00:00,22:00:00,15000,45000,4.1,Tempat kopi populer di Candi Sidoarjo.,8
-node/1000072,Kopi Mbah Doel,Sidoarjo,Candi,Jl. Raya Candi No. 3,09:00:00,22:00:00,10000,25000,4.2,Tempat kopi populer di Candi Sidoarjo.,8
-node/1000073,Kopi Luwak Candi,Sidoarjo,Candi,Jl. Raya Candi No. 4,09:00:00,22:00:00,15000,45000,4.3,Tempat kopi populer di Candi Sidoarjo.,8
-node/1000074,Kenangan Lingkar Timur,Sidoarjo,Candi,Jl. Raya Candi No. 5,09:00:00,22:00:00,10000,25000,4.4,Tempat kopi populer di Candi Sidoarjo.,8
-node/1000075,Point Coffee Candi,Sidoarjo,Candi,Jl. Raya Candi No. 6,09:00:00,22:00:00,15000,45000,4.5,Tempat kopi populer di Candi Sidoarjo.,8
-node/1000076,Warkop Stasiun,Sidoarjo,Candi,Jl. Raya Candi No. 7,09:00:00,22:00:00,10000,25000,4.6,Tempat kopi populer di Candi Sidoarjo.,8
-node/1000077,Kopi Rakyat Candi,Sidoarjo,Candi,Jl. Raya Candi No. 8,09:00:00,22:00:00,15000,45000,4.7,Tempat kopi populer di Candi Sidoarjo.,8
-node/1000078,Rumah Kopi Candi,Sidoarjo,Candi,Jl. Raya Candi No. 9,09:00:00,22:00:00,10000,25000,4.8,Tempat kopi populer di Candi Sidoarjo.,8
-node/1000079,Ngopi Sore Candi,Sidoarjo,Candi,Jl. Raya Candi No. 10,09:00:00,22:00:00,15000,45000,4.9,Tempat kopi populer di Candi Sidoarjo.,8
-node/1000080,Kopi Tas,Sidoarjo,Tanggulangin,Jl. Raya Tanggulangin No. 1,09:00:00,22:00:00,10000,25000,4.0,Tempat kopi populer di Tanggulangin Sidoarjo.,9
-node/1000081,Tanggulangin Corner,Sidoarjo,Tanggulangin,Jl. Raya Tanggulangin No. 2,09:00:00,22:00:00,15000,45000,4.1,Tempat kopi populer di Tanggulangin Sidoarjo.,9
-node/1000082,Kedai Kopi Kulit,Sidoarjo,Tanggulangin,Jl. Raya Tanggulangin No. 3,09:00:00,22:00:00,10000,25000,4.2,Tempat kopi populer di Tanggulangin Sidoarjo.,9
-node/1000083,Warkop Legenda,Sidoarjo,Tanggulangin,Jl. Raya Tanggulangin No. 4,09:00:00,22:00:00,15000,45000,4.3,Tempat kopi populer di Tanggulangin Sidoarjo.,9
-node/1000084,Kopi Pojok,Sidoarjo,Tanggulangin,Jl. Raya Tanggulangin No. 5,09:00:00,22:00:00,10000,25000,4.4,Tempat kopi populer di Tanggulangin Sidoarjo.,9
-node/1000085,Rumah Seduh,Sidoarjo,Tanggulangin,Jl. Raya Tanggulangin No. 6,09:00:00,22:00:00,15000,45000,4.5,Tempat kopi populer di Tanggulangin Sidoarjo.,9
-node/1000086,Kopi Abah,Sidoarjo,Tanggulangin,Jl. Raya Tanggulangin No. 7,09:00:00,22:00:00,10000,25000,4.6,Tempat kopi populer di Tanggulangin Sidoarjo.,9
-node/1000087,Kedai Kopi Sore,Sidoarjo,Tanggulangin,Jl. Raya Tanggulangin No. 8,09:00:00,22:00:00,15000,45000,4.7,Tempat kopi populer di Tanggulangin Sidoarjo.,9
-node/1000088,Angkringan Tanggulangin,Sidoarjo,Tanggulangin,Jl. Raya Tanggulangin No. 9,09:00:00,22:00:00,10000,25000,4.8,Tempat kopi populer di Tanggulangin Sidoarjo.,9
-node/1000089,Kopi Santai,Sidoarjo,Tanggulangin,Jl. Raya Tanggulangin No. 10,09:00:00,22:00:00,15000,45000,4.9,Tempat kopi populer di Tanggulangin Sidoarjo.,9
-node/1000090,Kopi Tanggul,Sidoarjo,Porong,Jl. Raya Porong No. 1,09:00:00,22:00:00,10000,25000,4.0,Tempat kopi populer di Porong Sidoarjo.,10
-node/1000091,Porong Station,Sidoarjo,Porong,Jl. Raya Porong No. 2,09:00:00,22:00:00,15000,45000,4.1,Tempat kopi populer di Porong Sidoarjo.,10
-node/1000092,Margo Mulyo,Sidoarjo,Porong,Jl. Raya Porong No. 3,09:00:00,22:00:00,10000,25000,4.2,Tempat kopi populer di Porong Sidoarjo.,10
-node/1000093,Warkop Porong Indah,Sidoarjo,Porong,Jl. Raya Porong No. 4,09:00:00,22:00:00,15000,45000,4.3,Tempat kopi populer di Porong Sidoarjo.,10
-node/1000094,Kopi Bangi,Sidoarjo,Porong,Jl. Raya Porong No. 5,09:00:00,22:00:00,10000,25000,4.4,Tempat kopi populer di Porong Sidoarjo.,10
-node/1000095,Kopi Tepi Jalan,Sidoarjo,Porong,Jl. Raya Porong No. 6,09:00:00,22:00:00,15000,45000,4.5,Tempat kopi populer di Porong Sidoarjo.,10
-node/1000096,Kopi Rakyat Porong,Sidoarjo,Porong,Jl. Raya Porong No. 7,09:00:00,22:00:00,10000,25000,4.6,Tempat kopi populer di Porong Sidoarjo.,10
-node/1000097,Warkop Gajah Mada,Sidoarjo,Porong,Jl. Raya Porong No. 8,09:00:00,22:00:00,15000,45000,4.7,Tempat kopi populer di Porong Sidoarjo.,10
-node/1000098,Kopi Seduluran,Sidoarjo,Porong,Jl. Raya Porong No. 9,09:00:00,22:00:00,10000,25000,4.8,Tempat kopi populer di Porong Sidoarjo.,10
-node/1000099,Kedai Kopi Baru,Sidoarjo,Porong,Jl. Raya Porong No. 10,09:00:00,22:00:00,15000,45000,4.9,Tempat kopi populer di Porong Sidoarjo.,10
-node/1000100,Tulangan Coffee Lab,Sidoarjo,Tulangan,Jl. Raya Tulangan No. 1,09:00:00,22:00:00,10000,25000,4.0,Tempat kopi populer di Tulangan Sidoarjo.,11
-node/1000101,Jenggolo Tulangan,Sidoarjo,Tulangan,Jl. Raya Tulangan No. 2,09:00:00,22:00:00,15000,45000,4.1,Tempat kopi populer di Tulangan Sidoarjo.,11
-node/1000102,Warkop Makmur,Sidoarjo,Tulangan,Jl. Raya Tulangan No. 3,09:00:00,22:00:00,10000,25000,4.2,Tempat kopi populer di Tulangan Sidoarjo.,11
-node/1000103,Kopi Kita,Sidoarjo,Tulangan,Jl. Raya Tulangan No. 4,09:00:00,22:00:00,15000,45000,4.3,Tempat kopi populer di Tulangan Sidoarjo.,11
-node/1000104,Rumah Kopi Tulangan,Sidoarjo,Tulangan,Jl. Raya Tulangan No. 5,09:00:00,22:00:00,10000,25000,4.4,Tempat kopi populer di Tulangan Sidoarjo.,11
-node/1000105,Kedai Kopi Hitam,Sidoarjo,Tulangan,Jl. Raya Tulangan No. 6,09:00:00,22:00:00,15000,45000,4.5,Tempat kopi populer di Tulangan Sidoarjo.,11
-node/1000106,Teras Ngopi Tulangan,Sidoarjo,Tulangan,Jl. Raya Tulangan No. 7,09:00:00,22:00:00,10000,25000,4.6,Tempat kopi populer di Tulangan Sidoarjo.,11
-node/1000107,Inspirasi Tulangan,Sidoarjo,Tulangan,Jl. Raya Tulangan No. 8,09:00:00,22:00:00,15000,45000,4.7,Tempat kopi populer di Tulangan Sidoarjo.,11
-node/1000108,Warkop Pojok,Sidoarjo,Tulangan,Jl. Raya Tulangan No. 9,09:00:00,22:00:00,10000,25000,4.8,Tempat kopi populer di Tulangan Sidoarjo.,11
-node/1000109,Kopi Santai Tulangan,Sidoarjo,Tulangan,Jl. Raya Tulangan No. 10,09:00:00,22:00:00,15000,45000,4.9,Tempat kopi populer di Tulangan Sidoarjo.,11
-node/1000110,Krembung Space,Sidoarjo,Krembung,Jl. Raya Krembung No. 1,09:00:00,22:00:00,10000,25000,4.0,Tempat kopi populer di Krembung Sidoarjo.,12
-node/1000111,Krembung Indah,Sidoarjo,Krembung,Jl. Raya Krembung No. 2,09:00:00,22:00:00,15000,45000,4.1,Tempat kopi populer di Krembung Sidoarjo.,12
-node/1000112,Krembung Jaya,Sidoarjo,Krembung,Jl. Raya Krembung No. 3,09:00:00,22:00:00,10000,25000,4.2,Tempat kopi populer di Krembung Sidoarjo.,12
-node/1000113,Kopi Rakyat Krembung,Sidoarjo,Krembung,Jl. Raya Krembung No. 4,09:00:00,22:00:00,15000,45000,4.3,Tempat kopi populer di Krembung Sidoarjo.,12
-node/1000114,Rumah Seduh Krembung,Sidoarjo,Krembung,Jl. Raya Krembung No. 5,09:00:00,22:00:00,10000,25000,4.4,Tempat kopi populer di Krembung Sidoarjo.,12
-node/1000115,Kopi Sore Krembung,Sidoarjo,Krembung,Jl. Raya Krembung No. 6,09:00:00,22:00:00,15000,45000,4.5,Tempat kopi populer di Krembung Sidoarjo.,12
-node/1000116,Kopi Mbah Man,Sidoarjo,Krembung,Jl. Raya Krembung No. 7,09:00:00,22:00:00,10000,25000,4.6,Tempat kopi populer di Krembung Sidoarjo.,12
-node/1000117,Warkop Klasik,Sidoarjo,Krembung,Jl. Raya Krembung No. 8,09:00:00,22:00:00,15000,45000,4.7,Tempat kopi populer di Krembung Sidoarjo.,12
-node/1000118,Kopi Mantap,Sidoarjo,Krembung,Jl. Raya Krembung No. 9,09:00:00,22:00:00,10000,25000,4.8,Tempat kopi populer di Krembung Sidoarjo.,12
-node/1000119,Teras Kopi,Sidoarjo,Krembung,Jl. Raya Krembung No. 10,09:00:00,22:00:00,15000,45000,4.9,Tempat kopi populer di Krembung Sidoarjo.,12
-node/1000120,Jabon Riverside,Sidoarjo,Jabon,Jl. Raya Jabon No. 1,09:00:00,22:00:00,10000,25000,4.0,Tempat kopi populer di Jabon Sidoarjo.,13
-node/1000121,Jabon Makmur,Sidoarjo,Jabon,Jl. Raya Jabon No. 2,09:00:00,22:00:00,15000,45000,4.1,Tempat kopi populer di Jabon Sidoarjo.,13
-node/1000122,Warkop Jabon Indah,Sidoarjo,Jabon,Jl. Raya Jabon No. 3,09:00:00,22:00:00,10000,25000,4.2,Tempat kopi populer di Jabon Sidoarjo.,13
-node/1000123,Kopi Pesisir,Sidoarjo,Jabon,Jl. Raya Jabon No. 4,09:00:00,22:00:00,15000,45000,4.3,Tempat kopi populer di Jabon Sidoarjo.,13
-node/1000124,Rumah Kopi Jabon,Sidoarjo,Jabon,Jl. Raya Jabon No. 5,09:00:00,22:00:00,10000,25000,4.4,Tempat kopi populer di Jabon Sidoarjo.,13
-node/1000125,Kopi Sederhana,Sidoarjo,Jabon,Jl. Raya Jabon No. 6,09:00:00,22:00:00,15000,45000,4.5,Tempat kopi populer di Jabon Sidoarjo.,13
-node/1000126,Kopi Rakyat Jabon,Sidoarjo,Jabon,Jl. Raya Jabon No. 7,09:00:00,22:00:00,10000,25000,4.6,Tempat kopi populer di Jabon Sidoarjo.,13
-node/1000127,Warkop Tepi Tambak,Sidoarjo,Jabon,Jl. Raya Jabon No. 8,09:00:00,22:00:00,15000,45000,4.7,Tempat kopi populer di Jabon Sidoarjo.,13
-node/1000128,Angkringan Jabon,Sidoarjo,Jabon,Jl. Raya Jabon No. 9,09:00:00,22:00:00,10000,25000,4.8,Tempat kopi populer di Jabon Sidoarjo.,13
-node/1000129,Kopi Pagi,Sidoarjo,Jabon,Jl. Raya Jabon No. 10,09:00:00,22:00:00,15000,45000,4.9,Tempat kopi populer di Jabon Sidoarjo.,13
-node/1000130,Prambon Garden,Sidoarjo,Prambon,Jl. Raya Prambon No. 1,09:00:00,22:00:00,10000,25000,4.0,Tempat kopi populer di Prambon Sidoarjo.,14
-node/1000131,Prambon Raya,Sidoarjo,Prambon,Jl. Raya Prambon No. 2,09:00:00,22:00:00,15000,45000,4.1,Tempat kopi populer di Prambon Sidoarjo.,14
-node/1000132,Prambon Indah,Sidoarjo,Prambon,Jl. Raya Prambon No. 3,09:00:00,22:00:00,10000,25000,4.2,Tempat kopi populer di Prambon Sidoarjo.,14
-node/1000133,Kopi Sawah Prambon,Sidoarjo,Prambon,Jl. Raya Prambon No. 4,09:00:00,22:00:00,15000,45000,4.3,Tempat kopi populer di Prambon Sidoarjo.,14
-node/1000134,Rumah Kopi Prambon,Sidoarjo,Prambon,Jl. Raya Prambon No. 5,09:00:00,22:00:00,10000,25000,4.4,Tempat kopi populer di Prambon Sidoarjo.,14
-node/1000135,Kopi Rakyat Prambon,Sidoarjo,Prambon,Jl. Raya Prambon No. 6,09:00:00,22:00:00,15000,45000,4.5,Tempat kopi populer di Prambon Sidoarjo.,14
-node/1000136,Kopi Sore Prambon,Sidoarjo,Prambon,Jl. Raya Prambon No. 7,09:00:00,22:00:00,10000,25000,4.6,Tempat kopi populer di Prambon Sidoarjo.,14
-node/1000137,Legenda Prambon,Sidoarjo,Prambon,Jl. Raya Prambon No. 8,09:00:00,22:00:00,15000,45000,4.7,Tempat kopi populer di Prambon Sidoarjo.,14
-node/1000138,Teras Ngopi Prambon,Sidoarjo,Prambon,Jl. Raya Prambon No. 9,09:00:00,22:00:00,10000,25000,4.8,Tempat kopi populer di Prambon Sidoarjo.,14
-node/1000139,Kopi Mantap Prambon,Sidoarjo,Prambon,Jl. Raya Prambon No. 10,09:00:00,22:00:00,15000,45000,4.9,Tempat kopi populer di Prambon Sidoarjo.,14
-node/1000140,Tarik Station,Sidoarjo,Tarik,Jl. Raya Tarik No. 1,09:00:00,22:00:00,10000,25000,4.0,Tempat kopi populer di Tarik Sidoarjo.,15
-node/1000141,Tarik Makmur,Sidoarjo,Tarik,Jl. Raya Tarik No. 2,09:00:00,22:00:00,15000,45000,4.1,Tempat kopi populer di Tarik Sidoarjo.,15
-node/1000142,Tarik Jaya,Sidoarjo,Tarik,Jl. Raya Tarik No. 3,09:00:00,22:00:00,10000,25000,4.2,Tempat kopi populer di Tarik Sidoarjo.,15
-node/1000143,Kopi Rakyat Tarik,Sidoarjo,Tarik,Jl. Raya Tarik No. 4,09:00:00,22:00:00,15000,45000,4.3,Tempat kopi populer di Tarik Sidoarjo.,15
-node/1000144,Rumah Seduh Tarik,Sidoarjo,Tarik,Jl. Raya Tarik No. 5,09:00:00,22:00:00,10000,25000,4.4,Tempat kopi populer di Tarik Sidoarjo.,15
-node/1000145,Kopi Sore Tarik,Sidoarjo,Tarik,Jl. Raya Tarik No. 6,09:00:00,22:00:00,15000,45000,4.5,Tempat kopi populer di Tarik Sidoarjo.,15
-node/1000146,Kopi Mbah Tarik,Sidoarjo,Tarik,Jl. Raya Tarik No. 7,09:00:00,22:00:00,10000,25000,4.6,Tempat kopi populer di Tarik Sidoarjo.,15
-node/1000147,Warkop Klasik Tarik,Sidoarjo,Tarik,Jl. Raya Tarik No. 8,09:00:00,22:00:00,15000,45000,4.7,Tempat kopi populer di Tarik Sidoarjo.,15
-node/1000148,Kopi Mantap Tarik,Sidoarjo,Tarik,Jl. Raya Tarik No. 9,09:00:00,22:00:00,10000,25000,4.8,Tempat kopi populer di Tarik Sidoarjo.,15
-node/1000149,Teras Kopi Tarik,Sidoarjo,Tarik,Jl. Raya Tarik No. 10,09:00:00,22:00:00,15000,45000,4.9,Tempat kopi populer di Tarik Sidoarjo.,15
-node/1000150,Balongbendo Space,Sidoarjo,Balongbendo,Jl. Raya Balongbendo No. 1,09:00:00,22:00:00,10000,25000,4.0,Tempat kopi populer di Balongbendo Sidoarjo.,16
-node/1000151,Balongbendo Indah,Sidoarjo,Balongbendo,Jl. Raya Balongbendo No. 2,09:00:00,22:00:00,15000,45000,4.1,Tempat kopi populer di Balongbendo Sidoarjo.,16
-node/1000152,Balongbendo Jaya,Sidoarjo,Balongbendo,Jl. Raya Balongbendo No. 3,09:00:00,22:00:00,10000,25000,4.2,Tempat kopi populer di Balongbendo Sidoarjo.,16
-node/1000153,Kopi Rakyat Balongbendo,Sidoarjo,Balongbendo,Jl. Raya Balongbendo No. 4,09:00:00,22:00:00,15000,45000,4.3,Tempat kopi populer di Balongbendo Sidoarjo.,16
-node/1000154,Rumah Seduh Balongbendo,Sidoarjo,Balongbendo,Jl. Raya Balongbendo No. 5,09:00:00,22:00:00,10000,25000,4.4,Tempat kopi populer di Balongbendo Sidoarjo.,16
-node/1000155,Kopi Sore Balongbendo,Sidoarjo,Balongbendo,Jl. Raya Balongbendo No. 6,09:00:00,22:00:00,15000,45000,4.5,Tempat kopi populer di Balongbendo Sidoarjo.,16
-node/1000156,Kopi Mbah Balong,Sidoarjo,Balongbendo,Jl. Raya Balongbendo No. 7,09:00:00,22:00:00,10000,25000,4.6,Tempat kopi populer di Balongbendo Sidoarjo.,16
-node/1000157,Warkop Klasik Balongbendo,Sidoarjo,Balongbendo,Jl. Raya Balongbendo No. 8,09:00:00,22:00:00,15000,45000,4.7,Tempat kopi populer di Balongbendo Sidoarjo.,16
-node/1000158,Kopi Mantap Balongbendo,Sidoarjo,Balongbendo,Jl. Raya Balongbendo No. 9,09:00:00,22:00:00,10000,25000,4.8,Tempat kopi populer di Balongbendo Sidoarjo.,16
-node/1000159,Teras Kopi Balongbendo,Sidoarjo,Balongbendo,Jl. Raya Balongbendo No. 10,09:00:00,22:00:00,15000,45000,4.9,Tempat kopi populer di Balongbendo Sidoarjo.,16
-node/1000160,Cak Sodik,Sidoarjo,Wonoayu,Jl. Raya Wonoayu No. 1,09:00:00,22:00:00,10000,25000,4.0,Tempat kopi populer di Wonoayu Sidoarjo.,17
-node/1000161,Wonoayu Lab,Sidoarjo,Wonoayu,Jl. Raya Wonoayu No. 2,09:00:00,22:00:00,15000,45000,4.1,Tempat kopi populer di Wonoayu Sidoarjo.,17
-node/1000162,Wonoayu Indah,Sidoarjo,Wonoayu,Jl. Raya Wonoayu No. 3,09:00:00,22:00:00,10000,25000,4.2,Tempat kopi populer di Wonoayu Sidoarjo.,17
-node/1000163,Kopi Sawah Wonoayu,Sidoarjo,Wonoayu,Jl. Raya Wonoayu No. 4,09:00:00,22:00:00,15000,45000,4.3,Tempat kopi populer di Wonoayu Sidoarjo.,17
-node/1000164,Rumah Kopi Wonoayu,Sidoarjo,Wonoayu,Jl. Raya Wonoayu No. 5,09:00:00,22:00:00,10000,25000,4.4,Tempat kopi populer di Wonoayu Sidoarjo.,17
-node/1000165,Kopi Rakyat Wonoayu,Sidoarjo,Wonoayu,Jl. Raya Wonoayu No. 6,09:00:00,22:00:00,15000,45000,4.5,Tempat kopi populer di Wonoayu Sidoarjo.,17
-node/1000166,Kopi Sore Wonoayu,Sidoarjo,Wonoayu,Jl. Raya Wonoayu No. 7,09:00:00,22:00:00,10000,25000,4.6,Tempat kopi populer di Wonoayu Sidoarjo.,17
-node/1000167,Legenda Wonoayu,Sidoarjo,Wonoayu,Jl. Raya Wonoayu No. 8,09:00:00,22:00:00,15000,45000,4.7,Tempat kopi populer di Wonoayu Sidoarjo.,17
-node/1000168,Teras Ngopi Wonoayu,Sidoarjo,Wonoayu,Jl. Raya Wonoayu No. 9,09:00:00,22:00:00,10000,25000,4.8,Tempat kopi populer di Wonoayu Sidoarjo.,17
-node/1000169,Kopi Mantap Wonoayu,Sidoarjo,Wonoayu,Jl. Raya Wonoayu No. 10,09:00:00,22:00:00,15000,45000,4.9,Tempat kopi populer di Wonoayu Sidoarjo.,17
-node/1000170,Sedati Garden,Sidoarjo,Sedati,Jl. Raya Sedati No. 1,09:00:00,22:00:00,10000,25000,4.0,Tempat kopi populer di Sedati Sidoarjo.,18
-node/1000171,Sedati Raya,Sidoarjo,Sedati,Jl. Raya Sedati No. 2,09:00:00,22:00:00,15000,45000,4.1,Tempat kopi populer di Sedati Sidoarjo.,18
-node/1000172,Sedati Indah,Sidoarjo,Sedati,Jl. Raya Sedati No. 3,09:00:00,22:00:00,10000,25000,4.2,Tempat kopi populer di Sedati Sidoarjo.,18
-node/1000173,Kopi Pesisir Sedati,Sidoarjo,Sedati,Jl. Raya Sedati No. 4,09:00:00,22:00:00,15000,45000,4.3,Tempat kopi populer di Sedati Sidoarjo.,18
-node/1000174,Rumah Kopi Sedati,Sidoarjo,Sedati,Jl. Raya Sedati No. 5,09:00:00,22:00:00,10000,25000,4.4,Tempat kopi populer di Sedati Sidoarjo.,18
-node/1000175,Kopi Rakyat Sedati,Sidoarjo,Sedati,Jl. Raya Sedati No. 6,09:00:00,22:00:00,15000,45000,4.5,Tempat kopi populer di Sedati Sidoarjo.,18
-node/1000176,Kopi Sore Sedati,Sidoarjo,Sedati,Jl. Raya Sedati No. 7,09:00:00,22:00:00,10000,25000,4.6,Tempat kopi populer di Sedati Sidoarjo.,18
-node/1000177,Legenda Sedati,Sidoarjo,Sedati,Jl. Raya Sedati No. 8,09:00:00,22:00:00,15000,45000,4.7,Tempat kopi populer di Sedati Sidoarjo.,18
-node/1000178,Teras Ngopi Sedati,Sidoarjo,Sedati,Jl. Raya Sedati No. 9,09:00:00,22:00:00,10000,25000,4.8,Tempat kopi populer di Sedati Sidoarjo.,18
-node/1000179,Kopi Mantap Sedati,Sidoarjo,Sedati,Jl. Raya Sedati No. 10,09:00:00,22:00:00,15000,45000,4.9,Tempat kopi populer di Sedati Sidoarjo.,18
+node/1000000,Kyotosaga Coffee Shop,Sidoarjo,Sidoarjo,Jl. Sidoarjo No. 1,09:00:00,22:00:00,10000,25000,4.0,Kyotosaga Coffee Shop adalah tempat ngopi di Sidoarjo Sidoarjo.,1
+node/1000001,Ekopilogi,Sidoarjo,Sidoarjo,Jl. Sidoarjo No. 2,09:00:00,22:00:00,15000,45000,4.1,Ekopilogi adalah tempat ngopi di Sidoarjo Sidoarjo.,1
+node/1000002,The Rooster Coffee Company,Sidoarjo,Sidoarjo,Jl. Sidoarjo No. 3,09:00:00,22:00:00,10000,25000,4.2,The Rooster Coffee Company adalah tempat ngopi di Sidoarjo Sidoarjo.,1
+node/1000003,Pagi Pagi Coffee,Sidoarjo,Sidoarjo,Jl. Sidoarjo No. 4,09:00:00,22:00:00,15000,45000,4.3,Pagi Pagi Coffee adalah tempat ngopi di Sidoarjo Sidoarjo.,1
+node/1000004,Jungkir Balik Coffee,Sidoarjo,Sidoarjo,Jl. Sidoarjo No. 5,09:00:00,22:00:00,10000,25000,4.4,Jungkir Balik Coffee adalah tempat ngopi di Sidoarjo Sidoarjo.,1
+node/1000005,Indische 1931 Coffee,Sidoarjo,Sidoarjo,Jl. Sidoarjo No. 6,09:00:00,22:00:00,15000,45000,4.5,Indische 1931 Coffee adalah tempat ngopi di Sidoarjo Sidoarjo.,1
+node/1000006,Kedai Kopi Potehi,Sidoarjo,Sidoarjo,Jl. Sidoarjo No. 7,09:00:00,22:00:00,10000,25000,4.6,Kedai Kopi Potehi adalah tempat ngopi di Sidoarjo Sidoarjo.,1
+node/1000007,De Jong Cafe,Sidoarjo,Sidoarjo,Jl. Sidoarjo No. 8,09:00:00,22:00:00,15000,45000,4.7,De Jong Cafe adalah tempat ngopi di Sidoarjo Sidoarjo.,1
+node/1000008,Kopi Kenangan Pahlawan,Sidoarjo,Sidoarjo,Jl. Sidoarjo No. 9,09:00:00,22:00:00,10000,25000,4.8,Kopi Kenangan Pahlawan adalah tempat ngopi di Sidoarjo Sidoarjo.,1
+node/1000009,Sarang Kopi (Sako),Sidoarjo,Sidoarjo,Jl. Sidoarjo No. 10,09:00:00,22:00:00,15000,45000,4.9,Sarang Kopi (Sako) adalah tempat ngopi di Sidoarjo Sidoarjo.,1
+node/1000010,Ame Coffee,Sidoarjo,Buduran,Jl. Buduran No. 1,09:00:00,22:00:00,10000,25000,4.0,Ame Coffee adalah tempat ngopi di Buduran Sidoarjo.,2
+node/1000011,Vlog Cafe,Sidoarjo,Buduran,Jl. Buduran No. 2,09:00:00,22:00:00,15000,45000,4.1,Vlog Cafe adalah tempat ngopi di Buduran Sidoarjo.,2
+node/1000012,Taketama Coffee,Sidoarjo,Buduran,Jl. Buduran No. 3,09:00:00,22:00:00,10000,25000,4.2,Taketama Coffee adalah tempat ngopi di Buduran Sidoarjo.,2
+node/1000013,Labuda Kopi,Sidoarjo,Buduran,Jl. Buduran No. 4,09:00:00,22:00:00,15000,45000,4.3,Labuda Kopi adalah tempat ngopi di Buduran Sidoarjo.,2
+node/1000014,Picnic Coffee & Tea,Sidoarjo,Buduran,Jl. Buduran No. 5,09:00:00,22:00:00,10000,25000,4.4,Picnic Coffee & Tea adalah tempat ngopi di Buduran Sidoarjo.,2
+node/1000015,The Little A Coffee Shop,Sidoarjo,Buduran,Jl. Buduran No. 6,09:00:00,22:00:00,15000,45000,4.5,The Little A Coffee Shop adalah tempat ngopi di Buduran Sidoarjo.,2
+node/1000016,Lavatera Coffee Shop,Sidoarjo,Buduran,Jl. Buduran No. 7,09:00:00,22:00:00,10000,25000,4.6,Lavatera Coffee Shop adalah tempat ngopi di Buduran Sidoarjo.,2
+node/1000017,Makmu Sidoarjo,Sidoarjo,Buduran,Jl. Buduran No. 8,09:00:00,22:00:00,15000,45000,4.7,Makmu Sidoarjo adalah tempat ngopi di Buduran Sidoarjo.,2
+node/1000018,Red Coffee and Plants,Sidoarjo,Buduran,Jl. Buduran No. 9,09:00:00,22:00:00,10000,25000,4.8,Red Coffee and Plants adalah tempat ngopi di Buduran Sidoarjo.,2
+node/1000019,Vox Populi Coffee,Sidoarjo,Buduran,Jl. Buduran No. 10,09:00:00,22:00:00,15000,45000,4.9,Vox Populi Coffee adalah tempat ngopi di Buduran Sidoarjo.,2
+node/1000020,KIRRIBILLI,Sidoarjo,Waru,Jl. Waru No. 1,09:00:00,22:00:00,10000,25000,4.0,KIRRIBILLI adalah tempat ngopi di Waru Sidoarjo.,3
+node/1000021,Dee Coffee House,Sidoarjo,Waru,Jl. Waru No. 2,09:00:00,22:00:00,15000,45000,4.1,Dee Coffee House adalah tempat ngopi di Waru Sidoarjo.,3
+node/1000022,Twentysix Cafe Waru,Sidoarjo,Waru,Jl. Waru No. 3,09:00:00,22:00:00,10000,25000,4.2,Twentysix Cafe Waru adalah tempat ngopi di Waru Sidoarjo.,3
+node/1000023,PAPADA CAFE,Sidoarjo,Waru,Jl. Waru No. 4,09:00:00,22:00:00,15000,45000,4.3,PAPADA CAFE adalah tempat ngopi di Waru Sidoarjo.,3
+node/1000024,Warung'e Dony,Sidoarjo,Waru,Jl. Waru No. 5,09:00:00,22:00:00,10000,25000,4.4,Warung'e Dony adalah tempat ngopi di Waru Sidoarjo.,3
+node/1000025,KAYOENE WARU,Sidoarjo,Waru,Jl. Waru No. 6,09:00:00,22:00:00,15000,45000,4.5,KAYOENE WARU adalah tempat ngopi di Waru Sidoarjo.,3
+node/1000026,Djuw Cafe,Sidoarjo,Waru,Jl. Waru No. 7,09:00:00,22:00:00,10000,25000,4.6,Djuw Cafe adalah tempat ngopi di Waru Sidoarjo.,3
+node/1000027,Napoli Tea & Coffee Shop,Sidoarjo,Waru,Jl. Waru No. 8,09:00:00,22:00:00,15000,45000,4.7,Napoli Tea & Coffee Shop adalah tempat ngopi di Waru Sidoarjo.,3
+node/1000028,Warkopbugil,Sidoarjo,Waru,Jl. Waru No. 9,09:00:00,22:00:00,10000,25000,4.8,Warkopbugil adalah tempat ngopi di Waru Sidoarjo.,3
+node/1000029,Arek Lokal (Arlo),Sidoarjo,Waru,Jl. Waru No. 10,09:00:00,22:00:00,15000,45000,4.9,Arek Lokal (Arlo) adalah tempat ngopi di Waru Sidoarjo.,3
+node/1000030,333 House Coffee,Sidoarjo,Gedangan,Jl. Gedangan No. 1,09:00:00,22:00:00,10000,25000,4.0,333 House Coffee adalah tempat ngopi di Gedangan Sidoarjo.,4
+node/1000031,Kopi Kenangan SPBU Gedangan,Sidoarjo,Gedangan,Jl. Gedangan No. 2,09:00:00,22:00:00,15000,45000,4.1,Kopi Kenangan SPBU Gedangan adalah tempat ngopi di Gedangan Sidoarjo.,4
+node/1000032,Kedai Kopi Mak Nyak,Sidoarjo,Gedangan,Jl. Gedangan No. 3,09:00:00,22:00:00,10000,25000,4.2,Kedai Kopi Mak Nyak adalah tempat ngopi di Gedangan Sidoarjo.,4
+node/1000033,Kedai Kopi Ahmed,Sidoarjo,Gedangan,Jl. Gedangan No. 4,09:00:00,22:00:00,15000,45000,4.3,Kedai Kopi Ahmed adalah tempat ngopi di Gedangan Sidoarjo.,4
+node/1000034,Warung Kopi Giling,Sidoarjo,Gedangan,Jl. Gedangan No. 5,09:00:00,22:00:00,10000,25000,4.4,Warung Kopi Giling adalah tempat ngopi di Gedangan Sidoarjo.,4
+node/1000035,Jati Kopi,Sidoarjo,Gedangan,Jl. Gedangan No. 6,09:00:00,22:00:00,15000,45000,4.5,Jati Kopi adalah tempat ngopi di Gedangan Sidoarjo.,4
+node/1000036,Semampir Coffee,Sidoarjo,Gedangan,Jl. Gedangan No. 7,09:00:00,22:00:00,10000,25000,4.6,Semampir Coffee adalah tempat ngopi di Gedangan Sidoarjo.,4
+node/1000037,Gedangan Coffee Roastery,Sidoarjo,Gedangan,Jl. Gedangan No. 8,09:00:00,22:00:00,15000,45000,4.7,Gedangan Coffee Roastery adalah tempat ngopi di Gedangan Sidoarjo.,4
+node/1000038,Ruang Kopi,Sidoarjo,Gedangan,Jl. Gedangan No. 9,09:00:00,22:00:00,10000,25000,4.8,Ruang Kopi adalah tempat ngopi di Gedangan Sidoarjo.,4
+node/1000039,Titik Temu Kopi,Sidoarjo,Gedangan,Jl. Gedangan No. 10,09:00:00,22:00:00,15000,45000,4.9,Titik Temu Kopi adalah tempat ngopi di Gedangan Sidoarjo.,4
+node/1000040,Kopi Ruang Hati Taman,Sidoarjo,Taman,Jl. Taman No. 1,09:00:00,22:00:00,10000,25000,4.0,Kopi Ruang Hati Taman adalah tempat ngopi di Taman Sidoarjo.,5
+node/1000041,Depot Kopi Sepanjang,Sidoarjo,Taman,Jl. Taman No. 2,09:00:00,22:00:00,15000,45000,4.1,Depot Kopi Sepanjang adalah tempat ngopi di Taman Sidoarjo.,5
+node/1000042,Kalcer Coffee,Sidoarjo,Taman,Jl. Taman No. 3,09:00:00,22:00:00,10000,25000,4.2,Kalcer Coffee adalah tempat ngopi di Taman Sidoarjo.,5
+node/1000043,Kedai Kopi 77,Sidoarjo,Taman,Jl. Taman No. 4,09:00:00,22:00:00,15000,45000,4.3,Kedai Kopi 77 adalah tempat ngopi di Taman Sidoarjo.,5
+node/1000044,Warkop 77 Sepanjang,Sidoarjo,Taman,Jl. Taman No. 5,09:00:00,22:00:00,10000,25000,4.4,Warkop 77 Sepanjang adalah tempat ngopi di Taman Sidoarjo.,5
+node/1000045,Coffee Time Sepanjang,Sidoarjo,Taman,Jl. Taman No. 6,09:00:00,22:00:00,15000,45000,4.5,Coffee Time Sepanjang adalah tempat ngopi di Taman Sidoarjo.,5
+node/1000046,Janji Jiwa Taman,Sidoarjo,Taman,Jl. Taman No. 7,09:00:00,22:00:00,10000,25000,4.6,Janji Jiwa Taman adalah tempat ngopi di Taman Sidoarjo.,5
+node/1000047,Kopi Joss Taman,Sidoarjo,Taman,Jl. Taman No. 8,09:00:00,22:00:00,15000,45000,4.7,Kopi Joss Taman adalah tempat ngopi di Taman Sidoarjo.,5
+node/1000048,Teras Kopi,Sidoarjo,Taman,Jl. Taman No. 9,09:00:00,22:00:00,10000,25000,4.8,Teras Kopi adalah tempat ngopi di Taman Sidoarjo.,5
+node/1000049,Kopi Persahabatan,Sidoarjo,Taman,Jl. Taman No. 10,09:00:00,22:00:00,15000,45000,4.9,Kopi Persahabatan adalah tempat ngopi di Taman Sidoarjo.,5
+node/1000050,Bejo Coffee Krian,Sidoarjo,Krian,Jl. Krian No. 1,09:00:00,22:00:00,10000,25000,4.0,Bejo Coffee Krian adalah tempat ngopi di Krian Sidoarjo.,6
+node/1000051,KAFE ASIA KRIAN,Sidoarjo,Krian,Jl. Krian No. 2,09:00:00,22:00:00,15000,45000,4.1,KAFE ASIA KRIAN adalah tempat ngopi di Krian Sidoarjo.,6
+node/1000052,Kopi Sae,Sidoarjo,Krian,Jl. Krian No. 3,09:00:00,22:00:00,10000,25000,4.2,Kopi Sae adalah tempat ngopi di Krian Sidoarjo.,6
+node/1000053,SAT SET Food Krian,Sidoarjo,Krian,Jl. Krian No. 4,09:00:00,22:00:00,15000,45000,4.3,SAT SET Food Krian adalah tempat ngopi di Krian Sidoarjo.,6
+node/1000054,Warkop Yuk Suminah,Sidoarjo,Krian,Jl. Krian No. 5,09:00:00,22:00:00,10000,25000,4.4,Warkop Yuk Suminah adalah tempat ngopi di Krian Sidoarjo.,6
+node/1000055,Krian Coffee Lab,Sidoarjo,Krian,Jl. Krian No. 6,09:00:00,22:00:00,15000,45000,4.5,Krian Coffee Lab adalah tempat ngopi di Krian Sidoarjo.,6
+node/1000056,Ambyar Coffee,Sidoarjo,Krian,Jl. Krian No. 7,09:00:00,22:00:00,10000,25000,4.6,Ambyar Coffee adalah tempat ngopi di Krian Sidoarjo.,6
+node/1000057,Kedai Kopi Oei,Sidoarjo,Krian,Jl. Krian No. 8,09:00:00,22:00:00,15000,45000,4.7,Kedai Kopi Oei adalah tempat ngopi di Krian Sidoarjo.,6
+node/1000058,Warkop Krian Bersatu,Sidoarjo,Krian,Jl. Krian No. 9,09:00:00,22:00:00,10000,25000,4.8,Warkop Krian Bersatu adalah tempat ngopi di Krian Sidoarjo.,6
+node/1000059,Kopi Sejiwa,Sidoarjo,Krian,Jl. Krian No. 10,09:00:00,22:00:00,15000,45000,4.9,Kopi Sejiwa adalah tempat ngopi di Krian Sidoarjo.,6
+node/1000060,45 Coffee Shop Grha Kopi Nusantara,Sidoarjo,Sukodono,Jl. Sukodono No. 1,09:00:00,22:00:00,10000,25000,4.0,45 Coffee Shop Grha Kopi Nusantara adalah tempat ngopi di Sukodono Sidoarjo.,7
+node/1000061,Warkop Coffe House Suko,Sidoarjo,Sukodono,Jl. Sukodono No. 2,09:00:00,22:00:00,15000,45000,4.1,Warkop Coffe House Suko adalah tempat ngopi di Sukodono Sidoarjo.,7
+node/1000062,Kopi Ombe,Sidoarjo,Sukodono,Jl. Sukodono No. 3,09:00:00,22:00:00,10000,25000,4.2,Kopi Ombe adalah tempat ngopi di Sukodono Sidoarjo.,7
+node/1000063,Latar Ombo,Sidoarjo,Sukodono,Jl. Sukodono No. 4,09:00:00,22:00:00,15000,45000,4.3,Latar Ombo adalah tempat ngopi di Sukodono Sidoarjo.,7
+node/1000064,Sukodono Coffee Space,Sidoarjo,Sukodono,Jl. Sukodono No. 5,09:00:00,22:00:00,10000,25000,4.4,Sukodono Coffee Space adalah tempat ngopi di Sukodono Sidoarjo.,7
+node/1000065,Kedai Kopi Srawung,Sidoarjo,Sukodono,Jl. Sukodono No. 6,09:00:00,22:00:00,15000,45000,4.5,Kedai Kopi Srawung adalah tempat ngopi di Sukodono Sidoarjo.,7
+node/1000066,Ruang Temu Coffee,Sidoarjo,Sukodono,Jl. Sukodono No. 7,09:00:00,22:00:00,10000,25000,4.6,Ruang Temu Coffee adalah tempat ngopi di Sukodono Sidoarjo.,7
+node/1000067,Warkop Berkah,Sidoarjo,Sukodono,Jl. Sukodono No. 8,09:00:00,22:00:00,15000,45000,4.7,Warkop Berkah adalah tempat ngopi di Sukodono Sidoarjo.,7
+node/1000068,Kopi Inspirasi,Sidoarjo,Sukodono,Jl. Sukodono No. 9,09:00:00,22:00:00,10000,25000,4.8,Kopi Inspirasi adalah tempat ngopi di Sukodono Sidoarjo.,7
+node/1000069,Teras Ngopi,Sidoarjo,Sukodono,Jl. Sukodono No. 10,09:00:00,22:00:00,15000,45000,4.9,Teras Ngopi adalah tempat ngopi di Sukodono Sidoarjo.,7
+node/1000070,Coffee Shop Crypto,Sidoarjo,Candi,Jl. Candi No. 1,09:00:00,22:00:00,10000,25000,4.0,Coffee Shop Crypto adalah tempat ngopi di Candi Sidoarjo.,8
+node/1000071,Meiji Park Cafe,Sidoarjo,Candi,Jl. Candi No. 2,09:00:00,22:00:00,15000,45000,4.1,Meiji Park Cafe adalah tempat ngopi di Candi Sidoarjo.,8
+node/1000072,HOP(E)S Car Wash & Cafe,Sidoarjo,Candi,Jl. Candi No. 3,09:00:00,22:00:00,10000,25000,4.2,HOP(E)S Car Wash & Cafe adalah tempat ngopi di Candi Sidoarjo.,8
+node/1000073,Candi Coffee House,Sidoarjo,Candi,Jl. Candi No. 4,09:00:00,22:00:00,15000,45000,4.3,Candi Coffee House adalah tempat ngopi di Candi Sidoarjo.,8
+node/1000074,Kopi Mbah Doel,Sidoarjo,Candi,Jl. Candi No. 5,09:00:00,22:00:00,10000,25000,4.4,Kopi Mbah Doel adalah tempat ngopi di Candi Sidoarjo.,8
+node/1000075,Pendopo Wetan,Sidoarjo,Candi,Jl. Candi No. 6,09:00:00,22:00:00,15000,45000,4.5,Pendopo Wetan adalah tempat ngopi di Candi Sidoarjo.,8
+node/1000076,Point Coffee Candi,Sidoarjo,Candi,Jl. Candi No. 7,09:00:00,22:00:00,10000,25000,4.6,Point Coffee Candi adalah tempat ngopi di Candi Sidoarjo.,8
+node/1000077,Warkop Stasiun Candi,Sidoarjo,Candi,Jl. Candi No. 8,09:00:00,22:00:00,15000,45000,4.7,Warkop Stasiun Candi adalah tempat ngopi di Candi Sidoarjo.,8
+node/1000078,Rumah Kopi Candi,Sidoarjo,Candi,Jl. Candi No. 9,09:00:00,22:00:00,10000,25000,4.8,Rumah Kopi Candi adalah tempat ngopi di Candi Sidoarjo.,8
+node/1000079,Ngopi Sore Candi,Sidoarjo,Candi,Jl. Candi No. 10,09:00:00,22:00:00,15000,45000,4.9,Ngopi Sore Candi adalah tempat ngopi di Candi Sidoarjo.,8
+node/1000080,Mbonk X Cafe Tanggulangin,Sidoarjo,Tanggulangin,Jl. Tanggulangin No. 1,09:00:00,22:00:00,10000,25000,4.0,Mbonk X Cafe Tanggulangin adalah tempat ngopi di Tanggulangin Sidoarjo.,9
+node/1000081,UWU COFFEE SHOP & FOOD,Sidoarjo,Tanggulangin,Jl. Tanggulangin No. 2,09:00:00,22:00:00,15000,45000,4.1,UWU COFFEE SHOP & FOOD adalah tempat ngopi di Tanggulangin Sidoarjo.,9
+node/1000082,Pring Bali Caffe,Sidoarjo,Tanggulangin,Jl. Tanggulangin No. 3,09:00:00,22:00:00,10000,25000,4.2,Pring Bali Caffe adalah tempat ngopi di Tanggulangin Sidoarjo.,9
+node/1000083,Kedai Kopi Kulit,Sidoarjo,Tanggulangin,Jl. Tanggulangin No. 4,09:00:00,22:00:00,15000,45000,4.3,Kedai Kopi Kulit adalah tempat ngopi di Tanggulangin Sidoarjo.,9
+node/1000084,Tanggulangin Coffee Corner,Sidoarjo,Tanggulangin,Jl. Tanggulangin No. 5,09:00:00,22:00:00,10000,25000,4.4,Tanggulangin Coffee Corner adalah tempat ngopi di Tanggulangin Sidoarjo.,9
+node/1000085,Kopi Tas,Sidoarjo,Tanggulangin,Jl. Tanggulangin No. 6,09:00:00,22:00:00,15000,45000,4.5,Kopi Tas adalah tempat ngopi di Tanggulangin Sidoarjo.,9
+node/1000086,Kopi Pojok Tanggulangin,Sidoarjo,Tanggulangin,Jl. Tanggulangin No. 7,09:00:00,22:00:00,10000,25000,4.6,Kopi Pojok Tanggulangin adalah tempat ngopi di Tanggulangin Sidoarjo.,9
+node/1000087,Rumah Seduh Tanggulangin,Sidoarjo,Tanggulangin,Jl. Tanggulangin No. 8,09:00:00,22:00:00,15000,45000,4.7,Rumah Seduh Tanggulangin adalah tempat ngopi di Tanggulangin Sidoarjo.,9
+node/1000088,Kedai Kopi Sore,Sidoarjo,Tanggulangin,Jl. Tanggulangin No. 9,09:00:00,22:00:00,10000,25000,4.8,Kedai Kopi Sore adalah tempat ngopi di Tanggulangin Sidoarjo.,9
+node/1000089,Angkringan Kopi Tanggulangin,Sidoarjo,Tanggulangin,Jl. Tanggulangin No. 10,09:00:00,22:00:00,15000,45000,4.9,Angkringan Kopi Tanggulangin adalah tempat ngopi di Tanggulangin Sidoarjo.,9
+node/1000090,Ngopi bareng BUNGA MEKAR,Sidoarjo,Porong,Jl. Porong No. 1,09:00:00,22:00:00,10000,25000,4.0,Ngopi bareng BUNGA MEKAR adalah tempat ngopi di Porong Sidoarjo.,10
+node/1000091,Wafi Car Wash and Motor Cycle Cafe,Sidoarjo,Porong,Jl. Porong No. 2,09:00:00,22:00:00,15000,45000,4.1,Wafi Car Wash and Motor Cycle Cafe adalah tempat ngopi di Porong Sidoarjo.,10
+node/1000092,Warkop Wunut Porong,Sidoarjo,Porong,Jl. Porong No. 3,09:00:00,22:00:00,10000,25000,4.2,Warkop Wunut Porong adalah tempat ngopi di Porong Sidoarjo.,10
+node/1000093,Porong Coffee Station,Sidoarjo,Porong,Jl. Porong No. 4,09:00:00,22:00:00,15000,45000,4.3,Porong Coffee Station adalah tempat ngopi di Porong Sidoarjo.,10
+node/1000094,Kedai Kopi Margo Mulyo,Sidoarjo,Porong,Jl. Porong No. 5,09:00:00,22:00:00,10000,25000,4.4,Kedai Kopi Margo Mulyo adalah tempat ngopi di Porong Sidoarjo.,10
+node/1000095,Kopi Tanggul,Sidoarjo,Porong,Jl. Porong No. 6,09:00:00,22:00:00,15000,45000,4.5,Kopi Tanggul adalah tempat ngopi di Porong Sidoarjo.,10
+node/1000096,Kopi Bangi Porong,Sidoarjo,Porong,Jl. Porong No. 7,09:00:00,22:00:00,10000,25000,4.6,Kopi Bangi Porong adalah tempat ngopi di Porong Sidoarjo.,10
+node/1000097,Warkop Porong Indah,Sidoarjo,Porong,Jl. Porong No. 8,09:00:00,22:00:00,15000,45000,4.7,Warkop Porong Indah adalah tempat ngopi di Porong Sidoarjo.,10
+node/1000098,Kopi Seduluran,Sidoarjo,Porong,Jl. Porong No. 9,09:00:00,22:00:00,10000,25000,4.8,Kopi Seduluran adalah tempat ngopi di Porong Sidoarjo.,10
+node/1000099,Warkop Gajah Mada,Sidoarjo,Porong,Jl. Porong No. 10,09:00:00,22:00:00,15000,45000,4.9,Warkop Gajah Mada adalah tempat ngopi di Porong Sidoarjo.,10
+node/1000100,Warung Kopi Mak Ti,Sidoarjo,Tulangan,Jl. Tulangan No. 1,09:00:00,22:00:00,10000,25000,4.0,Warung Kopi Mak Ti adalah tempat ngopi di Tulangan Sidoarjo.,11
+node/1000101,Cafe 86 Djoeragan Asap,Sidoarjo,Tulangan,Jl. Tulangan No. 2,09:00:00,22:00:00,15000,45000,4.1,Cafe 86 Djoeragan Asap adalah tempat ngopi di Tulangan Sidoarjo.,11
+node/1000102,Tulangan Coffee Lab,Sidoarjo,Tulangan,Jl. Tulangan No. 3,09:00:00,22:00:00,10000,25000,4.2,Tulangan Coffee Lab adalah tempat ngopi di Tulangan Sidoarjo.,11
+node/1000103,Warkop Threes'no,Sidoarjo,Tulangan,Jl. Tulangan No. 4,09:00:00,22:00:00,15000,45000,4.3,Warkop Threes'no adalah tempat ngopi di Tulangan Sidoarjo.,11
+node/1000104,Rumah Kopi Tulangan,Sidoarjo,Tulangan,Jl. Tulangan No. 5,09:00:00,22:00:00,10000,25000,4.4,Rumah Kopi Tulangan adalah tempat ngopi di Tulangan Sidoarjo.,11
+node/1000105,Teras Ngopi Tulangan,Sidoarjo,Tulangan,Jl. Tulangan No. 6,09:00:00,22:00:00,15000,45000,4.5,Teras Ngopi Tulangan adalah tempat ngopi di Tulangan Sidoarjo.,11
+node/1000106,Kedai Kopi Hitam,Sidoarjo,Tulangan,Jl. Tulangan No. 7,09:00:00,22:00:00,10000,25000,4.6,Kedai Kopi Hitam adalah tempat ngopi di Tulangan Sidoarjo.,11
+node/1000107,Inspirasi Tulangan,Sidoarjo,Tulangan,Jl. Tulangan No. 8,09:00:00,22:00:00,15000,45000,4.7,Inspirasi Tulangan adalah tempat ngopi di Tulangan Sidoarjo.,11
+node/1000108,Warkop Makmur,Sidoarjo,Tulangan,Jl. Tulangan No. 9,09:00:00,22:00:00,10000,25000,4.8,Warkop Makmur adalah tempat ngopi di Tulangan Sidoarjo.,11
+node/1000109,Kedai Kopi Jenggolo,Sidoarjo,Tulangan,Jl. Tulangan No. 10,09:00:00,22:00:00,15000,45000,4.9,Kedai Kopi Jenggolo adalah tempat ngopi di Tulangan Sidoarjo.,11
+node/1000110,Mbah Jebres Coffee,Sidoarjo,Krembung,Jl. Krembung No. 1,09:00:00,22:00:00,10000,25000,4.0,Mbah Jebres Coffee adalah tempat ngopi di Krembung Sidoarjo.,12
+node/1000111,Warunk Kebun Kecil,Sidoarjo,Krembung,Jl. Krembung No. 2,09:00:00,22:00:00,15000,45000,4.1,Warunk Kebun Kecil adalah tempat ngopi di Krembung Sidoarjo.,12
+node/1000112,Krembung Coffee Space,Sidoarjo,Krembung,Jl. Krembung No. 3,09:00:00,22:00:00,10000,25000,4.2,Krembung Coffee Space adalah tempat ngopi di Krembung Sidoarjo.,12
+node/1000113,Krembung Indah,Sidoarjo,Krembung,Jl. Krembung No. 4,09:00:00,22:00:00,15000,45000,4.3,Krembung Indah adalah tempat ngopi di Krembung Sidoarjo.,12
+node/1000114,Warkop Krembung Jaya,Sidoarjo,Krembung,Jl. Krembung No. 5,09:00:00,22:00:00,10000,25000,4.4,Warkop Krembung Jaya adalah tempat ngopi di Krembung Sidoarjo.,12
+node/1000115,Rumah Seduh Krembung,Sidoarjo,Krembung,Jl. Krembung No. 6,09:00:00,22:00:00,15000,45000,4.5,Rumah Seduh Krembung adalah tempat ngopi di Krembung Sidoarjo.,12
+node/1000116,Kopi Sore Krembung,Sidoarjo,Krembung,Jl. Krembung No. 7,09:00:00,22:00:00,10000,25000,4.6,Kopi Sore Krembung adalah tempat ngopi di Krembung Sidoarjo.,12
+node/1000117,Warkop Klasik,Sidoarjo,Krembung,Jl. Krembung No. 8,09:00:00,22:00:00,15000,45000,4.7,Warkop Klasik adalah tempat ngopi di Krembung Sidoarjo.,12
+node/1000118,Teras Kopi Krembung,Sidoarjo,Krembung,Jl. Krembung No. 9,09:00:00,22:00:00,10000,25000,4.8,Teras Kopi Krembung adalah tempat ngopi di Krembung Sidoarjo.,12
+node/1000119,Kedai Kopi Mbah Man,Sidoarjo,Krembung,Jl. Krembung No. 10,09:00:00,22:00:00,15000,45000,4.9,Kedai Kopi Mbah Man adalah tempat ngopi di Krembung Sidoarjo.,12
+node/1000120,Seven Point Café,Sidoarjo,Jabon,Jl. Jabon No. 1,09:00:00,22:00:00,10000,25000,4.0,Seven Point Café adalah tempat ngopi di Jabon Sidoarjo.,13
+node/1000121,Jabon Riverside Coffee,Sidoarjo,Jabon,Jl. Jabon No. 2,09:00:00,22:00:00,15000,45000,4.1,Jabon Riverside Coffee adalah tempat ngopi di Jabon Sidoarjo.,13
+node/1000122,Warkop Tepi Tambak,Sidoarjo,Jabon,Jl. Jabon No. 3,09:00:00,22:00:00,10000,25000,4.2,Warkop Tepi Tambak adalah tempat ngopi di Jabon Sidoarjo.,13
+node/1000123,Kopi Pesisir Jabon,Sidoarjo,Jabon,Jl. Jabon No. 4,09:00:00,22:00:00,15000,45000,4.3,Kopi Pesisir Jabon adalah tempat ngopi di Jabon Sidoarjo.,13
+node/1000124,Warkop Jabon Indah,Sidoarjo,Jabon,Jl. Jabon No. 5,09:00:00,22:00:00,10000,25000,4.4,Warkop Jabon Indah adalah tempat ngopi di Jabon Sidoarjo.,13
+node/1000125,Kopi Sederhana Jabon,Sidoarjo,Jabon,Jl. Jabon No. 6,09:00:00,22:00:00,15000,45000,4.5,Kopi Sederhana Jabon adalah tempat ngopi di Jabon Sidoarjo.,13
+node/1000126,Rumah Kopi Jabon,Sidoarjo,Jabon,Jl. Jabon No. 7,09:00:00,22:00:00,10000,25000,4.6,Rumah Kopi Jabon adalah tempat ngopi di Jabon Sidoarjo.,13
+node/1000127,Angkringan Jabon,Sidoarjo,Jabon,Jl. Jabon No. 8,09:00:00,22:00:00,15000,45000,4.7,Angkringan Jabon adalah tempat ngopi di Jabon Sidoarjo.,13
+node/1000128,Kopi Pagi Jabon,Sidoarjo,Jabon,Jl. Jabon No. 9,09:00:00,22:00:00,10000,25000,4.8,Kopi Pagi Jabon adalah tempat ngopi di Jabon Sidoarjo.,13
+node/1000129,Kedai Kopi Jabon Makmur,Sidoarjo,Jabon,Jl. Jabon No. 10,09:00:00,22:00:00,15000,45000,4.9,Kedai Kopi Jabon Makmur adalah tempat ngopi di Jabon Sidoarjo.,13
+node/1000130,Warkop Coffe Selir,Sidoarjo,Prambon,Jl. Prambon No. 1,09:00:00,22:00:00,10000,25000,4.0,Warkop Coffe Selir adalah tempat ngopi di Prambon Sidoarjo.,14
+node/1000131,Kalikopi Prambon,Sidoarjo,Prambon,Jl. Prambon No. 2,09:00:00,22:00:00,15000,45000,4.1,Kalikopi Prambon adalah tempat ngopi di Prambon Sidoarjo.,14
+node/1000132,Warkop Black Jedong Cangkring,Sidoarjo,Prambon,Jl. Prambon No. 3,09:00:00,22:00:00,10000,25000,4.2,Warkop Black Jedong Cangkring adalah tempat ngopi di Prambon Sidoarjo.,14
+node/1000133,Balike Coffe Prambon,Sidoarjo,Prambon,Jl. Prambon No. 4,09:00:00,22:00:00,15000,45000,4.3,Balike Coffe Prambon adalah tempat ngopi di Prambon Sidoarjo.,14
+node/1000134,Balad Coffe Wornk,Sidoarjo,Prambon,Jl. Prambon No. 5,09:00:00,22:00:00,10000,25000,4.4,Balad Coffe Wornk adalah tempat ngopi di Prambon Sidoarjo.,14
+node/1000135,Prambon Coffee Garden,Sidoarjo,Prambon,Jl. Prambon No. 6,09:00:00,22:00:00,15000,45000,4.5,Prambon Coffee Garden adalah tempat ngopi di Prambon Sidoarjo.,14
+node/1000136,Kopi Sawah Prambon,Sidoarjo,Prambon,Jl. Prambon No. 7,09:00:00,22:00:00,10000,25000,4.6,Kopi Sawah Prambon adalah tempat ngopi di Prambon Sidoarjo.,14
+node/1000137,Rumah Kopi Prambon,Sidoarjo,Prambon,Jl. Prambon No. 8,09:00:00,22:00:00,15000,45000,4.7,Rumah Kopi Prambon adalah tempat ngopi di Prambon Sidoarjo.,14
+node/1000138,Teras Ngopi Prambon,Sidoarjo,Prambon,Jl. Prambon No. 9,09:00:00,22:00:00,10000,25000,4.8,Teras Ngopi Prambon adalah tempat ngopi di Prambon Sidoarjo.,14
+node/1000139,Kopi Rakyat Prambon,Sidoarjo,Prambon,Jl. Prambon No. 10,09:00:00,22:00:00,15000,45000,4.9,Kopi Rakyat Prambon adalah tempat ngopi di Prambon Sidoarjo.,14
+node/1000140,1930 Gandok,Sidoarjo,Tarik,Jl. Tarik No. 1,09:00:00,22:00:00,10000,25000,4.0,1930 Gandok adalah tempat ngopi di Tarik Sidoarjo.,15
+node/1000141,Kedai Djuang Moeda,Sidoarjo,Tarik,Jl. Tarik No. 2,09:00:00,22:00:00,15000,45000,4.1,Kedai Djuang Moeda adalah tempat ngopi di Tarik Sidoarjo.,15
+node/1000142,Kedai Sedjiwa,Sidoarjo,Tarik,Jl. Tarik No. 3,09:00:00,22:00:00,10000,25000,4.2,Kedai Sedjiwa adalah tempat ngopi di Tarik Sidoarjo.,15
+node/1000143,ZENKJA KOPI,Sidoarjo,Tarik,Jl. Tarik No. 4,09:00:00,22:00:00,15000,45000,4.3,ZENKJA KOPI adalah tempat ngopi di Tarik Sidoarjo.,15
+node/1000144,Nahida Coffee and toast,Sidoarjo,Tarik,Jl. Tarik No. 5,09:00:00,22:00:00,10000,25000,4.4,Nahida Coffee and toast adalah tempat ngopi di Tarik Sidoarjo.,15
+node/1000145,Tepi Sungai Coffee & Kitchen,Sidoarjo,Tarik,Jl. Tarik No. 6,09:00:00,22:00:00,15000,45000,4.5,Tepi Sungai Coffee & Kitchen adalah tempat ngopi di Tarik Sidoarjo.,15
+node/1000146,Tepikopi Bakalan,Sidoarjo,Tarik,Jl. Tarik No. 7,09:00:00,22:00:00,10000,25000,4.6,Tepikopi Bakalan adalah tempat ngopi di Tarik Sidoarjo.,15
+node/1000147,Warkop Dua Putra,Sidoarjo,Tarik,Jl. Tarik No. 8,09:00:00,22:00:00,15000,45000,4.7,Warkop Dua Putra adalah tempat ngopi di Tarik Sidoarjo.,15
+node/1000148,Pagi Malam Kopi,Sidoarjo,Tarik,Jl. Tarik No. 9,09:00:00,22:00:00,10000,25000,4.8,Pagi Malam Kopi adalah tempat ngopi di Tarik Sidoarjo.,15
+node/1000149,Tarik Coffee Station,Sidoarjo,Tarik,Jl. Tarik No. 10,09:00:00,22:00:00,15000,45000,4.9,Tarik Coffee Station adalah tempat ngopi di Tarik Sidoarjo.,15
+node/1000150,Singgah Sawah Cafe & Resto,Sidoarjo,Balongbendo,Jl. Balongbendo No. 1,09:00:00,22:00:00,10000,25000,4.0,Singgah Sawah Cafe & Resto adalah tempat ngopi di Balongbendo Sidoarjo.,16
+node/1000151,WARUNG ADJI Balongbendo,Sidoarjo,Balongbendo,Jl. Balongbendo No. 2,09:00:00,22:00:00,15000,45000,4.1,WARUNG ADJI Balongbendo adalah tempat ngopi di Balongbendo Sidoarjo.,16
+node/1000152,Balongbendo Coffee Space,Sidoarjo,Balongbendo,Jl. Balongbendo No. 3,09:00:00,22:00:00,10000,25000,4.2,Balongbendo Coffee Space adalah tempat ngopi di Balongbendo Sidoarjo.,16
+node/1000153,Kedai Kopi Balongbendo Indah,Sidoarjo,Balongbendo,Jl. Balongbendo No. 4,09:00:00,22:00:00,15000,45000,4.3,Kedai Kopi Balongbendo Indah adalah tempat ngopi di Balongbendo Sidoarjo.,16
+node/1000154,Warkop Balongbendo Jaya,Sidoarjo,Balongbendo,Jl. Balongbendo No. 5,09:00:00,22:00:00,10000,25000,4.4,Warkop Balongbendo Jaya adalah tempat ngopi di Balongbendo Sidoarjo.,16
+node/1000155,Rumah Seduh Balongbendo,Sidoarjo,Balongbendo,Jl. Balongbendo No. 6,09:00:00,22:00:00,15000,45000,4.5,Rumah Seduh Balongbendo adalah tempat ngopi di Balongbendo Sidoarjo.,16
+node/1000156,Kopi Sore Balongbendo,Sidoarjo,Balongbendo,Jl. Balongbendo No. 7,09:00:00,22:00:00,10000,25000,4.6,Kopi Sore Balongbendo adalah tempat ngopi di Balongbendo Sidoarjo.,16
+node/1000157,Kopi Mbah Balong,Sidoarjo,Balongbendo,Jl. Balongbendo No. 8,09:00:00,22:00:00,15000,45000,4.7,Kopi Mbah Balong adalah tempat ngopi di Balongbendo Sidoarjo.,16
+node/1000158,Warkop Klasik Balongbendo,Sidoarjo,Balongbendo,Jl. Balongbendo No. 9,09:00:00,22:00:00,10000,25000,4.8,Warkop Klasik Balongbendo adalah tempat ngopi di Balongbendo Sidoarjo.,16
+node/1000159,Teras Kopi Balongbendo,Sidoarjo,Balongbendo,Jl. Balongbendo No. 10,09:00:00,22:00:00,15000,45000,4.9,Teras Kopi Balongbendo adalah tempat ngopi di Balongbendo Sidoarjo.,16
+node/1000160,Dayana Coffee and Eatery,Sidoarjo,Wonoayu,Jl. Wonoayu No. 1,09:00:00,22:00:00,10000,25000,4.0,Dayana Coffee and Eatery adalah tempat ngopi di Wonoayu Sidoarjo.,17
+node/1000161,K'BON Cafe,Sidoarjo,Wonoayu,Jl. Wonoayu No. 2,09:00:00,22:00:00,15000,45000,4.1,K'BON Cafe adalah tempat ngopi di Wonoayu Sidoarjo.,17
+node/1000162,POM Coffee,Sidoarjo,Wonoayu,Jl. Wonoayu No. 3,09:00:00,22:00:00,10000,25000,4.2,POM Coffee adalah tempat ngopi di Wonoayu Sidoarjo.,17
+node/1000163,Kedai Sport Wonoayu,Sidoarjo,Wonoayu,Jl. Wonoayu No. 4,09:00:00,22:00:00,15000,45000,4.3,Kedai Sport Wonoayu adalah tempat ngopi di Wonoayu Sidoarjo.,17
+node/1000164,Warkop Cak Sodik,Sidoarjo,Wonoayu,Jl. Wonoayu No. 5,09:00:00,22:00:00,10000,25000,4.4,Warkop Cak Sodik adalah tempat ngopi di Wonoayu Sidoarjo.,17
+node/1000165,Wonoayu Coffee Lab,Sidoarjo,Wonoayu,Jl. Wonoayu No. 6,09:00:00,22:00:00,15000,45000,4.5,Wonoayu Coffee Lab adalah tempat ngopi di Wonoayu Sidoarjo.,17
+node/1000166,Rumah Kopi Wonoayu,Sidoarjo,Wonoayu,Jl. Wonoayu No. 7,09:00:00,22:00:00,10000,25000,4.6,Rumah Kopi Wonoayu adalah tempat ngopi di Wonoayu Sidoarjo.,17
+node/1000167,Kopi Sawah Wonoayu,Sidoarjo,Wonoayu,Jl. Wonoayu No. 8,09:00:00,22:00:00,15000,45000,4.7,Kopi Sawah Wonoayu adalah tempat ngopi di Wonoayu Sidoarjo.,17
+node/1000168,Teras Ngopi Wonoayu,Sidoarjo,Wonoayu,Jl. Wonoayu No. 9,09:00:00,22:00:00,10000,25000,4.8,Teras Ngopi Wonoayu adalah tempat ngopi di Wonoayu Sidoarjo.,17
+node/1000169,Kopi Sore Wonoayu,Sidoarjo,Wonoayu,Jl. Wonoayu No. 10,09:00:00,22:00:00,15000,45000,4.9,Kopi Sore Wonoayu adalah tempat ngopi di Wonoayu Sidoarjo.,17
+node/1000170,Kafe Kopi Pinggir Kali (Kopili),Sidoarjo,Sedati,Jl. Sedati No. 1,09:00:00,22:00:00,10000,25000,4.0,Kafe Kopi Pinggir Kali (Kopili) adalah tempat ngopi di Sedati Sidoarjo.,18
+node/1000171,Kafe Ka Demangan,Sidoarjo,Sedati,Jl. Sedati No. 2,09:00:00,22:00:00,15000,45000,4.1,Kafe Ka Demangan adalah tempat ngopi di Sedati Sidoarjo.,18
+node/1000172,Accoustic Cafe Sedati,Sidoarjo,Sedati,Jl. Sedati No. 3,09:00:00,22:00:00,10000,25000,4.2,Accoustic Cafe Sedati adalah tempat ngopi di Sedati Sidoarjo.,18
+node/1000173,Kafe Lancelot Gisik,Sidoarjo,Sedati,Jl. Sedati No. 4,09:00:00,22:00:00,15000,45000,4.3,Kafe Lancelot Gisik adalah tempat ngopi di Sedati Sidoarjo.,18
+node/1000174,Kopi Kenangan Sedati,Sidoarjo,Sedati,Jl. Sedati No. 5,09:00:00,22:00:00,10000,25000,4.4,Kopi Kenangan Sedati adalah tempat ngopi di Sedati Sidoarjo.,18
+node/1000175,Sedati Coffee Garden,Sidoarjo,Sedati,Jl. Sedati No. 6,09:00:00,22:00:00,15000,45000,4.5,Sedati Coffee Garden adalah tempat ngopi di Sedati Sidoarjo.,18
+node/1000176,Kopi Pesisir Sedati,Sidoarjo,Sedati,Jl. Sedati No. 7,09:00:00,22:00:00,10000,25000,4.6,Kopi Pesisir Sedati adalah tempat ngopi di Sedati Sidoarjo.,18
+node/1000177,Rumah Kopi Sedati,Sidoarjo,Sedati,Jl. Sedati No. 8,09:00:00,22:00:00,15000,45000,4.7,Rumah Kopi Sedati adalah tempat ngopi di Sedati Sidoarjo.,18
+node/1000178,Warkop Legenda Sedati,Sidoarjo,Sedati,Jl. Sedati No. 9,09:00:00,22:00:00,10000,25000,4.8,Warkop Legenda Sedati adalah tempat ngopi di Sedati Sidoarjo.,18
+node/1000179,Teras Ngopi Sedati,Sidoarjo,Sedati,Jl. Sedati No. 10,09:00:00,22:00:00,15000,45000,4.9,Teras Ngopi Sedati adalah tempat ngopi di Sedati Sidoarjo.,18
