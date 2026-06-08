@@ -34,5 +34,8 @@ class DatabaseSeeder extends Seeder
 
         // Seed dummy data for all tables
         \App\Models\Kecamatan::factory(5)->create();
+
+        // Import data dari CSV
+        $this->call(CoffeeShopDataSeeder::class);
     }
 }

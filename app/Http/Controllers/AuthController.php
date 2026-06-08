@@ -95,20 +95,23 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'username' => 'required|unique:users,username',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:6|confirmed',
+            'password' => 'required|min:8|confirmed',
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'username' => $request->username,
             'email' => $request->email,
-            'password' => bcrypt($request->password),
+            'password' => Hash::make($request->password),
             'role' => 'user',
         ]);
 
+        // For now, auto-verify. Later integrate with email system
+        $user->update(['email_verified_at' => now()]);
+
         Auth::login($user);
 
-        return redirect()->route('user.dashboard');
+        return redirect()->route('user.dashboard')->with('success', 'Registrasi berhasil! Selamat datang.');
     }
 
     /*
