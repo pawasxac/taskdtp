@@ -3,6 +3,7 @@
 Dokumen ini berisi visualisasi dan spesifikasi hubungan antar-tabel (*Entity Relationship Diagram*) untuk sistem database **Daily Coffee Sidoarjo** menggunakan format Mermaid.
 
 ```mermaid
+%%{init: { "er": { "useMaxWidth": true, "layoutDirection": "TB" } } }%%
 erDiagram
     USERS {
         bigint id PK
@@ -117,23 +118,23 @@ erDiagram
         timestamp updated_at
     }
 
-    %% Relationships
-    KECAMATANS ||--o{ COFFEE_SHOPS : "has many"
-    USERS ||--o{ COFFEE_SHOP_REVIEWS : "writes"
-    COFFEE_SHOPS ||--o{ COFFEE_SHOP_REVIEWS : "receives"
+    %% Relasi Hubungan (Bahasa Indonesia)
+    KECAMATANS ||--o{ COFFEE_SHOPS : "memiliki banyak"
+    USERS ||--o{ COFFEE_SHOP_REVIEWS : "menulis ulasan"
+    COFFEE_SHOPS ||--o{ COFFEE_SHOP_REVIEWS : "menerima ulasan"
     
-    USERS ||--o{ COMMUNITY_MEMBERS : "joins"
-    KOMUNITAS ||--o{ COMMUNITY_MEMBERS : "has"
+    USERS ||--o{ COMMUNITY_MEMBERS : "bergabung"
+    KOMUNITAS ||--o{ COMMUNITY_MEMBERS : "memiliki anggota"
     
-    USERS ||--o{ COMMUNITY_POSTS : "creates"
-    KOMUNITAS ||--o{ COMMUNITY_POSTS : "contains"
+    USERS ||--o{ COMMUNITY_POSTS : "membuat postingan"
+    KOMUNITAS ||--o{ COMMUNITY_POSTS : "berisi postingan"
     
-    COMMUNITY_POSTS ||--o{ COMMUNITY_COMMENTS : "has"
-    USERS ||--o{ COMMUNITY_COMMENTS : "writes"
+    COMMUNITY_POSTS ||--o{ COMMUNITY_COMMENTS : "memiliki komentar"
+    USERS ||--o{ COMMUNITY_COMMENTS : "menulis komentar"
     
-    KOMUNITAS ||--o{ GATHERING_REQUESTS : "proposes"
-    COFFEE_SHOPS ||--o{ GATHERING_REQUESTS : "hosts"
-    USERS ||--o{ GATHERING_REQUESTS : "creates"
+    KOMUNITAS ||--o{ GATHERING_REQUESTS : "mengajukan kegiatan"
+    COFFEE_SHOPS ||--o{ GATHERING_REQUESTS : "menjadi tempat"
+    USERS ||--o{ GATHERING_REQUESTS : "membuat pengajuan"
 ```
 
 ---
@@ -142,7 +143,7 @@ erDiagram
 
 1.  **Kecamatan & Coffee Shop (`One-to-Many`)**
     *   Satu `KECAMATAN` dapat menampung banyak `COFFEE_SHOP`.
-    *   Kunci Relasi: `kecamtan_id` di tabel `coffee_shops`.
+    *   Kunci Relasi: `kecamatan_id` di tabel `coffee_shops`.
 
 2.  **User & Coffee Shop Reviews (`Many-to-Many via Review`)**
     *   Satu `USER` dapat menulis banyak `COFFEE_SHOP_REVIEWS`.
