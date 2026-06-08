@@ -17,7 +17,7 @@ import Navbar from '../Components/Navbar';
 
 const HERO_INTERVAL = 4000;
 const HERO_TICK_FADE = 240;
-const PAGE_GRID_LIMIT = 8;
+const INITIAL_GRID_LIMIT = 12;
 
 const formatRupiah = (value) => {
   if (value === null || value === undefined || value === '') return 'Belum ke-tag';
@@ -50,6 +50,7 @@ export default function Welcome({ coffeeShops = [], kecamatans = [], communities
   const [heroIndex, setHeroIndex] = useState(0);
   const [spotlightIndex, setSpotlightIndex] = useState(0);
   const [heroVisible, setHeroVisible] = useState(true);
+  const [displayCount, setDisplayCount] = useState(INITIAL_GRID_LIMIT);
   const swapTimeoutRef = useRef(null);
 
   useEffect(() => {
@@ -196,7 +197,12 @@ export default function Welcome({ coffeeShops = [], kecamatans = [], communities
   const btnSecondary =
     'inline-flex items-center justify-center gap-2 border-2 border-[#1A0F0A] bg-white px-4 py-2 font-mono text-[10px] font-black uppercase tracking-[0.16em] text-[#1A0F0A] shadow-[3px_3px_0px_0px_#1A0F0A] transition-all duration-150 hover:-translate-y-0.5 hover:translate-x-0.5 hover:shadow-[1px_1px_0px_0px_#1A0F0A]';
 
-  const visibleCafes = filtered.slice(0, PAGE_GRID_LIMIT);
+  const visibleCafes = filtered.slice(0, displayCount);
+  const hasMore = displayCount < filtered.length;
+
+  const handleLoadMore = () => {
+    setDisplayCount(prev => prev + 12);
+  };
 
   return (
     <div className="min-h-screen bg-[#FAF6F0] text-[#1A0F0A] selection:bg-[#C19A6B] selection:text-[#1A0F0A]">
@@ -422,6 +428,18 @@ export default function Welcome({ coffeeShops = [], kecamatans = [], communities
                 </button>
               ))}
             </div>
+
+            {hasMore && (
+              <div className="mt-8 flex justify-center">
+                <button
+                  type="button"
+                  onClick={handleLoadMore}
+                  className="inline-flex items-center justify-center gap-2 border-2 border-[#1A0F0A] bg-[#C19A6B] px-8 py-4 font-mono text-[12px] font-black uppercase tracking-[0.16em] text-[#1A0F0A] shadow-[4px_4px_0px_0px_#1A0F0A] transition-all duration-150 hover:-translate-y-0.5 hover:translate-x-0.5 hover:shadow-[2px_2px_0px_0px_#1A0F0A]"
+                >
+                  Tampilkan Lebih Banyak
+                </button>
+              </div>
+            )}
 
             {filtered.length === 0 && (
               <div className="mt-6 border-2 border-[#1A0F0A] bg-white p-6 text-center shadow-[4px_4px_0px_0px_#1A0F0A]">

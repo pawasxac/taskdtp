@@ -8,7 +8,7 @@
     <style>
         .sidebar {
             background: linear-gradient(180deg, #0a0e1a 0%, #0f1621 50%, #0a0e1a 100%);
-            position: relative;
+            position: fixed;
         }
 
         .sidebar::before {

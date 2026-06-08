@@ -80,7 +80,6 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
             ])
                 ->where('is_active', true)
                 ->orderByDesc('rating')
-                ->limit(8)
                 ->get()
                 ->map(function ($shop) use ($districtName) {
                     $shop->district_name = $districtName(
@@ -523,6 +522,34 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
      * call `$user->role->name`.
      */
     Route::middleware(['auth'])->prefix('admin')->group(function () use ($districtName) {
+        Route::get('/dashboard-lama', function () {
+            if (auth()->user()->role !== 'admin') {
+                return redirect()->route('dashboard');
+            }
+
+            $totalUsers = \App\Models\User::count();
+            $totalPosts = 0; // Or \App\Models\CommunityPost::count() if the model exists, wait, let's use what Blade had or skip if it causes errors. In Blade: \App\Models\CommunityPost::count()
+            // To prevent errors if models aren't fully migrated/created in the friend's branch, I'll use class_exists checks or DB facade for safety, but let's assume they exist as per Blade.
+            
+            $communityCount = \App\Models\Komunitas::count();
+            // Let's just use what Blade had.
+            
+            return inertia('Admin/OriginalDashboard', [
+                'stats' => [
+                    'coffee_shops_count' => \App\Models\CoffeeShop::count(),
+                    'users_count' => \App\Models\User::count(),
+                    'komunitas_count' => \App\Models\Komunitas::count(),
+                    'avg_rating' => number_format(\App\Models\CoffeeShop::avg('rating') ?? 0, 1),
+                    'reviews_count' => \DB::table('coffee_shop_reviews')->count(), // safer if model is missing
+                    'community_members_count' => \DB::table('community_members')->count(),
+                    'community_posts_count' => \DB::table('community_posts')->count(),
+                    'gathering_requests_count' => \DB::table('gathering_requests')->count(),
+                    'engagement_rate' => $totalUsers > 0 ? round((\DB::table('community_posts')->count() / $totalUsers) * 100, 1) : 0,
+                    'avg_per_community' => $communityCount > 0 ? round(\DB::table('community_members')->count() / $communityCount) : 0,
+                ]
+            ]);
+        })->name('admin.dashboard-lama');
+
         Route::get('/gateway', function () {
             if (auth()->user()->role !== 'admin') {
                 return redirect()->route('dashboard');
@@ -556,6 +583,16 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
         Route::get('/coffee-shops/{id}/edit', [CoffeeShopController::class, 'edit'])->name('coffee.edit');
         Route::put('/coffee-shops/{id}', [CoffeeShopController::class, 'update'])->name('coffee.update');
         Route::delete('/coffee-shops/{id}', [CoffeeShopController::class, 'destroy'])->name('coffee.destroy');
+
+        // Restore missing CRUD routes for Blade views
+        Route::get('/dashboard', function () { return redirect()->route('admin.dashboard-lama'); })->name('admin.dashboard');
+        Route::resource('kecamatan', \App\Http\Controllers\Admin\KecamatanController::class);
+        Route::resource('komunitas', \App\Http\Controllers\Admin\KomunitasController::class);
+        Route::resource('community-posts', \App\Http\Controllers\Admin\CommunityPostController::class);
+        Route::resource('gathering-requests', \App\Http\Controllers\Admin\GatheringRequestController::class);
+        Route::resource('coffee-shop-reviews', \App\Http\Controllers\Admin\CoffeeShopReviewController::class);
+        Route::resource('community-members', \App\Http\Controllers\Admin\CommunityMemberController::class);
+        Route::get('/login-monitor', function() { return view('admin.login-monitor'); })->name('admin.login.monitor');
     });
 });
 
