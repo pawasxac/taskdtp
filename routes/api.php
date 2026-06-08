@@ -9,9 +9,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-// Rute API Coffee Shop
-Route::apiResource('coffee-shops', CoffeeShopController::class);
-
-// Rute API Komunitas
-Route::apiResource('komunitas', KomunitasController::class);
+// Rute API
+Route::name('api.')->group(function () {
+    Route::apiResource('coffee-shops', CoffeeShopController::class);
+    Route::apiResource('komunitas', KomunitasController::class);
+});
  
