@@ -32,8 +32,16 @@ class DatabaseSeeder extends Seeder
             'role' => 'admin',
         ]);
 
-        // Seed dummy data for all tables
-        \App\Models\Kecamatan::factory(5)->create();
+        // Seed the 18 real kecamatans in Sidoarjo
+        $kecamatans = [
+            'Sidoarjo', 'Buduran', 'Waru', 'Gedangan', 'Taman',
+            'Krian', 'Sukodono', 'Candi', 'Tanggulangin', 'Porong',
+            'Tulangan', 'Krembung', 'Jabon', 'Prambon', 'Tarik',
+            'Balongbendo', 'Wonoayu', 'Sedati'
+        ];
+        foreach ($kecamatans as $name) {
+            \App\Models\Kecamatan::firstOrCreate(['name' => $name]);
+        }
 
         // Import data dari CSV
         $this->call(CoffeeShopDataSeeder::class);

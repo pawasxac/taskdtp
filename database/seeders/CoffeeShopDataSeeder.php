@@ -52,6 +52,12 @@ class CoffeeShopDataSeeder extends Seeder
                 'harga_max' => (int)$row[8], // harga_max
                 'rating' => (float)$row[9],  // rating
                 'deskripsi' => $row[10],     // deskripsi
+                'kecamatan_id' => (int)$row[11], // kecamatan_id
+                'latitude' => isset($row[12]) ? (float)$row[12] : null,
+                'longitude' => isset($row[13]) ? (float)$row[13] : null,
+                'photo_url' => isset($row[14]) ? $row[14] : null,
+                'is_verified' => isset($row[15]) ? (bool)$row[15] : false,
+                'is_active' => isset($row[16]) ? (bool)$row[16] : true,
             ]);
 
             $count++;
