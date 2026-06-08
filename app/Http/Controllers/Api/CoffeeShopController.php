@@ -34,8 +34,12 @@ class CoffeeShopController extends Controller
         if ($request->has('is_active')) $filters['is_active'] = $request->is_active;
         
         // Price range filters
-        if ($request->has('price_min')) $filters['harga_min'] = $request->price_min;
-        if ($request->has('price_max')) $filters['harga_max'] = $request->price_max;
+        if ($request->has('price_min')) {
+            $query->where('harga_min', '>=', $request->price_min);
+        }
+        if ($request->has('price_max')) {
+            $query->where('harga_max', '<=', $request->price_max);
+        }
         
         // Rating filter (minimum rating)
         if ($request->has('min_rating')) {
