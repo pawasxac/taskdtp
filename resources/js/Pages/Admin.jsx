@@ -45,21 +45,21 @@ export default function Admin({ users = [], coffeeShops = [], communities = [] }
               <p className="font-mono text-[10px] font-black uppercase tracking-[0.16em]">Total Pengguna</p>
               <Users size={20} className="text-[#C19A6B]" />
             </div>
-            <p className="font-clash text-4xl font-black">{users.length}</p>
+            <p className="font-clash text-4xl font-black">{users?.total || 0}</p>
           </div>
           <div className="border-2 border-[#1A0F0A] bg-[#C19A6B] text-[#1A0F0A] p-6 shadow-[6px_6px_0px_0px_#1A0F0A] flex flex-col justify-between h-32">
             <div className="flex justify-between items-center">
               <p className="font-mono text-[10px] font-black uppercase tracking-[0.16em]">Coffee Shop</p>
               <Coffee size={20} />
             </div>
-            <p className="font-clash text-4xl font-black">{coffeeShops.length}</p>
+            <p className="font-clash text-4xl font-black">{coffeeShops?.total || 0}</p>
           </div>
           <div className="border-2 border-[#1A0F0A] bg-white text-[#1A0F0A] p-6 shadow-[6px_6px_0px_0px_#1A0F0A] flex flex-col justify-between h-32">
             <div className="flex justify-between items-center">
               <p className="font-mono text-[10px] font-black uppercase tracking-[0.16em] text-[#C19A6B]">Komunitas Skena</p>
               <Activity size={20} className="text-[#C19A6B]" />
             </div>
-            <p className="font-clash text-4xl font-black">{communities.length || 0}</p>
+            <p className="font-clash text-4xl font-black">{communities?.total || 0}</p>
           </div>
         </div>
 
@@ -81,6 +81,7 @@ export default function Admin({ users = [], coffeeShops = [], communities = [] }
 
           <div className="p-0 overflow-x-auto">
             {activeTab === 'users' && (
+              <>
               <table className="min-w-full font-mono text-xs text-left">
                 <thead className="border-b-2 border-[#1A0F0A] bg-[#FAF6F0] text-[#1A0F0A]/60">
                   <tr>
@@ -91,7 +92,7 @@ export default function Admin({ users = [], coffeeShops = [], communities = [] }
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((usr, i) => (
+                  {(users?.data || []).map((usr, i) => (
                     <tr key={usr.id || i} className="border-b border-[#1A0F0A]/10 hover:bg-[#FAF6F0]/50 transition-colors">
                       <td className="p-4 font-bold uppercase truncate max-w-[200px]">{usr.name || usr.username || `USER_${i}`}</td>
                       <td className={`p-4 font-bold uppercase ${usr.role === 'admin' ? 'text-[#C19A6B]' : ''}`}>{usr.role || 'user'}</td>
@@ -101,14 +102,23 @@ export default function Admin({ users = [], coffeeShops = [], communities = [] }
                       </td>
                     </tr>
                   ))}
-                  {users.length === 0 && (
+                  {(!users?.data || users.data.length === 0) && (
                     <tr><td colSpan="4" className="p-8 text-center text-[#1A0F0A]/50 font-bold uppercase">Data Kosong</td></tr>
                   )}
                 </tbody>
               </table>
+              {users?.links && (
+                <div className="flex justify-end gap-2 p-4 bg-white border-t border-[#1A0F0A]/10">
+                  {users.links.map(link => (
+                    <Link key={link.label} href={link.url || '#'} dangerouslySetInnerHTML={{ __html: link.label }} className={`px-3 py-1 text-xs font-mono uppercase border border-[#1A0F0A] ${link.active ? 'bg-[#1A0F0A] text-white' : 'bg-white hover:bg-[#FAF6F0]'}`} />
+                  ))}
+                </div>
+              )}
+              </>
             )}
 
             {activeTab === 'shops' && (
+              <>
               <table className="min-w-[800px] w-full font-mono text-xs text-left">
                 <thead className="border-b-2 border-[#1A0F0A] bg-[#FAF6F0] text-[#1A0F0A]/60">
                   <tr>
@@ -120,7 +130,7 @@ export default function Admin({ users = [], coffeeShops = [], communities = [] }
                   </tr>
                 </thead>
                 <tbody>
-                  {coffeeShops.map((cafe) => (
+                  {(coffeeShops?.data || []).map((cafe) => (
                     <tr key={cafe.id} className="border-b border-[#1A0F0A]/10 hover:bg-[#FAF6F0]/50 transition-colors">
                       <td className="p-4 font-bold uppercase text-[#C19A6B] truncate max-w-[200px]">{cafe.nama}</td>
                       <td className="p-4 font-bold uppercase truncate max-w-[150px]">{cafe.district_name || cafe.kecamatan?.name || cafe.kecamatan || cafe.daerah}</td>
@@ -137,18 +147,63 @@ export default function Admin({ users = [], coffeeShops = [], communities = [] }
                       </td>
                     </tr>
                   ))}
-                  {coffeeShops.length === 0 && (
+                  {(!coffeeShops?.data || coffeeShops.data.length === 0) && (
                     <tr><td colSpan="5" className="p-8 text-center text-[#1A0F0A]/50 font-bold uppercase">Data Kosong</td></tr>
                   )}
                 </tbody>
               </table>
+              {coffeeShops?.links && (
+                <div className="flex justify-end gap-2 p-4 bg-white border-t border-[#1A0F0A]/10">
+                  {coffeeShops.links.map(link => (
+                    <Link key={link.label} href={link.url || '#'} dangerouslySetInnerHTML={{ __html: link.label }} className={`px-3 py-1 text-xs font-mono uppercase border border-[#1A0F0A] ${link.active ? 'bg-[#1A0F0A] text-white' : 'bg-white hover:bg-[#FAF6F0]'}`} />
+                  ))}
+                </div>
+              )}
+              </>
             )}
 
             {activeTab === 'communities' && (
-              <div className="p-8 text-center text-[#1A0F0A]/50 font-mono text-sm font-bold uppercase">
-                <ShieldAlert className="mx-auto mb-2 opacity-50" size={32} />
-                Fitur Manajemen Komunitas Belum Aktif
-              </div>
+              <>
+              <table className="w-full text-left font-mono text-sm">
+                <thead className="bg-[#1A0F0A] text-[#FAF6F0] text-[10px] uppercase tracking-[0.16em]">
+                  <tr>
+                    <th className="p-4 border-r border-[#FAF6F0]/20">Nama Komunitas</th>
+                    <th className="p-4 border-r border-[#FAF6F0]/20">Ketua</th>
+                    <th className="p-4 border-r border-[#FAF6F0]/20">Domisili</th>
+                    <th className="p-4 border-r border-[#FAF6F0]/20">Status</th>
+                    <th className="p-4">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#1A0F0A]/10 bg-white">
+                  {communities?.data?.map((kom, idx) => (
+                    <tr key={kom.id} className="hover:bg-[#FAF6F0] transition-colors">
+                      <td className="p-4 font-bold uppercase">{kom.nama_komunitas}</td>
+                      <td className="p-4">{kom.ketua}</td>
+                      <td className="p-4">{kom.domisili}</td>
+                      <td className="p-4">
+                        <span className={`px-2 py-1 text-[10px] uppercase font-black ${kom.status === 'aktif' ? 'bg-[#C19A6B] text-white' : 'bg-[#1A0F0A] text-white'}`}>
+                          {kom.status || 'Aktif'}
+                        </span>
+                      </td>
+                      <td className="p-4 flex gap-2">
+                        <button className="px-3 py-1 border border-[#1A0F0A] text-[10px] font-bold uppercase hover:bg-[#1A0F0A] hover:text-white transition-colors">Edit</button>
+                        <button className="px-3 py-1 border border-red-600 text-red-600 text-[10px] font-bold uppercase hover:bg-red-600 hover:text-white transition-colors">Del</button>
+                      </td>
+                    </tr>
+                  ))}
+                  {(!communities?.data || communities.data.length === 0) && (
+                    <tr><td colSpan="5" className="p-8 text-center text-[#1A0F0A]/50 font-bold uppercase">Belum ada komunitas.</td></tr>
+                  )}
+                </tbody>
+              </table>
+              {communities?.links && (
+                <div className="flex justify-end gap-2 p-4 bg-white border-t border-[#1A0F0A]/10">
+                  {communities.links.map(link => (
+                    <Link key={link.label} href={link.url || '#'} dangerouslySetInnerHTML={{ __html: link.label }} className={`px-3 py-1 text-xs font-mono uppercase border border-[#1A0F0A] ${link.active ? 'bg-[#1A0F0A] text-white' : 'bg-white hover:bg-[#FAF6F0]'}`} />
+                  ))}
+                </div>
+              )}
+              </>
             )}
           </div>
         </div>

@@ -9,9 +9,24 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-// Rute API
+// Rute API untuk Testing Ujian (Postman)
+Route::get('/kedai', function () {
+    return response()->json([
+        'status' => 'success',
+        'data' => \App\Models\CoffeeShop::with('kecamatan')->get()
+    ]);
+});
+
+Route::get('/komunitas', function () {
+    return response()->json([
+        'status' => 'success',
+        'data' => \App\Models\Komunitas::with(['members.user', 'posts'])->get()
+    ]);
+});
+
+// Original Routes (kept for compatibility if needed)
 Route::name('api.')->group(function () {
     Route::apiResource('coffee-shops', CoffeeShopController::class);
-    Route::apiResource('komunitas', KomunitasController::class);
+    Route::apiResource('komunitas-resource', KomunitasController::class);
 });
  

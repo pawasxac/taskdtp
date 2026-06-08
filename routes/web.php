@@ -321,43 +321,48 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
                 ]);
             }
 
-            $directMessages = $users->take(4)->values()->map(function ($contact, $index) use ($avatarUrl, $authUser) {
-                return [
-                    'id'           => $contact->id,
-                    'time'         => now()->subMinutes(($index + 1) * 9)->format('H:i'),
-                    'last_message' => $index % 2 === 0
-                        ? 'Nanti sore jadi pindah nongkrong ke spot yang ada colokan panjang?'
-                        : 'Aku nemu kopi susu yang nggak lebay manisnya, kamu harus coba.',
+            $realDms = \App\Models\DirectMessage::where('sender_id', $authUser->id)
+                ->orWhere('receiver_id', $authUser->id)
+                ->with(['sender:id,name,username,profile_picture,instagram,whatsapp,discord', 'receiver:id,name,username,profile_picture,instagram,whatsapp,discord'])
+                ->orderBy('created_at', 'asc')
+                ->get();
+            
+            $dmGroups = [];
+            foreach ($realDms as $msg) {
+                $contact = $msg->sender_id === $authUser->id ? $msg->receiver : $msg->sender;
+                if (!isset($dmGroups[$contact->id])) {
+                    $dmGroups[$contact->id] = [
+                        'id' => $contact->id,
+                        'user' => [
+                            'id' => $contact->id,
+                            'name' => $contact->name,
+                            'username' => $contact->username,
+                            'profile_picture' => $contact->profile_picture,
+                            'avatar_url' => $avatarUrl($contact),
+                            'instagram' => $contact->instagram,
+                            'whatsapp' => $contact->whatsapp,
+                            'discord' => $contact->discord,
+                        ],
+                        'messages' => [],
+                        'time' => $msg->created_at->format('H:i'),
+                        'last_message' => $msg->message,
+                    ];
+                }
+                $dmGroups[$contact->id]['messages'][] = [
+                    'id' => 'dm-' . $msg->id,
+                    'text' => $msg->message,
                     'user' => [
-                        'name'            => $contact->name,
-                        'username'        => $contact->username,
-                        'profile_picture' => $contact->profile_picture,
-                        'avatar_url'      => $avatarUrl($contact),
-                    ],
-                    'messages' => [
-                        [
-                            'id'   => 'dm-' . $contact->id . '-1',
-                            'text' => 'Besok kalau sempat, kita review tempat baru yang deket kampus yuk.',
-                            'user' => [
-                                'name'            => $contact->name,
-                                'username'        => $contact->username,
-                                'profile_picture' => $contact->profile_picture,
-                                'avatar_url'      => $avatarUrl($contact),
-                            ],
-                        ],
-                        [
-                            'id'   => 'dm-' . $contact->id . '-2',
-                            'text' => 'Gas. Yang penting kopinya enak dan kursinya nggak bikin pinggang nyerah.',
-                            'user' => [
-                                'name'            => $authUser->name,
-                                'username'        => $authUser->username,
-                                'profile_picture' => $authUser->profile_picture,
-                                'avatar_url'      => $avatarUrl($authUser),
-                            ],
-                        ],
+                        'id' => $msg->sender->id,
+                        'name' => $msg->sender->name,
+                        'username' => $msg->sender->username,
+                        'profile_picture' => $msg->sender->profile_picture,
+                        'avatar_url' => $avatarUrl($msg->sender),
                     ],
                 ];
-            });
+                $dmGroups[$contact->id]['time'] = $msg->created_at->format('H:i');
+                $dmGroups[$contact->id]['last_message'] = $msg->message;
+            }
+            $directMessages = collect(array_values($dmGroups))->sortByDesc('time')->values();
 
             if ($directMessages->isEmpty()) {
                 $directMessages = collect([
@@ -366,16 +371,21 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
                         'time'         => now()->format('H:i'),
                         'last_message' => 'Belum ada DM baru, tapi inbox tetap siap dipakai buat ngajak ngopi.',
                         'user' => [
+                            'id'              => 99999,
                             'name'            => 'Teman Nongki',
                             'username'        => 'temannongki',
                             'profile_picture' => null,
                             'avatar_url'      => $avatarUrl(null, 'Teman Nongki'),
+                            'instagram'       => null,
+                            'whatsapp'        => null,
+                            'discord'         => null,
                         ],
                         'messages' => [
                             [
                                 'id'   => 'fallback-dm-1',
                                 'text' => 'Kalau nanti mau ngopi, tinggal lempar lokasi ya.',
                                 'user' => [
+                                    'id'              => 99999,
                                     'name'            => 'Teman Nongki',
                                     'username'        => 'temannongki',
                                     'profile_picture' => null,
@@ -395,7 +405,7 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
                 [
                     'id'    => 'notif-1',
                     'type'  => 'Forum',
-                    'title' => 'Ada balasan baru di thread favoritmu.',
+                    'title' => 'Ada balasan baru di komunitas favoritmu.',
                     'body'  => 'Seseorang baru nimbrung di obrolan soal tempat ngopi yang aman buat laptop dan rapat mendadak.',
                     'route' => '/dashboard',
                     'cta'   => 'Buka Forum',
@@ -537,6 +547,67 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
         Route::post('/community/join', function (Request $request) {
             return redirect()->back()->with('success', 'Permintaan join komunitas sudah dikirim. Tinggal tunggu diajak ngopi bareng.');
         })->name('community.join');
+
+        Route::post('/komunitas/store', function (Request $request) {
+            $validated = $request->validate([
+                'nama_komunitas' => 'required|string|max:255',
+                'deskripsi' => 'nullable|string',
+                'domisili' => 'nullable|string|max:255',
+            ]);
+
+            $komunitas = Komunitas::create([
+                'nama_komunitas' => $validated['nama_komunitas'],
+                'deskripsi' => $validated['deskripsi'],
+                'domisili' => $validated['domisili'],
+                'ketua' => auth()->user()->name,
+                'status' => 'aktif',
+            ]);
+
+            $komunitas->members()->create([
+                'user_id' => auth()->id(),
+                'role' => 'leader'
+            ]);
+
+            return back()->with('success', 'Komunitas berhasil dibuat!');
+        })->name('komunitas.store');
+
+        Route::post('/komunitas/{id}/post', function (Request $request, $id) {
+            $validated = $request->validate(['content' => 'required|string']);
+            
+            $komunitas = Komunitas::findOrFail($id);
+            $komunitas->posts()->create([
+                'user_id' => auth()->id(),
+                'content' => $validated['content'],
+            ]);
+
+            return back();
+        })->name('komunitas.post');
+
+        Route::post('/dm/send', function (Request $request) {
+            $request->validate([
+                'receiver_id' => 'required|exists:users,id',
+                'message' => 'required|string|max:1000',
+            ]);
+
+            $senderId = auth()->id();
+            $receiverId = $request->receiver_id;
+
+            $existingCount = \App\Models\DirectMessage::where(function($q) use ($senderId, $receiverId) {
+                $q->where('sender_id', $senderId)->where('receiver_id', $receiverId);
+            })->orWhere(function($q) use ($senderId, $receiverId) {
+                $q->where('sender_id', $receiverId)->where('receiver_id', $senderId);
+            })->count();
+
+            abort_if($existingCount >= 10, 403, 'Udah limit brok, lanjut sosmed aja!');
+
+            \App\Models\DirectMessage::create([
+                'sender_id' => $senderId,
+                'receiver_id' => $receiverId,
+                'message' => $request->message,
+            ]);
+
+            return back()->with('success', 'Pesan terkirim.');
+        })->name('dm.send');
     });
 
     /**
@@ -560,17 +631,20 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
                 return redirect()->route('dashboard');
             }
 
+            $coffeeShops = CoffeeShop::with('kecamatan')->paginate(15);
+            $coffeeShops->getCollection()->transform(function ($shop) use ($districtName) {
+                $shop->district_name = $districtName(
+                    $shop->getRelation('kecamatan'),
+                    $shop->kecamatan ?: $shop->daerah
+                );
+                return $shop;
+            });
+
             return inertia('Admin', [
                 'user'         => auth()->user(),
-                'coffeeShops'  => CoffeeShop::with('kecamatan')->get()->map(function ($shop) use ($districtName) {
-                    $shop->district_name = $districtName(
-                        $shop->getRelation('kecamatan'),
-                        $shop->kecamatan ?: $shop->daerah
-                    );
-                    return $shop;
-                }),
-                'communities'  => Komunitas::all(),
-                'users'        => User::all(),
+                'coffeeShops'  => $coffeeShops,
+                'communities'  => Komunitas::paginate(15),
+                'users'        => User::paginate(15),
             ]);
         })->name('admin.management');
 

@@ -4,6 +4,7 @@ import {
   ArrowUpRight, CheckCircle2, ChevronDown, Coffee, Lock, MapPin,
   MessageSquareText, Search, Sparkles, Star, Users, X, Map
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '../Components/Navbar';
 import CustomCursor from '../Components/CustomCursor';
 
@@ -127,12 +128,39 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#FAF6F0] text-[#1A0F0A] selection:bg-[#C19A6B] selection:text-[#1A0F0A]">
-      <Head title="Superior Premium Ngopi" />
-      <Navbar current="home" />
-      <CustomCursor />
+    <AnimatePresence mode="wait">
+      <motion.div 
+        key="page"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="flex flex-col min-h-screen bg-[#FAF6F0] text-[#1A0F0A] selection:bg-[#C19A6B] selection:text-[#1A0F0A]"
+      >
+        <Head title="Superior Premium Ngopi" />
+        
+        {/* Intro Loading Screen */}
+        <motion.div
+          initial={{ y: 0 }}
+          animate={{ y: '-100%' }}
+          transition={{ duration: 0.8, delay: 1.5, ease: [0.76, 0, 0.24, 1] }}
+          className="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-[#1A0F0A] text-[#FAF6F0]"
+        >
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col items-center gap-4"
+          >
+            <Coffee size={48} className="text-[#C19A6B] animate-bounce" />
+            <h1 className="font-clash text-4xl font-black uppercase tracking-widest">NGOPI</h1>
+            <p className="font-mono text-xs uppercase tracking-[0.3em] text-[#C19A6B]">Loading Vibes...</p>
+          </motion.div>
+        </motion.div>
 
-      <main className="pt-24 pb-12">
+        <Navbar current="home" />
+        <CustomCursor />
+
+      <main className="pt-24 pb-12 flex-grow">
         {/* Dynamic Hero Section */}
         <section className="px-4 md:px-8 mb-24 max-w-7xl mx-auto">
           <div className="reveal-up text-center flex flex-col items-center justify-center min-h-[50vh]">
@@ -277,9 +305,10 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
             </div>
           )}
         </section>
+      </main>
 
         {/* Footer Restoration */}
-        <footer className="mt-32 border-t-2 border-[#1A0F0A] bg-[#1A0F0A] text-[#FAF6F0] pt-16 pb-8 px-4 md:px-8">
+        <footer className="mt-auto border-t-2 border-[#1A0F0A] bg-[#1A0F0A] text-[#FAF6F0] pt-16 pb-8 px-4 md:px-8">
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
             <div>
               <h4 className="font-clash text-3xl font-black uppercase mb-4 text-[#C19A6B]">Roastery Skena</h4>
@@ -308,7 +337,6 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
             <p>Crafted for the Culture.</p>
           </div>
         </footer>
-      </main>
 
       {/* Fullscreen Wide Modal for Cafe Details */}
       {activeCafe && (
@@ -354,16 +382,16 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
                       <Map size={24} /> Peta Lokasi
                     </h3>
                     <div className="border-2 border-[#1A0F0A] p-2 bg-white">
-                      {activeCafe.latitude && activeCafe.longitude ? (
+                      {activeCafe.nama ? (
                         <iframe
-                          src={`https://maps.google.com/maps?q=${activeCafe.latitude},${activeCafe.longitude}&z=15&output=embed`}
+                          src={`https://maps.google.com/maps?q=${encodeURIComponent(activeCafe.nama + ' ' + (activeCafe.alamat || ''))}&output=embed`}
                           className="w-full h-[300px] bg-[#FAF6F0]"
                           loading="lazy"
                           title="Peta"
                         />
                       ) : (
                         <div className="h-[300px] flex items-center justify-center bg-[#FAF6F0] font-mono text-sm">
-                          Koordinat belum diset
+                          Loading Peta...
                         </div>
                       )}
                     </div>
@@ -443,6 +471,7 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
           </div>
         </div>
       )}
-    </div>
+      </motion.div>
+    </AnimatePresence>
   );
 }

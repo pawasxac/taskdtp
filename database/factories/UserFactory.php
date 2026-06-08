@@ -23,6 +23,7 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $seed = Str::random(10);
         return [
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
@@ -30,6 +31,17 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'bio' => fake()->randomElement([
+                'Nugas, nyeruput, ngobrol.',
+                'Cari colokan lebih penting dari cari jodoh.',
+                'Skena abis, manual brew only.',
+                'Bukan anak senja, cuma nyari wifi kenceng.',
+                'Ngopi pelan, mikir belakangan.'
+            ]),
+            'profile_picture' => "https://api.dicebear.com/7.x/bottts/svg?seed={$seed}",
+            'instagram' => '@' . fake()->userName(),
+            'whatsapp' => fake()->phoneNumber(),
+            'discord' => fake()->userName() . '#' . fake()->numberBetween(1000, 9999),
         ];
     }
 
