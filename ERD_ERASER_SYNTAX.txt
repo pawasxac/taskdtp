@@ -1,0 +1,132 @@
+// Eraser.io - Native ERD Diagram-as-Code Syntax
+
+USERS [icon: user] {
+  id bigint pk
+  name string
+  email string
+  username string
+  password string
+  role string
+  email_verified_at timestamp
+  deleted_at timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
+KECAMATANS [icon: map] {
+  id bigint pk
+  name string
+  created_at timestamp
+  updated_at timestamp
+}
+
+COFFEE_SHOPS [icon: coffee] {
+  id bigint pk
+  nama string
+  daerah string
+  kecamatan string
+  kecamatan_id bigint
+  alamat text
+  jam_buka string
+  jam_tutup string
+  harga_min integer
+  harga_max integer
+  rating decimal
+  deskripsi text
+  latitude decimal
+  longitude decimal
+  photo_url string
+  is_verified boolean
+  is_active boolean
+  deleted_at timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
+COFFEE_SHOP_REVIEWS {
+  id bigint pk
+  coffee_shop_id bigint
+  user_id bigint
+  rating integer
+  ulasan text
+  created_at timestamp
+  updated_at timestamp
+}
+
+KOMUNITAS [icon: users] {
+  id bigint pk
+  nama_komunitas string
+  domisili string
+  ketua string
+  deskripsi text
+  tanggal_dibentuk date
+  jumlah_anggota integer
+  kontak string
+  status string
+  photo_url string
+  deleted_at timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
+COMMUNITY_MEMBERS {
+  id bigint pk
+  komunitas_id bigint
+  user_id bigint
+  role string
+  joined_at timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
+COMMUNITY_POSTS {
+  id bigint pk
+  komunitas_id bigint
+  user_id bigint
+  title string
+  content text
+  photo_url string
+  created_at timestamp
+  updated_at timestamp
+}
+
+COMMUNITY_COMMENTS {
+  id bigint pk
+  post_id bigint
+  user_id bigint
+  comment text
+  created_at timestamp
+  updated_at timestamp
+}
+
+GATHERING_REQUESTS {
+  id bigint pk
+  komunitas_id bigint
+  coffee_shop_id bigint
+  user_id bigint
+  nama_kegiatan string
+  deskripsi text
+  tanggal_kegiatan date
+  waktu_kegiatan time
+  status string
+  created_at timestamp
+  updated_at timestamp
+}
+
+// Relationships
+KECAMATANS.id < COFFEE_SHOPS.kecamatan_id
+USERS.id < COFFEE_SHOP_REVIEWS.user_id
+COFFEE_SHOPS.id < COFFEE_SHOP_REVIEWS.coffee_shop_id
+
+USERS.id < COMMUNITY_MEMBERS.user_id
+KOMUNITAS.id < COMMUNITY_MEMBERS.komunitas_id
+
+USERS.id < COMMUNITY_POSTS.user_id
+KOMUNITAS.id < COMMUNITY_POSTS.komunitas_id
+
+COMMUNITY_POSTS.id < COMMUNITY_COMMENTS.post_id
+USERS.id < COMMUNITY_COMMENTS.user_id
+
+KOMUNITAS.id < GATHERING_REQUESTS.komunitas_id
+COFFEE_SHOPS.id < GATHERING_REQUESTS.coffee_shop_id
+USERS.id < GATHERING_REQUESTS.user_id
