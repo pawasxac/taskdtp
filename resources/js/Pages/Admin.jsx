@@ -30,12 +30,20 @@ export default function Admin({ users = [], coffeeShops = [], communities = [] }
             <h1 className="font-clash text-4xl font-black uppercase">Control Panel</h1>
             <p className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-[#C19A6B] mt-2">Mode Dewa: Aktif</p>
           </div>
-          <Link
-            href="/dashboard"
-            className="magnetic inline-flex items-center gap-2 border-2 border-[#1A0F0A] bg-white px-4 py-2 font-mono text-[10px] font-black uppercase tracking-wider hover:bg-[#1A0F0A] hover:text-[#FAF6F0] transition-colors"
-          >
-            <ArrowLeft size={16} /> Kembali ke Lounge
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <a
+              href="/admin/dashboard-lama"
+              className="magnetic inline-flex items-center gap-2 border-2 border-[#C19A6B] bg-[#C19A6B] px-4 py-2 font-mono text-[10px] font-black uppercase tracking-wider text-[#1A0F0A] hover:bg-[#1A0F0A] hover:text-[#FAF6F0] transition-colors"
+            >
+              ⚙️ Panel CRUD Lama
+            </a>
+            <Link
+              href="/dashboard"
+              className="magnetic inline-flex items-center gap-2 border-2 border-[#1A0F0A] bg-white px-4 py-2 font-mono text-[10px] font-black uppercase tracking-wider hover:bg-[#1A0F0A] hover:text-[#FAF6F0] transition-colors"
+            >
+              <ArrowLeft size={16} /> Kembali ke Lounge
+            </Link>
+          </div>
         </div>
 
         {/* BENTO STATS GRID */}
