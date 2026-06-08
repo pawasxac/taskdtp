@@ -618,6 +618,30 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
      * call `$user->role->name`.
      */
     Route::middleware(['auth'])->prefix('admin')->group(function () use ($districtName) {
+        Route::get('/dashboard-lama', function () {
+            if (auth()->user()->role !== 'admin') {
+                return redirect()->route('dashboard');
+            }
+
+            $totalUsers = \App\Models\User::count();
+            $communityCount = \App\Models\Komunitas::count();
+
+            return inertia('Admin/OriginalDashboard', [
+                'stats' => [
+                    'coffee_shops_count' => \App\Models\CoffeeShop::count(),
+                    'users_count' => $totalUsers,
+                    'komunitas_count' => $communityCount,
+                    'avg_rating' => number_format(\App\Models\CoffeeShop::avg('rating') ?? 0, 1),
+                    'reviews_count' => \DB::table('coffee_shop_reviews')->count(),
+                    'community_members_count' => \DB::table('community_members')->count(),
+                    'community_posts_count' => \DB::table('community_posts')->count(),
+                    'gathering_requests_count' => \DB::table('gathering_requests')->count(),
+                    'engagement_rate' => $totalUsers > 0 ? round((\DB::table('community_posts')->count() / $totalUsers) * 100, 1) : 0,
+                    'avg_per_community' => $communityCount > 0 ? round(\DB::table('community_members')->count() / $communityCount) : 0,
+                ]
+            ]);
+        })->name('admin.dashboard-lama');
+
         Route::get('/gateway', function () {
             if (auth()->user()->role !== 'admin') {
                 return redirect()->route('dashboard');
@@ -654,6 +678,24 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
         Route::get('/coffee-shops/{id}/edit', [CoffeeShopController::class, 'edit'])->name('coffee.edit');
         Route::put('/coffee-shops/{id}', [CoffeeShopController::class, 'update'])->name('coffee.update');
         Route::delete('/coffee-shops/{id}', [CoffeeShopController::class, 'destroy'])->name('coffee.destroy');
+
+        // Restore missing CRUD routes for Blade views
+        Route::get('/dashboard', function () { return redirect()->route('admin.dashboard-lama'); })->name('admin.dashboard');
+        Route::resource('kecamatan', \App\Http\Controllers\Admin\KecamatanController::class);
+        Route::resource('komunitas', \App\Http\Controllers\Admin\KomunitasController::class);
+        Route::resource('community-posts', \App\Http\Controllers\Admin\CommunityPostController::class);
+        Route::resource('gathering-requests', \App\Http\Controllers\Admin\GatheringRequestController::class);
+        Route::resource('coffee-shop-reviews', \App\Http\Controllers\Admin\CoffeeShopReviewController::class);
+        Route::resource('community-members', \App\Http\Controllers\Admin\CommunityMemberController::class);
+        
+        // User management routes
+        Route::get('/users/create', [CoffeeShopController::class, 'createUser'])->name('admin.user.create');
+        Route::post('/users', [CoffeeShopController::class, 'storeUser'])->name('admin.user.store');
+        Route::get('/users/{id}/edit', [CoffeeShopController::class, 'editUser'])->name('admin.user.edit');
+        Route::put('/users/{id}', [CoffeeShopController::class, 'updateUser'])->name('admin.user.update');
+        Route::delete('/users/{id}', [CoffeeShopController::class, 'destroyUser'])->name('admin.user.destroy');
+
+        Route::get('/login-monitor', [CoffeeShopController::class, 'loginMonitor'])->name('admin.login.monitor');
     });
 });
 

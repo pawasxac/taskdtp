@@ -66,8 +66,14 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
   const [activeCafe, setActiveCafe] = useState(null);
   const [guestModal, setGuestModal] = useState(false);
 
+  const isFirstMount = useRef(true);
+
   // Debounced Filter Call
   useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
     const timer = setTimeout(() => {
       router.get(
         '/',

@@ -106,7 +106,7 @@ export default function Admin({ users = [], coffeeShops = [], communities = [] }
                       <td className={`p-4 font-bold uppercase ${usr.role === 'admin' ? 'text-[#C19A6B]' : ''}`}>{usr.role || 'user'}</td>
                       <td className="p-4 text-center font-bold">0</td>
                       <td className="p-4">
-                        <button className="magnetic border border-[#1A0F0A] bg-white px-3 py-1 font-black uppercase text-[10px] hover:bg-[#1A0F0A] hover:text-[#FAF6F0]">Kelola</button>
+                        <a href="/admin/dashboard-lama" className="magnetic border border-[#1A0F0A] bg-white px-3 py-1 font-black uppercase text-[10px] hover:bg-[#1A0F0A] hover:text-[#FAF6F0]">Kelola</a>
                       </td>
                     </tr>
                   ))}
@@ -151,7 +151,7 @@ export default function Admin({ users = [], coffeeShops = [], communities = [] }
                         )}
                       </td>
                       <td className="p-4">
-                        <button className="magnetic border border-[#1A0F0A] bg-white px-3 py-1 font-black uppercase text-[10px] hover:bg-[#1A0F0A] hover:text-[#FAF6F0]">Edit</button>
+                        <Link href={`/admin/coffee-shops/${cafe.id}/edit`} className="magnetic border border-[#1A0F0A] bg-white px-3 py-1 font-black uppercase text-[10px] hover:bg-[#1A0F0A] hover:text-[#FAF6F0]">Edit</Link>
                       </td>
                     </tr>
                   ))}

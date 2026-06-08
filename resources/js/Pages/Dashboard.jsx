@@ -31,6 +31,7 @@ export default function Dashboard({
   const currentUser = user || auth?.user || null;
   const isAdmin = currentUser?.role === 'admin';
 
+  const [localDirectMessages, setLocalDirectMessages] = useState(directMessages);
   const [chatMessages, setChatMessages] = useState(globalChat);
   const [chatInput, setChatInput] = useState('');
   const [selectedDmId, setSelectedDmId] = useState(directMessages[0]?.id || null);
@@ -63,8 +64,41 @@ export default function Dashboard({
   const feedRef = useRef(null);
 
   useEffect(() => { setChatMessages(globalChat); }, [globalChat]);
+  useEffect(() => { setLocalDirectMessages(directMessages); }, [directMessages]);
   useEffect(() => { if (chatListRef.current) chatListRef.current.scrollTop = chatListRef.current.scrollHeight; }, [chatMessages.length]);
   useEffect(() => { if (feedRef.current) feedRef.current.scrollTop = feedRef.current.scrollHeight; }, [selectedKomunitas?.replies?.length]);
+
+  // Connect to SSE stream
+  useEffect(() => {
+    const eventSource = new EventSource('/chat/stream');
+
+    eventSource.addEventListener('ping', (e) => {
+      try {
+        const data = JSON.parse(e.data);
+        setChatMessages((prev) => {
+          // Prevent duplicates
+          if (prev.some((m) => m.id === data.id)) return prev;
+          return [
+            ...prev,
+            {
+              id: data.id,
+              user: { name: 'Radar Skena', username: 'radarskena', profile_picture: null },
+              area: 'Live Lounge',
+              text: data.text,
+              time: data.time.substring(0, 5),
+              tags: ['live'],
+            },
+          ];
+        });
+      } catch (err) {
+        console.error('Failed parsing stream message:', err);
+      }
+    });
+
+    return () => {
+      eventSource.close();
+    };
+  }, []);
 
   useEffect(() => {
     const tab = new URLSearchParams(window.location.search).get('tab');
@@ -76,19 +110,49 @@ export default function Dashboard({
   }, []);
 
   const selectedDm = useMemo(
-    () => directMessages.find((d) => d.id === selectedDmId) || directMessages[0] || null,
-    [directMessages, selectedDmId]
+    () => localDirectMessages.find((d) => d.id === selectedDmId) || localDirectMessages[0] || null,
+    [localDirectMessages, selectedDmId]
   );
 
   const handleSendDm = (e) => {
     e.preventDefault();
     if (!dmInput.trim() || !selectedDm) return;
+    const sentText = dmInput;
+    setDmInput('');
+
+    // Optimistically update the UI messages list
+    setLocalDirectMessages(prev => {
+        return prev.map(dm => {
+            if (dm.id === selectedDm.id) {
+                // If it's a dynamic temporary ID (like dm-new-xx), we keep it until page reload or replace it
+                const newMsg = {
+                    id: `dm-temp-${Date.now()}`,
+                    text: sentText,
+                    user: {
+                        id: currentUser.id,
+                        name: currentUser.name,
+                        username: currentUser.username,
+                        profile_picture: currentUser.profile_picture,
+                    }
+                };
+                return {
+                    ...dm,
+                    last_message: sentText,
+                    messages: [...(dm.messages || []), newMsg]
+                };
+            }
+            return dm;
+        });
+    });
+
     router.post('/dm/send', {
       receiver_id: selectedDm.user.id,
-      message: dmInput,
+      message: sentText,
     }, {
       preserveScroll: true,
-      onSuccess: () => setDmInput(''),
+      onSuccess: (page) => {
+        // Inertia will reload the page props, syncing localDirectMessages back to server state
+      },
     });
   };
 
@@ -143,10 +207,31 @@ export default function Dashboard({
         user={publicProfileUser} 
         onClose={() => setPublicProfileUser(null)} 
         onDmClick={(u) => {
-            // Here we would ideally open or create a DM with `u`.
-            // For now, if they are in the DM list, select them.
-            const existingDm = directMessages.find(dm => dm.user?.id === u.id);
-            if (existingDm) setSelectedDmId(existingDm.id);
+            const existingDm = localDirectMessages.find(dm => dm.user?.id === u.id);
+            if (existingDm) {
+                setSelectedDmId(existingDm.id);
+            } else {
+                // Instatiate a mock dynamic thread locally for this user
+                const newDmId = `dm-new-${u.id}`;
+                const newDmThread = {
+                    id: newDmId,
+                    time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+                    last_message: 'Mulai percakapan...',
+                    user: {
+                        id: u.id,
+                        name: u.name,
+                        username: u.username || u.name.toLowerCase().replace(/\s+/g, ''),
+                        profile_picture: u.profile_picture || null,
+                        avatar_url: u.profile_picture ? `/uploads/profile_pictures/${u.profile_picture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=1A0F0A&color=FAF6F0&bold=true`,
+                        instagram: u.instagram || null,
+                        whatsapp: u.whatsapp || null,
+                        discord: u.discord || null,
+                    },
+                    messages: []
+                };
+                setLocalDirectMessages(prev => [newDmThread, ...prev]);
+                setSelectedDmId(newDmId);
+            }
             if (dmRef.current) dmRef.current.scrollIntoView({ behavior: 'smooth' });
         }}
       />
@@ -249,7 +334,7 @@ export default function Dashboard({
                 <p className="font-mono text-[10px] font-black uppercase tracking-[0.16em] text-[#C19A6B]">DM Masuk</p>
                 <MessageSquareText size={16} className="text-[#C19A6B]" />
               </div>
-              <p className="font-clash text-3xl font-black">{directMessages.length} Pesan Baru</p>
+              <p className="font-clash text-3xl font-black">{localDirectMessages.length} Pesan Baru</p>
             </div>
           </div>
 
@@ -296,9 +381,9 @@ export default function Dashboard({
             <div className="flex flex-1 min-h-0">
                 {/* Left Sidebar (Active Convos) */}
                 <div className="w-1/3 border-r-2 border-[#1A0F0A] overflow-y-auto custom-scrollbar bg-white">
-                    {directMessages.length === 0 ? (
+                    {localDirectMessages.length === 0 ? (
                         <p className="p-4 text-xs font-mono text-[#1A0F0A]/50">Belum ada DM.</p>
-                    ) : directMessages.map(dm => (
+                    ) : localDirectMessages.map(dm => (
                         <button 
                             key={dm.id} 
                             onClick={() => setSelectedDmId(dm.id)}
