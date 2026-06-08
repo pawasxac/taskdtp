@@ -94,5 +94,71 @@ class DatabaseSeeder extends Seeder
          * jam_tutup, kecamatan) into the database.
          */
         $this->call(CoffeeShopDataSeeder::class);
+
+        // Generate Dummy Users for Forum and DM
+        $dummyUsers = User::factory(15)->create();
+
+        // Generate some DMs between Admin and User
+        $admin = User::where('email', 'admin@kopi.com')->first();
+        $user1 = User::where('email', 'user@kopi.com')->first();
+        
+        \App\Models\DirectMessage::create([
+            'sender_id' => $user1->id,
+            'receiver_id' => $admin->id,
+            'message' => 'Bang, cafe di buduran yang colokannya banyak di mana ya?',
+        ]);
+
+        \App\Models\DirectMessage::create([
+            'sender_id' => $admin->id,
+            'receiver_id' => $user1->id,
+            'message' => 'Coba ke circle kopi depan raya, aman sampe pagi.',
+        ]);
+        
+        // Let's create some dummy DMs for user1 to test limit logic later
+        for ($i=0; $i<8; $i++) {
+            \App\Models\DirectMessage::create([
+                'sender_id' => $user1->id,
+                'receiver_id' => $admin->id,
+                'message' => 'Spam test message ' . $i,
+            ]);
+        }
+        
+        // Generate Dummy Komunitas
+        $komunitasNames = ['Pecinta Manual Brew Sidoarjo', 'Nugas Till Drop', 'Vibes Anak Senja Skena', 'Pemburu Colokan Waru'];
+        
+        foreach ($komunitasNames as $kName) {
+            $komunitas = \App\Models\Komunitas::create([
+                'nama_komunitas' => $kName,
+                'deskripsi' => 'Komunitas resmi untuk anak skena yang suka kumpul dan bahas ' . $kName,
+                'domisili' => $kecamatans[array_rand($kecamatans)],
+                'ketua' => $dummyUsers->random()->name,
+                'status' => 'aktif',
+                'tanggal_dibentuk' => now(),
+                'photo_url' => 'https://ui-avatars.com/api/?name=' . urlencode($kName) . '&background=C19A6B&color=1A0F0A&size=1200'
+            ]);
+
+            // Add leader
+            $komunitas->members()->create([
+                'user_id' => $dummyUsers->random()->id,
+                'role' => 'leader'
+            ]);
+
+            // Add random members
+            $members = $dummyUsers->random(rand(3, 8));
+            foreach ($members as $mem) {
+                $komunitas->members()->firstOrCreate(
+                    ['user_id' => $mem->id],
+                    ['role' => 'member']
+                );
+            }
+
+            // Add dummy posts
+            for ($j=0; $j<3; $j++) {
+                $komunitas->posts()->create([
+                    'user_id' => $dummyUsers->random()->id,
+                    'content' => 'Ada rekomen kedai baru ga bro? Lagi pengen nyari suasana baru nih buat nugas.',
+                ]);
+            }
+        }
     }
 }

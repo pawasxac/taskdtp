@@ -5,84 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Admin Panel')</title>
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
-    <style>
-        .sidebar {
-            background: linear-gradient(180deg, #0a0e1a 0%, #0f1621 50%, #0a0e1a 100%);
-            position: fixed;
-        }
-
-        .sidebar::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image:
-                radial-gradient(circle at 20% 50%, rgba(139, 111, 71, 0.03) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(139, 111, 71, 0.02) 0%, transparent 50%);
-            pointer-events: none;
-        }
-
-        .sidebar h3 {
-            position: relative;
-            z-index: 1;
-            background: linear-gradient(135deg, #ddbfa3 0%, #c6a88b 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            font-size: 11px;
-        }
-
-        .sidebar a {
-            position: relative;
-            z-index: 1;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .sidebar a:hover {
-            background: rgba(198, 168, 139, 0.1);
-            color: #fff;
-            border-left: 3px solid #c6a88b;
-            padding-left: 11px;
-        }
-
-        .sidebar a.active {
-            background: linear-gradient(90deg, rgba(198, 168, 139, 0.2) 0%, rgba(198, 168, 139, 0.08) 100%);
-            color: #ddbfa3;
-            border-left: 3px solid #c6a88b;
-            padding-left: 11px;
-        }
-
-        .topbar {
-            background: linear-gradient(90deg, #0a0e1a 0%, #0f1621 100%);
-            border-bottom: 1px solid rgba(198, 168, 139, 0.1);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .topbar .badge {
-            background: rgba(198, 168, 139, 0.15);
-            color: #ddbfa3;
-            border-color: rgba(198, 168, 139, 0.2);
-            font-weight: 600;
-        }
-
-        .topbar .btn-delete {
-            background: rgba(239, 68, 68, 0.15);
-            color: #fca5a5;
-            border: 1px solid rgba(239, 68, 68, 0.25);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .topbar .btn-delete:hover {
-            background: rgba(239, 68, 68, 0.25);
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
-        }
-    </style>
 </head>
-<body>
+<body class="dashboard-body">
 
 <!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
@@ -107,7 +31,7 @@
     <div class="topbar">
         <button class="menu-btn">☰</button>
 
-        <div class="flex items-center gap-3" style="margin-left:auto;">
+        <div class="topbar-right">
             <span class="badge">
                 {{ Auth::user()->username }}
             </span>

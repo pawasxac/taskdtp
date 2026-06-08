@@ -27,6 +27,9 @@ class User extends Authenticatable
         'profile_picture',
         'bio',
         'phone_number',
+        'instagram',
+        'whatsapp',
+        'discord',
     ];
 
     /**
@@ -105,6 +108,16 @@ class User extends Authenticatable
     public function gatheringRequests()
     {
         return $this->hasMany(\App\Models\GatheringRequest::class, 'requested_by');
+    }
+
+    public function sentMessages()
+    {
+        return $this->hasMany(DirectMessage::class, 'sender_id');
+    }
+
+    public function receivedMessages()
+    {
+        return $this->hasMany(DirectMessage::class, 'receiver_id');
     }
 
 }

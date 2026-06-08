@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 @theme {
-  --color-alabaster: #FBF9F6;
-  --color-espresso: #160F0B;
-  --color-terracotta: #D66838;
-  --color-sage: #3E5146;
-  --color-borderline: #E6E1DA;
+  --color-alabaster: #FAF6F0;
+  --color-espresso: #1A0F0A;
+  --color-terracotta: #C19A6B; /* Changed to creamy latte/gold accent */
+  --color-sage: #8B6F47;
+  --color-borderline: #4A3A1A;
 
   --font-clash: "Clash Display", sans-serif;
   --font-mono: "Space Mono", monospace;
@@ -24,16 +24,43 @@
     color: var(--color-espresso);
     overflow-x: hidden;
     -webkit-text-size-adjust: 100%;
+    /* Smooth scrolling for anchor links */
+    scroll-behavior: smooth;
+  }
+
+  /* Custom Premium Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-alabaster);
+    border-left: 1px solid var(--color-borderline);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-espresso);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-terracotta);
   }
 
   /* Base Inputs Focus Reset */
-  input, textarea {
+  input, textarea, select {
     @apply bg-transparent border-b border-borderline focus:border-espresso outline-none ring-0 font-mono text-sm;
     caret-color: var(--color-terracotta);
+    transition: border-color 0.3s cubic-bezier(0.85, 0, 0.15, 1);
   }
 
   img, video, iframe {
     max-width: 100%;
+  }
+
+  /* Disable custom cursor entirely on touch devices at CSS level */
+  @media (pointer: coarse) {
+    #fluid-cursor-dot,
+    #fluid-cursor-ring {
+      display: none !important;
+    }
   }
 }
 
@@ -44,13 +71,65 @@
     animation: marquee 20s linear infinite;
   }
 
-  /* SVG Noise Overlay for the Brutalist Skena look */
-  .bg-noise {
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  .reveal-up {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
+  }
+  
+  .reveal-up.is-revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  /* Smooth transform classes for kinematics */
+  .spring-transition {
+    transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 }
 
 @keyframes marquee {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
+}
+
+/* Fluid Cursor Elements */
+#fluid-cursor-dot {
+  position: fixed;
+  top: 0; left: 0;
+  width: 6px; height: 6px;
+  background-color: var(--color-terracotta);
+  border-radius: 50% !important;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: transform 0.1s linear, background-color 0.3s ease;
+  mix-blend-mode: difference;
+}
+
+#fluid-cursor-ring {
+  position: fixed;
+  top: 0; left: 0;
+  width: 32px; height: 32px;
+  border: 1.5px solid var(--color-terracotta);
+  border-radius: 50% !important;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s cubic-bezier(0.85, 0, 0.15, 1), 
+              height 0.3s cubic-bezier(0.85, 0, 0.15, 1),
+              background-color 0.3s cubic-bezier(0.85, 0, 0.15, 1);
+  mix-blend-mode: difference;
+}
+
+/* Magnetic Hover State */
+body.is-magnetic #fluid-cursor-ring {
+  width: 60px;
+  height: 60px;
+  background-color: rgba(193, 154, 107, 0.2); /* terracotta with opacity */
+  border-color: transparent;
+}
+body.is-magnetic #fluid-cursor-dot {
+  transform: translate(-50%, -50%) scale(1.5);
 }

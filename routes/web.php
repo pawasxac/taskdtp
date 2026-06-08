@@ -72,27 +72,52 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
      * The hero, filters, forum feed and reviews are always rendered
      * for both guests and members.
      */
-    Route::get('/', function () use ($districtName) {
+    Route::get('/', function (Request $request) use ($districtName) {
+        $query = CoffeeShop::with([
+            'kecamatan',
+            'reviews.user:id,name,username,profile_picture',
+        ])->where('is_active', true);
+
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('alamat', 'like', "%{$search}%");
+            });
+        }
+
+        if ($kecamatan = $request->input('kecamatan')) {
+            $query->where(function ($q) use ($kecamatan) {
+                $q->whereHas('kecamatan', fn ($k) => $k->where('name', $kecamatan))
+                  ->orWhere('daerah', $kecamatan);
+            });
+        }
+
+        if ($price = $request->input('price')) {
+            $query->where('harga_max', '<=', $price);
+        }
+
+        if ($rating = $request->input('rating')) {
+            $query->where('rating', '>=', $rating);
+        }
+
+        $paginated = $query->orderByDesc('rating')->paginate(12)->withQueryString();
+        
+        $paginated->getCollection()->transform(function ($shop) use ($districtName) {
+            $shop->district_name = $districtName(
+                $shop->getRelation('kecamatan'),
+                $shop->kecamatan ?: $shop->daerah
+            );
+            return $shop;
+        });
+
         return inertia('Welcome', [
-            'coffeeShops' => CoffeeShop::with([
-                'kecamatan',
-                'reviews.user:id,name,username,profile_picture',
-            ])
-                ->where('is_active', true)
-                ->orderByDesc('rating')
-                ->get()
-                ->map(function ($shop) use ($districtName) {
-                    $shop->district_name = $districtName(
-                        $shop->getRelation('kecamatan'),
-                        $shop->kecamatan ?: $shop->daerah
-                    );
-                    return $shop;
-                }),
+            'coffeeShops' => $paginated,
+            'filters' => $request->only(['search', 'kecamatan', 'price', 'rating']),
             'kecamatans' => Kecamatan::query()
                 ->orderBy('name')
                 ->get(['id', 'name']),
             'communities' => Komunitas::with([
-                'posts' => fn ($query) => $query
+                'posts' => fn ($q) => $q
                     ->latest()
                     ->with([
                         'user:id,name,username,profile_picture',
@@ -296,43 +321,48 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
                 ]);
             }
 
-            $directMessages = $users->take(4)->values()->map(function ($contact, $index) use ($avatarUrl, $authUser) {
-                return [
-                    'id'           => $contact->id,
-                    'time'         => now()->subMinutes(($index + 1) * 9)->format('H:i'),
-                    'last_message' => $index % 2 === 0
-                        ? 'Nanti sore jadi pindah nongkrong ke spot yang ada colokan panjang?'
-                        : 'Aku nemu kopi susu yang nggak lebay manisnya, kamu harus coba.',
+            $realDms = \App\Models\DirectMessage::where('sender_id', $authUser->id)
+                ->orWhere('receiver_id', $authUser->id)
+                ->with(['sender:id,name,username,profile_picture,instagram,whatsapp,discord', 'receiver:id,name,username,profile_picture,instagram,whatsapp,discord'])
+                ->orderBy('created_at', 'asc')
+                ->get();
+            
+            $dmGroups = [];
+            foreach ($realDms as $msg) {
+                $contact = $msg->sender_id === $authUser->id ? $msg->receiver : $msg->sender;
+                if (!isset($dmGroups[$contact->id])) {
+                    $dmGroups[$contact->id] = [
+                        'id' => $contact->id,
+                        'user' => [
+                            'id' => $contact->id,
+                            'name' => $contact->name,
+                            'username' => $contact->username,
+                            'profile_picture' => $contact->profile_picture,
+                            'avatar_url' => $avatarUrl($contact),
+                            'instagram' => $contact->instagram,
+                            'whatsapp' => $contact->whatsapp,
+                            'discord' => $contact->discord,
+                        ],
+                        'messages' => [],
+                        'time' => $msg->created_at->format('H:i'),
+                        'last_message' => $msg->message,
+                    ];
+                }
+                $dmGroups[$contact->id]['messages'][] = [
+                    'id' => 'dm-' . $msg->id,
+                    'text' => $msg->message,
                     'user' => [
-                        'name'            => $contact->name,
-                        'username'        => $contact->username,
-                        'profile_picture' => $contact->profile_picture,
-                        'avatar_url'      => $avatarUrl($contact),
-                    ],
-                    'messages' => [
-                        [
-                            'id'   => 'dm-' . $contact->id . '-1',
-                            'text' => 'Besok kalau sempat, kita review tempat baru yang deket kampus yuk.',
-                            'user' => [
-                                'name'            => $contact->name,
-                                'username'        => $contact->username,
-                                'profile_picture' => $contact->profile_picture,
-                                'avatar_url'      => $avatarUrl($contact),
-                            ],
-                        ],
-                        [
-                            'id'   => 'dm-' . $contact->id . '-2',
-                            'text' => 'Gas. Yang penting kopinya enak dan kursinya nggak bikin pinggang nyerah.',
-                            'user' => [
-                                'name'            => $authUser->name,
-                                'username'        => $authUser->username,
-                                'profile_picture' => $authUser->profile_picture,
-                                'avatar_url'      => $avatarUrl($authUser),
-                            ],
-                        ],
+                        'id' => $msg->sender->id,
+                        'name' => $msg->sender->name,
+                        'username' => $msg->sender->username,
+                        'profile_picture' => $msg->sender->profile_picture,
+                        'avatar_url' => $avatarUrl($msg->sender),
                     ],
                 ];
-            });
+                $dmGroups[$contact->id]['time'] = $msg->created_at->format('H:i');
+                $dmGroups[$contact->id]['last_message'] = $msg->message;
+            }
+            $directMessages = collect(array_values($dmGroups))->sortByDesc('time')->values();
 
             if ($directMessages->isEmpty()) {
                 $directMessages = collect([
@@ -341,16 +371,21 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
                         'time'         => now()->format('H:i'),
                         'last_message' => 'Belum ada DM baru, tapi inbox tetap siap dipakai buat ngajak ngopi.',
                         'user' => [
+                            'id'              => 99999,
                             'name'            => 'Teman Nongki',
                             'username'        => 'temannongki',
                             'profile_picture' => null,
                             'avatar_url'      => $avatarUrl(null, 'Teman Nongki'),
+                            'instagram'       => null,
+                            'whatsapp'        => null,
+                            'discord'         => null,
                         ],
                         'messages' => [
                             [
                                 'id'   => 'fallback-dm-1',
                                 'text' => 'Kalau nanti mau ngopi, tinggal lempar lokasi ya.',
                                 'user' => [
+                                    'id'              => 99999,
                                     'name'            => 'Teman Nongki',
                                     'username'        => 'temannongki',
                                     'profile_picture' => null,
@@ -370,7 +405,7 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
                 [
                     'id'    => 'notif-1',
                     'type'  => 'Forum',
-                    'title' => 'Ada balasan baru di thread favoritmu.',
+                    'title' => 'Ada balasan baru di komunitas favoritmu.',
                     'body'  => 'Seseorang baru nimbrung di obrolan soal tempat ngopi yang aman buat laptop dan rapat mendadak.',
                     'route' => '/dashboard',
                     'cta'   => 'Buka Forum',
@@ -512,6 +547,67 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
         Route::post('/community/join', function (Request $request) {
             return redirect()->back()->with('success', 'Permintaan join komunitas sudah dikirim. Tinggal tunggu diajak ngopi bareng.');
         })->name('community.join');
+
+        Route::post('/komunitas/store', function (Request $request) {
+            $validated = $request->validate([
+                'nama_komunitas' => 'required|string|max:255',
+                'deskripsi' => 'nullable|string',
+                'domisili' => 'nullable|string|max:255',
+            ]);
+
+            $komunitas = Komunitas::create([
+                'nama_komunitas' => $validated['nama_komunitas'],
+                'deskripsi' => $validated['deskripsi'],
+                'domisili' => $validated['domisili'],
+                'ketua' => auth()->user()->name,
+                'status' => 'aktif',
+            ]);
+
+            $komunitas->members()->create([
+                'user_id' => auth()->id(),
+                'role' => 'leader'
+            ]);
+
+            return back()->with('success', 'Komunitas berhasil dibuat!');
+        })->name('komunitas.store');
+
+        Route::post('/komunitas/{id}/post', function (Request $request, $id) {
+            $validated = $request->validate(['content' => 'required|string']);
+            
+            $komunitas = Komunitas::findOrFail($id);
+            $komunitas->posts()->create([
+                'user_id' => auth()->id(),
+                'content' => $validated['content'],
+            ]);
+
+            return back();
+        })->name('komunitas.post');
+
+        Route::post('/dm/send', function (Request $request) {
+            $request->validate([
+                'receiver_id' => 'required|exists:users,id',
+                'message' => 'required|string|max:1000',
+            ]);
+
+            $senderId = auth()->id();
+            $receiverId = $request->receiver_id;
+
+            $existingCount = \App\Models\DirectMessage::where(function($q) use ($senderId, $receiverId) {
+                $q->where('sender_id', $senderId)->where('receiver_id', $receiverId);
+            })->orWhere(function($q) use ($senderId, $receiverId) {
+                $q->where('sender_id', $receiverId)->where('receiver_id', $senderId);
+            })->count();
+
+            abort_if($existingCount >= 10, 403, 'Udah limit brok, lanjut sosmed aja!');
+
+            \App\Models\DirectMessage::create([
+                'sender_id' => $senderId,
+                'receiver_id' => $receiverId,
+                'message' => $request->message,
+            ]);
+
+            return back()->with('success', 'Pesan terkirim.');
+        })->name('dm.send');
     });
 
     /**
@@ -522,34 +618,6 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
      * call `$user->role->name`.
      */
     Route::middleware(['auth'])->prefix('admin')->group(function () use ($districtName) {
-        Route::get('/dashboard-lama', function () {
-            if (auth()->user()->role !== 'admin') {
-                return redirect()->route('dashboard');
-            }
-
-            $totalUsers = \App\Models\User::count();
-            $totalPosts = 0; // Or \App\Models\CommunityPost::count() if the model exists, wait, let's use what Blade had or skip if it causes errors. In Blade: \App\Models\CommunityPost::count()
-            // To prevent errors if models aren't fully migrated/created in the friend's branch, I'll use class_exists checks or DB facade for safety, but let's assume they exist as per Blade.
-            
-            $communityCount = \App\Models\Komunitas::count();
-            // Let's just use what Blade had.
-            
-            return inertia('Admin/OriginalDashboard', [
-                'stats' => [
-                    'coffee_shops_count' => \App\Models\CoffeeShop::count(),
-                    'users_count' => \App\Models\User::count(),
-                    'komunitas_count' => \App\Models\Komunitas::count(),
-                    'avg_rating' => number_format(\App\Models\CoffeeShop::avg('rating') ?? 0, 1),
-                    'reviews_count' => \DB::table('coffee_shop_reviews')->count(), // safer if model is missing
-                    'community_members_count' => \DB::table('community_members')->count(),
-                    'community_posts_count' => \DB::table('community_posts')->count(),
-                    'gathering_requests_count' => \DB::table('gathering_requests')->count(),
-                    'engagement_rate' => $totalUsers > 0 ? round((\DB::table('community_posts')->count() / $totalUsers) * 100, 1) : 0,
-                    'avg_per_community' => $communityCount > 0 ? round(\DB::table('community_members')->count() / $communityCount) : 0,
-                ]
-            ]);
-        })->name('admin.dashboard-lama');
-
         Route::get('/gateway', function () {
             if (auth()->user()->role !== 'admin') {
                 return redirect()->route('dashboard');
@@ -563,17 +631,20 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
                 return redirect()->route('dashboard');
             }
 
+            $coffeeShops = CoffeeShop::with('kecamatan')->paginate(15);
+            $coffeeShops->getCollection()->transform(function ($shop) use ($districtName) {
+                $shop->district_name = $districtName(
+                    $shop->getRelation('kecamatan'),
+                    $shop->kecamatan ?: $shop->daerah
+                );
+                return $shop;
+            });
+
             return inertia('Admin', [
                 'user'         => auth()->user(),
-                'coffeeShops'  => CoffeeShop::with('kecamatan')->get()->map(function ($shop) use ($districtName) {
-                    $shop->district_name = $districtName(
-                        $shop->getRelation('kecamatan'),
-                        $shop->kecamatan ?: $shop->daerah
-                    );
-                    return $shop;
-                }),
-                'communities'  => Komunitas::all(),
-                'users'        => User::all(),
+                'coffeeShops'  => $coffeeShops,
+                'communities'  => Komunitas::paginate(15),
+                'users'        => User::paginate(15),
             ]);
         })->name('admin.management');
 
@@ -583,16 +654,6 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
         Route::get('/coffee-shops/{id}/edit', [CoffeeShopController::class, 'edit'])->name('coffee.edit');
         Route::put('/coffee-shops/{id}', [CoffeeShopController::class, 'update'])->name('coffee.update');
         Route::delete('/coffee-shops/{id}', [CoffeeShopController::class, 'destroy'])->name('coffee.destroy');
-
-        // Restore missing CRUD routes for Blade views
-        Route::get('/dashboard', function () { return redirect()->route('admin.dashboard-lama'); })->name('admin.dashboard');
-        Route::resource('kecamatan', \App\Http\Controllers\Admin\KecamatanController::class);
-        Route::resource('komunitas', \App\Http\Controllers\Admin\KomunitasController::class);
-        Route::resource('community-posts', \App\Http\Controllers\Admin\CommunityPostController::class);
-        Route::resource('gathering-requests', \App\Http\Controllers\Admin\GatheringRequestController::class);
-        Route::resource('coffee-shop-reviews', \App\Http\Controllers\Admin\CoffeeShopReviewController::class);
-        Route::resource('community-members', \App\Http\Controllers\Admin\CommunityMemberController::class);
-        Route::get('/login-monitor', function() { return view('admin.login-monitor'); })->name('admin.login.monitor');
     });
 });
 
