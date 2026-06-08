@@ -1,106 +1,155 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ShieldAlert, MapPin } from 'lucide-react';
+import { ShieldAlert, MapPin, Users, Coffee, Activity, ArrowLeft } from 'lucide-react';
 import Navbar from '../Components/Navbar';
+import CustomCursor from '../Components/CustomCursor';
 
 export default function Admin({ users = [], coffeeShops = [], communities = [] }) {
   const { auth } = usePage().props;
   const user = auth?.user || null;
 
+  const [activeTab, setActiveTab] = useState('users');
+
   if (!user || user.role !== 'admin') return null;
 
+  const tabs = [
+    { id: 'users', label: 'Data Pengguna', icon: <Users size={16} /> },
+    { id: 'shops', label: 'Direktori Kedai', icon: <Coffee size={16} /> },
+    { id: 'communities', label: 'Komunitas', icon: <Activity size={16} /> },
+  ];
+
   return (
-    <div className="min-h-screen bg-[#1A0F0A] text-[#FAF6F0] selection:bg-[#FAF6F0] selection:text-[#1A0F0A]">
-      <Head title="Admin Panel" />
+    <div className="min-h-screen bg-[#FAF6F0] text-[#1A0F0A] selection:bg-[#C19A6B] selection:text-[#1A0F0A]">
+      <Head title="Control Panel Admin" />
       <Navbar current="admin" />
-      <main className="px-4 py-6 md:px-8">
-        <div className="mx-auto max-w-7xl space-y-4">
-          <header className="border-2 border-[#FAF6F0] bg-[#1A0F0A] p-4 shadow-[6px_6px_0px_0px_#C19A6B]">
-            <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-              <div>
-                <p className="font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#C19A6B]">
-                  Pusat Kontrol
-                </p>
-                <h1 className="mt-2 break-words font-clash text-2xl font-black uppercase md:text-3xl">Kontrol Panel Admin</h1>
-                <p className="mt-2 text-sm leading-6 text-white/75 md:text-base">
-                  Kelola pengguna, coffee shop, dan data komunitas tanpa layout yang meledak.
-                </p>
-              </div>
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center justify-center border-2 border-[#FAF6F0] bg-white px-4 py-2.5 font-mono text-[10px] font-black uppercase tracking-[0.14em] text-[#1A0F0A] shadow-[3px_3px_0px_0px_#C19A6B]"
+      <CustomCursor />
+
+      <main className="pt-24 pb-12 px-4 md:px-8 max-w-[1440px] mx-auto">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+          <div>
+            <h1 className="font-clash text-4xl font-black uppercase">Control Panel</h1>
+            <p className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-[#C19A6B] mt-2">Mode Dewa: Aktif</p>
+          </div>
+          <Link
+            href="/dashboard"
+            className="magnetic inline-flex items-center gap-2 border-2 border-[#1A0F0A] bg-white px-4 py-2 font-mono text-[10px] font-black uppercase tracking-wider hover:bg-[#1A0F0A] hover:text-[#FAF6F0] transition-colors"
+          >
+            <ArrowLeft size={16} /> Kembali ke Lounge
+          </Link>
+        </div>
+
+        {/* BENTO STATS GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="border-2 border-[#1A0F0A] bg-[#1A0F0A] text-[#FAF6F0] p-6 shadow-[6px_6px_0px_0px_#C19A6B] flex flex-col justify-between h-32">
+            <div className="flex justify-between items-center">
+              <p className="font-mono text-[10px] font-black uppercase tracking-[0.16em]">Total Pengguna</p>
+              <Users size={20} className="text-[#C19A6B]" />
+            </div>
+            <p className="font-clash text-4xl font-black">{users.length}</p>
+          </div>
+          <div className="border-2 border-[#1A0F0A] bg-[#C19A6B] text-[#1A0F0A] p-6 shadow-[6px_6px_0px_0px_#1A0F0A] flex flex-col justify-between h-32">
+            <div className="flex justify-between items-center">
+              <p className="font-mono text-[10px] font-black uppercase tracking-[0.16em]">Coffee Shop</p>
+              <Coffee size={20} />
+            </div>
+            <p className="font-clash text-4xl font-black">{coffeeShops.length}</p>
+          </div>
+          <div className="border-2 border-[#1A0F0A] bg-white text-[#1A0F0A] p-6 shadow-[6px_6px_0px_0px_#1A0F0A] flex flex-col justify-between h-32">
+            <div className="flex justify-between items-center">
+              <p className="font-mono text-[10px] font-black uppercase tracking-[0.16em] text-[#C19A6B]">Komunitas Skena</p>
+              <Activity size={20} className="text-[#C19A6B]" />
+            </div>
+            <p className="font-clash text-4xl font-black">{communities.length || 0}</p>
+          </div>
+        </div>
+
+        {/* TABBED INTERFACE */}
+        <div className="border-2 border-[#1A0F0A] bg-white shadow-[6px_6px_0px_0px_#1A0F0A]">
+          <div className="flex overflow-x-auto border-b-2 border-[#1A0F0A] bg-[#FAF6F0] custom-scrollbar">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`magnetic shrink-0 flex items-center gap-2 px-6 py-4 font-mono text-[10px] font-black uppercase tracking-wider border-r-2 border-[#1A0F0A] transition-colors ${
+                  activeTab === tab.id ? 'bg-[#1A0F0A] text-[#FAF6F0]' : 'bg-transparent text-[#1A0F0A] hover:bg-[#1A0F0A]/10'
+                }`}
               >
-                Kembali ke Dashboard
-              </Link>
-            </div>
-          </header>
+                {tab.icon} {tab.label}
+              </button>
+            ))}
+          </div>
 
-          <div className="grid gap-4 2xl:grid-cols-2">
-            <div className="border-2 border-white/80 bg-white/5">
-              <div className="border-b-2 border-white/20 bg-white/10 p-4 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-white">
-                <div className="flex items-center gap-3">
-                  <ShieldAlert size={16} className="text-[#C19A6B]" /> Data Pengguna Aktif
-                </div>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="min-w-full font-mono text-[11px] text-left">
-                  <thead className="border-b border-white/20 bg-black/20 text-white/60">
-                    <tr>
-                      <th className="p-3 font-bold uppercase tracking-[0.14em]">Nama</th>
-                      <th className="p-3 font-bold uppercase tracking-[0.14em]">Role</th>
-                      <th className="p-3 font-bold uppercase tracking-[0.14em] text-center">Reports</th>
-                      <th className="p-3 font-bold uppercase tracking-[0.14em]">Action</th>
+          <div className="p-0 overflow-x-auto">
+            {activeTab === 'users' && (
+              <table className="min-w-full font-mono text-xs text-left">
+                <thead className="border-b-2 border-[#1A0F0A] bg-[#FAF6F0] text-[#1A0F0A]/60">
+                  <tr>
+                    <th className="p-4 font-black uppercase tracking-wider">Nama/Username</th>
+                    <th className="p-4 font-black uppercase tracking-wider">Role</th>
+                    <th className="p-4 font-black uppercase tracking-wider text-center">Reports</th>
+                    <th className="p-4 font-black uppercase tracking-wider">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((usr, i) => (
+                    <tr key={usr.id || i} className="border-b border-[#1A0F0A]/10 hover:bg-[#FAF6F0]/50 transition-colors">
+                      <td className="p-4 font-bold uppercase truncate max-w-[200px]">{usr.name || usr.username || `USER_${i}`}</td>
+                      <td className={`p-4 font-bold uppercase ${usr.role === 'admin' ? 'text-[#C19A6B]' : ''}`}>{usr.role || 'user'}</td>
+                      <td className="p-4 text-center font-bold">0</td>
+                      <td className="p-4">
+                        <button className="magnetic border border-[#1A0F0A] bg-white px-3 py-1 font-black uppercase text-[10px] hover:bg-[#1A0F0A] hover:text-[#FAF6F0]">Kelola</button>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {users.map((usr, i) => (
-                      <tr key={usr.id || i} className="border-b border-white/10">
-                        <td className="max-w-[200px] truncate p-3 font-bold uppercase">{usr.name || usr.username || `USER_${i}`}</td>
-                        <td className="p-3 font-bold text-[#C19A6B]">{usr.role || 'user'}</td>
-                        <td className="p-3 text-center font-bold">0</td>
-                        <td className="p-3">
-                          <button className="font-bold uppercase text-white/70 transition-colors hover:text-white">Lihat</button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                  ))}
+                  {users.length === 0 && (
+                    <tr><td colSpan="4" className="p-8 text-center text-[#1A0F0A]/50 font-bold uppercase">Data Kosong</td></tr>
+                  )}
+                </tbody>
+              </table>
+            )}
 
-            <div className="border-2 border-white/80 bg-white/5">
-              <div className="border-b-2 border-white/20 bg-white/10 p-4 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-white">
-                <div className="flex items-center gap-3">
-                  <MapPin size={16} className="text-[#C19A6B]" /> Direktori Spaces
-                </div>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="min-w-[760px] w-full font-mono text-[11px] text-left">
-                  <thead className="border-b border-white/20 bg-black/20 text-white/60">
-                    <tr>
-                      <th className="p-3 font-bold uppercase tracking-[0.14em]">Shop</th>
-                      <th className="p-3 font-bold uppercase tracking-[0.14em]">Region</th>
-                      <th className="p-3 font-bold uppercase tracking-[0.14em]">Address</th>
-                      <th className="p-3 font-bold uppercase tracking-[0.14em]">Hours</th>
-                      <th className="p-3 font-bold uppercase tracking-[0.14em]">Price</th>
-                      <th className="p-3 font-bold uppercase tracking-[0.14em]">Lat/Long</th>
+            {activeTab === 'shops' && (
+              <table className="min-w-[800px] w-full font-mono text-xs text-left">
+                <thead className="border-b-2 border-[#1A0F0A] bg-[#FAF6F0] text-[#1A0F0A]/60">
+                  <tr>
+                    <th className="p-4 font-black uppercase tracking-wider">Kedai</th>
+                    <th className="p-4 font-black uppercase tracking-wider">Region</th>
+                    <th className="p-4 font-black uppercase tracking-wider">Jam Buka</th>
+                    <th className="p-4 font-black uppercase tracking-wider">Status</th>
+                    <th className="p-4 font-black uppercase tracking-wider">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {coffeeShops.map((cafe) => (
+                    <tr key={cafe.id} className="border-b border-[#1A0F0A]/10 hover:bg-[#FAF6F0]/50 transition-colors">
+                      <td className="p-4 font-bold uppercase text-[#C19A6B] truncate max-w-[200px]">{cafe.nama}</td>
+                      <td className="p-4 font-bold uppercase truncate max-w-[150px]">{cafe.district_name || cafe.kecamatan?.name || cafe.kecamatan || cafe.daerah}</td>
+                      <td className="p-4 font-bold uppercase whitespace-nowrap">{cafe.jam_buka} - {cafe.jam_tutup}</td>
+                      <td className="p-4 font-bold uppercase">
+                        {cafe.is_active ? (
+                          <span className="bg-[#1A0F0A] text-[#C19A6B] px-2 py-1">Aktif</span>
+                        ) : (
+                          <span className="bg-red-900 text-white px-2 py-1">Draft</span>
+                        )}
+                      </td>
+                      <td className="p-4">
+                        <button className="magnetic border border-[#1A0F0A] bg-white px-3 py-1 font-black uppercase text-[10px] hover:bg-[#1A0F0A] hover:text-[#FAF6F0]">Edit</button>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {coffeeShops.map((cafe) => (
-                      <tr key={cafe.id} className="border-b border-white/10">
-                        <td className="max-w-[180px] truncate p-3 font-bold uppercase text-[#C19A6B]">{cafe.nama}</td>
-                        <td className="p-3 font-bold">{cafe.district_name || cafe.kecamatan?.name || cafe.kecamatan || cafe.daerah}</td>
-                        <td className="max-w-[240px] truncate p-3 font-bold" title={cafe.alamat}>{cafe.alamat}</td>
-                        <td className="whitespace-nowrap p-3 font-bold">{cafe.jam_buka} - {cafe.jam_tutup}</td>
-                        <td className="whitespace-nowrap p-3 font-bold">Rp{cafe.harga_min} - {cafe.harga_max}</td>
-                        <td className="whitespace-nowrap p-3 font-bold">{cafe.latitude}, {cafe.longitude}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                  ))}
+                  {coffeeShops.length === 0 && (
+                    <tr><td colSpan="5" className="p-8 text-center text-[#1A0F0A]/50 font-bold uppercase">Data Kosong</td></tr>
+                  )}
+                </tbody>
+              </table>
+            )}
+
+            {activeTab === 'communities' && (
+              <div className="p-8 text-center text-[#1A0F0A]/50 font-mono text-sm font-bold uppercase">
+                <ShieldAlert className="mx-auto mb-2 opacity-50" size={32} />
+                Fitur Manajemen Komunitas Belum Aktif
               </div>
-            </div>
+            )}
           </div>
         </div>
       </main>

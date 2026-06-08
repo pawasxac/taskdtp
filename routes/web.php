@@ -72,28 +72,52 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
      * The hero, filters, forum feed and reviews are always rendered
      * for both guests and members.
      */
-    Route::get('/', function () use ($districtName) {
+    Route::get('/', function (Request $request) use ($districtName) {
+        $query = CoffeeShop::with([
+            'kecamatan',
+            'reviews.user:id,name,username,profile_picture',
+        ])->where('is_active', true);
+
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('alamat', 'like', "%{$search}%");
+            });
+        }
+
+        if ($kecamatan = $request->input('kecamatan')) {
+            $query->where(function ($q) use ($kecamatan) {
+                $q->whereHas('kecamatan', fn ($k) => $k->where('name', $kecamatan))
+                  ->orWhere('daerah', $kecamatan);
+            });
+        }
+
+        if ($price = $request->input('price')) {
+            $query->where('harga_max', '<=', $price);
+        }
+
+        if ($rating = $request->input('rating')) {
+            $query->where('rating', '>=', $rating);
+        }
+
+        $paginated = $query->orderByDesc('rating')->paginate(12)->withQueryString();
+        
+        $paginated->getCollection()->transform(function ($shop) use ($districtName) {
+            $shop->district_name = $districtName(
+                $shop->getRelation('kecamatan'),
+                $shop->kecamatan ?: $shop->daerah
+            );
+            return $shop;
+        });
+
         return inertia('Welcome', [
-            'coffeeShops' => CoffeeShop::with([
-                'kecamatan',
-                'reviews.user:id,name,username,profile_picture',
-            ])
-                ->where('is_active', true)
-                ->orderByDesc('rating')
-                ->limit(8)
-                ->get()
-                ->map(function ($shop) use ($districtName) {
-                    $shop->district_name = $districtName(
-                        $shop->getRelation('kecamatan'),
-                        $shop->kecamatan ?: $shop->daerah
-                    );
-                    return $shop;
-                }),
+            'coffeeShops' => $paginated,
+            'filters' => $request->only(['search', 'kecamatan', 'price', 'rating']),
             'kecamatans' => Kecamatan::query()
                 ->orderBy('name')
                 ->get(['id', 'name']),
             'communities' => Komunitas::with([
-                'posts' => fn ($query) => $query
+                'posts' => fn ($q) => $q
                     ->latest()
                     ->with([
                         'user:id,name,username,profile_picture',
