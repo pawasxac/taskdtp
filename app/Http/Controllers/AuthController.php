@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LoginLog;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
-use App\Models\LoginLog;
 
 class AuthController extends Controller
 {
@@ -18,7 +18,13 @@ class AuthController extends Controller
 
     public function showLogin()
     {
-        return view('auth.login');
+        if (Auth::check()) {
+            return Auth::user()->role === 'admin'
+                ? redirect()->route('admin.gateway')
+                : redirect()->route('dashboard');
+        }
+
+        return inertia('Auth/Login');
     }
 
     public function login(Request $request)
@@ -37,12 +43,12 @@ class AuthController extends Controller
         }
 
         if (!$userExists) {
-            return back()->with('error', 'User tidak ditemukan: ' . $loginInput);
+            return back()->with('error', 'Akunmu nggak ketemu di radar. Coba cek lagi email atau username-nya.');
         }
 
         // Check password
         if (!Hash::check($request->password, $userExists->password)) {
-            return back()->with('error', 'Password salah');
+            return back()->with('error', 'Password-nya masih zonk. Coba racik ulang, ya.');
         }
 
         // Attempt login
@@ -57,10 +63,10 @@ class AuthController extends Controller
         ]);
 
         if (Auth::user()->role === 'admin') {
-            return redirect()->route('admin.dashboard');
+            return redirect()->route('admin.gateway');
         }
 
-        return redirect()->route('user.dashboard');
+        return redirect()->route('dashboard');
     }
 
     /*
@@ -86,7 +92,13 @@ class AuthController extends Controller
 
     public function showRegister()
     {
-        return view('auth.register');
+        if (Auth::check()) {
+            return Auth::user()->role === 'admin'
+                ? redirect()->route('admin.gateway')
+                : redirect()->route('dashboard');
+        }
+
+        return inertia('Auth/Register');
     }
 
     public function register(Request $request)
@@ -110,8 +122,9 @@ class AuthController extends Controller
         $user->update(['email_verified_at' => now()]);
 
         Auth::login($user);
+        $request->session()->regenerate();
 
-        return redirect()->route('user.dashboard')->with('success', 'Registrasi berhasil! Selamat datang.');
+        return redirect()->route('dashboard')->with('success', 'Akunmu udah gacor. Tinggal gas ngopi dan nimbrung.');
     }
 
     /*
@@ -207,4 +220,3 @@ class AuthController extends Controller
         ]);
     }
 }
-

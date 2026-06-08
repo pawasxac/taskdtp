@@ -87,6 +87,49 @@
                    min="1" max="5" step="0.1" required>
         </div>
 
+        <div class="form-group">
+            <label for="image_url">Gambar Coffee Shop (URL)</label>
+            <input type="url" id="image_url" name="image_url" value="{{ old('image_url', $data->image_url) }}" placeholder="https://example.com/coffee-shop.jpg">
+            <span class="help-text">Paste URL gambar dari sumber eksternal seperti Unsplash, Pixabay, atau hosting gambar lainnya</span>
+            <div id="image-preview-container" style="margin-top: 12px; display: none;">
+                <img id="image-preview" src="" alt="Preview" style="max-width: 200px; max-height: 150px; border-radius: 8px; border: 1px solid #ccc;">
+            </div>
+        </div>
+
+        <script>
+            const imageUrlInput = document.getElementById('image_url');
+            const previewContainer = document.getElementById('image-preview-container');
+            const previewImage = document.getElementById('image-preview');
+
+            imageUrlInput.addEventListener('input', function(e) {
+                const url = e.target.value.trim();
+
+                if (url === '') {
+                    previewContainer.style.display = 'none';
+                    return;
+                }
+
+                // Validate URL format
+                try {
+                    new URL(url);
+                    previewImage.src = url;
+                    previewImage.onload = function() {
+                        previewContainer.style.display = 'block';
+                    };
+                    previewImage.onerror = function() {
+                        previewContainer.style.display = 'none';
+                    };
+                } catch (e) {
+                    previewContainer.style.display = 'none';
+                }
+            });
+
+            // Show preview if there's already a value on page load
+            if (imageUrlInput.value) {
+                imageUrlInput.dispatchEvent(new Event('input'));
+            }
+        </script>
+
         <div class="form-actions">
             <a href="{{ route('coffee.index') }}" class="btn-cancel">Batal</a>
             <button type="submit" class="btn-save">Update</button>

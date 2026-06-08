@@ -1,199 +1,561 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\Admin\CoffeeShopController;
-use App\Http\Controllers\Admin\KomunitasController;
-use App\Http\Controllers\Admin\KecamatanController;
-use App\Http\Controllers\Admin\CoffeeShopReviewController;
-use App\Http\Controllers\Admin\CommunityMemberController;
-use App\Http\Controllers\Admin\GatheringRequestController;
-use App\Http\Controllers\Admin\CommunityPostController;
-use App\Http\Controllers\Admin\CommunityCommentController;
+use App\Http\Controllers\AuthController;
+use App\Models\CoffeeShop;
+use App\Models\Kecamatan;
+use App\Models\Komunitas;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| WEB MIDDLEWARE - All routes should be in this group
-|--------------------------------------------------------------------------
-*/
+/**
+ * Build a stable avatar URL for any user, falling back to ui-avatars.
+ * Supports http(s) URLs, relative filenames, and the empty case.
+ */
+$avatarUrl = function (?User $user, ?string $fallback = null): string {
+    $name = urlencode($fallback ?: ($user?->name ?: $user?->username ?: 'Ngopi User'));
 
-Route::middleware(['web'])->group(function () {
+    if ($user?->profile_picture) {
+        if (str_starts_with($user->profile_picture, 'http')) {
+            return $user->profile_picture;
+        }
 
-/*
-|--------------------------------------------------------------------------
-| AUTH
-|--------------------------------------------------------------------------
-*/
+        return url('/uploads/profile_pictures/' . $user->profile_picture);
+    }
 
-Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login'])->name('login.post');
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    return "https://ui-avatars.com/api/?name={$name}&background=1A0F0A&color=FAF6F0&bold=true";
+};
 
-Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-Route::post('/register', [AuthController::class, 'register'])->name('register.post');
+/**
+ * Build a fallback cover image URL for communities and cafes.
+ */
+$fallbackCover = function (string $name): string {
+    $label = urlencode($name);
+    return "https://ui-avatars.com/api/?name={$label}&background=C19A6B&color=1A0F0A&size=1200&font-size=0.24&bold=true";
+};
 
-/*
-|--------------------------------------------------------------------------
-| PASSWORD RESET
-|--------------------------------------------------------------------------
-*/
+/**
+ * Resolves a human-readable district name from any of the shapes
+ * the database may legitimately return: object, array, raw string.
+ */
+$districtName = function ($relationValue, ?string $fallback = null): ?string {
+    if (is_object($relationValue)) {
+        return $relationValue->name ?? $relationValue->nama ?? $fallback;
+    }
 
-Route::get('/forgot-password', [PasswordResetController::class, 'showForgotForm'])->name('password.request');
-Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])->name('password.email');
-Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
-Route::post('/reset-password', [PasswordResetController::class, 'reset'])->name('password.update');
+    if (is_array($relationValue)) {
+        return $relationValue['name'] ?? $relationValue['nama'] ?? $fallback;
+    }
 
+    if (is_string($relationValue) && trim($relationValue) !== '') {
+        return $relationValue;
+    }
 
-/*
-|--------------------------------------------------------------------------
-| ADMIN AREA
-|--------------------------------------------------------------------------
-*/
+    return $fallback;
+};
 
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
+/**
+ * CRITICAL: The `role` column is a primitive string column.
+ * Always use strict string comparison to avoid Error 500 from
+ * `$user->role->name` or similar object-property access.
+ */
+$isAdmin = fn (?User $user): bool => (bool) $user && $user->role === 'admin';
+$isUser  = fn (?User $user): bool => (bool) $user && $user->role === 'user';
 
-Route::view('/dashboard', 'admin.dashboard')->name('admin.dashboard');
+Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $districtName, $isAdmin, $isUser) {
+    /**
+     * PUBLIC LANDING PAGE
+     * --------------------------------------------------------------
+     * Authenticated users and admins have full liberty to visit `/`
+     * without being trapped or redirected back to the dashboard.
+     * The hero, filters, forum feed and reviews are always rendered
+     * for both guests and members.
+     */
+    Route::get('/', function () use ($districtName) {
+        return inertia('Welcome', [
+            'coffeeShops' => CoffeeShop::with([
+                'kecamatan',
+                'reviews.user:id,name,username,profile_picture',
+            ])
+                ->where('is_active', true)
+                ->orderByDesc('rating')
+                ->limit(8)
+                ->get()
+                ->map(function ($shop) use ($districtName) {
+                    $shop->district_name = $districtName(
+                        $shop->getRelation('kecamatan'),
+                        $shop->kecamatan ?: $shop->daerah
+                    );
+                    return $shop;
+                }),
+            'kecamatans' => Kecamatan::query()
+                ->orderBy('name')
+                ->get(['id', 'name']),
+            'communities' => Komunitas::with([
+                'posts' => fn ($query) => $query
+                    ->latest()
+                    ->with([
+                        'user:id,name,username,profile_picture',
+                        'comments.user:id,name,username,profile_picture',
+                    ]),
+                'members.user:id,name,username,profile_picture',
+            ])
+                ->orderBy('nama_komunitas')
+                ->get(),
+        ]);
+    })->name('home');
 
-/*
-|--------------------------------------------------------------------------
-| COFFEE SHOPS
-|--------------------------------------------------------------------------
-*/
+    /**
+     * GUEST AUTH ROUTES (login + register).
+     * Block entry for users who are already logged in to avoid the
+     * login-page trap that previously caused silent route freezes.
+     */
+    Route::middleware('guest')->group(function () {
+        Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+        Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+        Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+        Route::post('/register', [AuthController::class, 'register'])->name('register.post');
+    });
 
-Route::get('/coffee-shops', [CoffeeShopController::class, 'index'])->name('coffee.index');
-Route::get('/coffee-shops/create', [CoffeeShopController::class, 'create'])->name('coffee.create');
-Route::post('/coffee-shops', [CoffeeShopController::class, 'store'])->name('coffee.store');
-Route::get('/coffee-shops/{id}/edit', [CoffeeShopController::class, 'edit'])->name('coffee.edit');
-Route::put('/coffee-shops/{id}', [CoffeeShopController::class, 'update'])->name('coffee.update');
-Route::delete('/coffee-shops/{id}', [CoffeeShopController::class, 'destroy'])->name('coffee.destroy');
+    /**
+     * GLOBAL LOGOUT — available to anyone so the Navbar can destroy
+     * the session cleanly without routing freezes.
+     */
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-/*
-|--------------------------------------------------------------------------
-| USER MANAGEMENT
-|--------------------------------------------------------------------------
-*/
+    /**
+     * AUTHENTICATED DASHBOARD
+     * --------------------------------------------------------------
+     * No role-trap on `/`. Both 'admin' and 'user' accounts can enter.
+     * Role-aware props are passed down to the React layer, which uses
+     * primitive string comparison (`auth.user.role === 'admin'`).
+     */
+    Route::middleware(['auth'])->group(function () use ($avatarUrl, $fallbackCover, $districtName, $isAdmin, $isUser) {
+        Route::get('/dashboard', function () use ($avatarUrl, $fallbackCover, $districtName, $isAdmin, $isUser) {
+            $authUser     = auth()->user();
+            $adminAccess  = $isAdmin($authUser);
+            $memberAccess = $isUser($authUser);
 
-Route::get('/login-monitor', [CoffeeShopController::class, 'loginMonitor'])->name('admin.login.monitor');
-Route::get('/user/create', [CoffeeShopController::class, 'createUser'])->name('admin.user.create');
-Route::post('/user', [CoffeeShopController::class, 'storeUser'])->name('admin.user.store');
-Route::get('/user/{id}/edit', [CoffeeShopController::class, 'editUser'])->name('admin.user.edit');
-Route::put('/user/{id}', [CoffeeShopController::class, 'updateUser'])->name('admin.user.update');
-Route::delete('/user/{id}', [CoffeeShopController::class, 'destroyUser'])->name('admin.user.destroy');
+            if (! $adminAccess && ! $memberAccess) {
+                abort(403, 'Role akun tidak dikenali.');
+            }
 
-/*
-|--------------------------------------------------------------------------
-| KOMUNITAS
-|--------------------------------------------------------------------------
-*/
+            $coffeeShops = CoffeeShop::with([
+                'kecamatan',
+                'reviews.user:id,name,username,profile_picture',
+            ])
+                ->where('is_active', true)
+                ->orderByDesc('rating')
+                ->get()
+                ->map(function ($shop) use ($districtName) {
+                    $shop->district_name = $districtName(
+                        $shop->getRelation('kecamatan'),
+                        $shop->kecamatan ?: $shop->daerah
+                    );
+                    return $shop;
+                });
 
-Route::get('/komunitas', [KomunitasController::class, 'index'])->name('komunitas.index');
-Route::get('/komunitas/create', [KomunitasController::class, 'create'])->name('komunitas.create');
-Route::post('/komunitas', [KomunitasController::class, 'store'])->name('komunitas.store');
-Route::get('/komunitas/{id}', [KomunitasController::class, 'show'])->name('komunitas.show');
-Route::get('/komunitas/{id}/edit', [KomunitasController::class, 'edit'])->name('komunitas.edit');
-Route::put('/komunitas/{id}', [KomunitasController::class, 'update'])->name('komunitas.update');
-Route::delete('/komunitas/{id}', [KomunitasController::class, 'destroy'])->name('komunitas.destroy');
+            $users = User::query()
+                ->whereNull('deleted_at')
+                ->where('id', '!=', $authUser->id)
+                ->get(['id', 'name', 'username', 'email', 'profile_picture']);
 
-/*
-|--------------------------------------------------------------------------
-| KECAMATAN
-|--------------------------------------------------------------------------
-*/
+            $communities = Komunitas::with([
+                'members.user:id,name,username,profile_picture',
+                'posts' => fn ($query) => $query
+                    ->latest()
+                    ->with([
+                        'user:id,name,username,profile_picture',
+                        'comments.user:id,name,username,profile_picture',
+                    ]),
+            ])
+                ->orderBy('nama_komunitas')
+                ->get();
 
-Route::get('/kecamatan', [KecamatanController::class, 'index'])->name('kecamatan.index');
-Route::get('/kecamatan/create', [KecamatanController::class, 'create'])->name('kecamatan.create');
-Route::post('/kecamatan', [KecamatanController::class, 'store'])->name('kecamatan.store');
-Route::get('/kecamatan/{id}/edit', [KecamatanController::class, 'edit'])->name('kecamatan.edit');
-Route::put('/kecamatan/{id}', [KecamatanController::class, 'update'])->name('kecamatan.update');
-Route::delete('/kecamatan/{id}', [KecamatanController::class, 'destroy'])->name('kecamatan.destroy');
+            $forums = $communities->map(function ($community) use ($avatarUrl, $fallbackCover) {
+                $creator = optional($community->posts->first())->user;
+                $fallbackUser = (object) [
+                    'name'     => $community->ketua ?: 'Penjaga Tongkrongan',
+                    'username' => strtolower(str_replace(' ', '', $community->ketua ?: 'penjaga')),
+                    'profile_picture' => null,
+                ];
 
-/*
-|--------------------------------------------------------------------------
-| COFFEE SHOP REVIEWS
-|--------------------------------------------------------------------------
-*/
+                $forumOwner = $creator ?: $fallbackUser;
 
-Route::get('/coffee-shop-reviews', [CoffeeShopReviewController::class, 'index'])->name('coffee-shop-reviews.index');
-Route::get('/coffee-shop-reviews/create', [CoffeeShopReviewController::class, 'create'])->name('coffee-shop-reviews.create');
-Route::post('/coffee-shop-reviews', [CoffeeShopReviewController::class, 'store'])->name('coffee-shop-reviews.store');
-Route::get('/coffee-shop-reviews/{id}/edit', [CoffeeShopReviewController::class, 'edit'])->name('coffee-shop-reviews.edit');
-Route::put('/coffee-shop-reviews/{id}', [CoffeeShopReviewController::class, 'update'])->name('coffee-shop-reviews.update');
-Route::delete('/coffee-shop-reviews/{id}', [CoffeeShopReviewController::class, 'destroy'])->name('coffee-shop-reviews.destroy');
+                return [
+                    'id'              => $community->id,
+                    'community_slug'  => str()->slug($community->nama_komunitas),
+                    'title'           => $community->nama_komunitas,
+                    'description'     => $community->deskripsi ?: 'Tempat curhat soal seduhan, colokan, dan playlist sore.',
+                    'member_count'    => $community->members->count() ?: ($community->jumlah_anggota ?? 0),
+                    'reply_count'     => $community->posts->sum(fn ($post) => $post->comments->count()),
+                    'cover_image'     => $community->photo_url ?: $fallbackCover($community->nama_komunitas),
+                    'domisili'        => $community->domisili,
+                    'creator'         => [
+                        'name'            => $forumOwner->name,
+                        'username'        => $forumOwner->username,
+                        'profile_picture' => $creator?->profile_picture ?? null,
+                        'avatar_url'      => $avatarUrl($creator, $forumOwner->name),
+                    ],
+                    'tags' => collect([
+                        $community->domisili,
+                        'forum',
+                        'ngopi',
+                    ])->filter()->unique()->values(),
+                    'replies' => $community->posts
+                        ->flatMap(fn ($post) => $post->comments)
+                        ->sortByDesc('created_at')
+                        ->take(3)
+                        ->values()
+                        ->map(fn ($comment) => [
+                            'id'      => $comment->id,
+                            'comment' => $comment->comment,
+                            'user'    => [
+                                'name'            => $comment->user?->name ?: 'Anak Nongki',
+                                'username'        => $comment->user?->username ?: 'anaknongki',
+                                'profile_picture' => $comment->user?->profile_picture,
+                                'avatar_url'      => $avatarUrl($comment->user, $comment->user?->name ?: 'Anak Nongki'),
+                            ],
+                        ]),
+                ];
+            })->values();
 
-/*
-|--------------------------------------------------------------------------
-| COMMUNITY MEMBERS
-|--------------------------------------------------------------------------
-*/
+            if ($forums->isEmpty()) {
+                $forums = collect($coffeeShops->take(3)->values()->map(function ($shop, $index) use ($authUser, $avatarUrl, $fallbackCover) {
+                    return [
+                        'id'              => 'fallback-' . $shop->id,
+                        'community_slug'  => 'circle-' . $shop->id,
+                        'title'           => 'Circle ' . $shop->nama,
+                        'description'     => 'Tempat ngobrol santai soal beans favorit, kursi pojok, dan jam paling aman buat datang.',
+                        'member_count'    => 14 + $index,
+                        'reply_count'     => 4 + $index,
+                        'cover_image'     => $shop->photo_url ?: $fallbackCover($shop->nama),
+                        'domisili'        => $shop->district_name ?? $shop->daerah,
+                        'creator'         => [
+                            'name'            => $authUser->name,
+                            'username'        => $authUser->username,
+                            'profile_picture' => $authUser->profile_picture,
+                            'avatar_url'      => $avatarUrl($authUser),
+                        ],
+                        'tags' => collect([$shop->district_name, 'kopi', 'skena'])->filter()->values(),
+                        'replies' => [
+                            [
+                                'id'      => 'reply-' . $shop->id . '-1',
+                                'comment' => 'Spot ini enak buat ngilang bentar dari deadline yang kelewat cerewet.',
+                                'user'    => [
+                                    'name'            => $authUser->name,
+                                    'username'        => $authUser->username,
+                                    'profile_picture' => $authUser->profile_picture,
+                                    'avatar_url'      => $avatarUrl($authUser),
+                                ],
+                            ],
+                        ],
+                    ];
+                }));
+            }
 
-Route::get('/community-members', [CommunityMemberController::class, 'index'])->name('community-members.index');
-Route::get('/community-members/create', [CommunityMemberController::class, 'create'])->name('community-members.create');
-Route::post('/community-members', [CommunityMemberController::class, 'store'])->name('community-members.store');
-Route::get('/community-members/{id}/edit', [CommunityMemberController::class, 'edit'])->name('community-members.edit');
-Route::put('/community-members/{id}', [CommunityMemberController::class, 'update'])->name('community-members.update');
-Route::delete('/community-members/{id}', [CommunityMemberController::class, 'destroy'])->name('community-members.destroy');
+            $globalChat = collect();
 
-/*
-|--------------------------------------------------------------------------
-| GATHERING REQUESTS
-|--------------------------------------------------------------------------
-*/
+            foreach ($coffeeShops->take(5) as $shop) {
+                foreach ($shop->reviews->take(1) as $review) {
+                    $globalChat->push([
+                        'id'         => 'review-' . $review->id,
+                        'user'       => [
+                            'name'            => $review->user?->name ?: 'Anak Kopi',
+                            'username'        => $review->user?->username ?: 'anakkopi',
+                            'profile_picture' => $review->user?->profile_picture,
+                            'avatar_url'      => $avatarUrl($review->user, $review->user?->name ?: 'Anak Kopi'),
+                        ],
+                        'area'       => $shop->district_name ?: $shop->daerah ?: 'Sidoarjo',
+                        'text'       => $review->review ?: "Baru nyoba {$shop->nama}, tempatnya adem dan nggak bikin buru-buru pulang.",
+                        'time'       => optional($review->created_at)->format('H:i') ?: now()->format('H:i'),
+                        'tags'       => collect([$shop->district_name, 'review'])->filter()->values(),
+                        'cafe_id'    => $shop->id,
+                        'cafe_name'  => $shop->nama,
+                    ]);
+                }
+            }
 
-Route::get('/gathering-requests', [GatheringRequestController::class, 'index'])->name('gathering-requests.index');
-Route::get('/gathering-requests/create', [GatheringRequestController::class, 'create'])->name('gathering-requests.create');
-Route::post('/gathering-requests', [GatheringRequestController::class, 'store'])->name('gathering-requests.store');
-Route::get('/gathering-requests/{id}/edit', [GatheringRequestController::class, 'edit'])->name('gathering-requests.edit');
-Route::put('/gathering-requests/{id}', [GatheringRequestController::class, 'update'])->name('gathering-requests.update');
-Route::post('/gathering-requests/{id}/status', [GatheringRequestController::class, 'updateStatus'])->name('gathering-requests.update-status');
-Route::delete('/gathering-requests/{id}', [GatheringRequestController::class, 'destroy'])->name('gathering-requests.destroy');
+            if ($globalChat->isEmpty()) {
+                $globalChat = collect([
+                    [
+                        'id'    => 'seed-chat-1',
+                        'user'  => [
+                            'name'            => $authUser->name,
+                            'username'        => $authUser->username,
+                            'profile_picture' => $authUser->profile_picture,
+                            'avatar_url'      => $avatarUrl($authUser),
+                        ],
+                        'area'  => 'Global Lounge',
+                        'text'  => 'Siapa yang punya rekomendasi spot buat nugas sambil cari cinnamon roll yang beneran niat?',
+                        'time'  => now()->subMinutes(12)->format('H:i'),
+                        'tags'  => ['lounge', 'nugas'],
+                        'cafe_id'    => null,
+                        'cafe_name'  => null,
+                    ],
+                ]);
+            }
 
-/*
-|--------------------------------------------------------------------------
-| COMMUNITY POSTS
-|--------------------------------------------------------------------------
-*/
+            $directMessages = $users->take(4)->values()->map(function ($contact, $index) use ($avatarUrl, $authUser) {
+                return [
+                    'id'           => $contact->id,
+                    'time'         => now()->subMinutes(($index + 1) * 9)->format('H:i'),
+                    'last_message' => $index % 2 === 0
+                        ? 'Nanti sore jadi pindah nongkrong ke spot yang ada colokan panjang?'
+                        : 'Aku nemu kopi susu yang nggak lebay manisnya, kamu harus coba.',
+                    'user' => [
+                        'name'            => $contact->name,
+                        'username'        => $contact->username,
+                        'profile_picture' => $contact->profile_picture,
+                        'avatar_url'      => $avatarUrl($contact),
+                    ],
+                    'messages' => [
+                        [
+                            'id'   => 'dm-' . $contact->id . '-1',
+                            'text' => 'Besok kalau sempat, kita review tempat baru yang deket kampus yuk.',
+                            'user' => [
+                                'name'            => $contact->name,
+                                'username'        => $contact->username,
+                                'profile_picture' => $contact->profile_picture,
+                                'avatar_url'      => $avatarUrl($contact),
+                            ],
+                        ],
+                        [
+                            'id'   => 'dm-' . $contact->id . '-2',
+                            'text' => 'Gas. Yang penting kopinya enak dan kursinya nggak bikin pinggang nyerah.',
+                            'user' => [
+                                'name'            => $authUser->name,
+                                'username'        => $authUser->username,
+                                'profile_picture' => $authUser->profile_picture,
+                                'avatar_url'      => $avatarUrl($authUser),
+                            ],
+                        ],
+                    ],
+                ];
+            });
 
-Route::get('/community-posts', [CommunityPostController::class, 'index'])->name('community-posts.index');
-Route::get('/community-posts/create', [CommunityPostController::class, 'create'])->name('community-posts.create');
-Route::post('/community-posts', [CommunityPostController::class, 'store'])->name('community-posts.store');
-Route::get('/community-posts/{id}/edit', [CommunityPostController::class, 'edit'])->name('community-posts.edit');
-Route::put('/community-posts/{id}', [CommunityPostController::class, 'update'])->name('community-posts.update');
-Route::delete('/community-posts/{id}', [CommunityPostController::class, 'destroy'])->name('community-posts.destroy');
+            if ($directMessages->isEmpty()) {
+                $directMessages = collect([
+                    [
+                        'id'           => 'fallback-dm',
+                        'time'         => now()->format('H:i'),
+                        'last_message' => 'Belum ada DM baru, tapi inbox tetap siap dipakai buat ngajak ngopi.',
+                        'user' => [
+                            'name'            => 'Teman Nongki',
+                            'username'        => 'temannongki',
+                            'profile_picture' => null,
+                            'avatar_url'      => $avatarUrl(null, 'Teman Nongki'),
+                        ],
+                        'messages' => [
+                            [
+                                'id'   => 'fallback-dm-1',
+                                'text' => 'Kalau nanti mau ngopi, tinggal lempar lokasi ya.',
+                                'user' => [
+                                    'name'            => 'Teman Nongki',
+                                    'username'        => 'temannongki',
+                                    'profile_picture' => null,
+                                    'avatar_url'      => $avatarUrl(null, 'Teman Nongki'),
+                                ],
+                            ],
+                        ],
+                    ],
+                ]);
+            }
 
-/*
-|--------------------------------------------------------------------------
-| COMMUNITY COMMENTS
-|--------------------------------------------------------------------------
-*/
+            /**
+             * Notification items with deep-link routes so the React
+             * popover can navigate to the right destination on click.
+             */
+            $notifications = collect([
+                [
+                    'id'    => 'notif-1',
+                    'type'  => 'Forum',
+                    'title' => 'Ada balasan baru di thread favoritmu.',
+                    'body'  => 'Seseorang baru nimbrung di obrolan soal tempat ngopi yang aman buat laptop dan rapat mendadak.',
+                    'route' => '/dashboard',
+                    'cta'   => 'Buka Forum',
+                ],
+                [
+                    'id'    => 'notif-2',
+                    'type'  => 'DM',
+                    'title' => 'Inbox kamu lagi gerak.',
+                    'body'  => 'Ada ajakan nongkrong masuk. Tinggal pilih: gas sekarang atau pura-pura sibuk dulu.',
+                    'route' => '/dashboard',
+                    'cta'   => 'Cek DM',
+                ],
+                [
+                    'id'    => 'notif-3',
+                    'type'  => 'Radar',
+                    'title' => 'Spot rating tinggi lagi rame dicari.',
+                    'body'  => 'Beberapa kedai dengan rating manis lagi naik daun. Cocok buat hunting sore ini.',
+                    'route' => '/',
+                    'cta'   => 'Lihat Spotlight',
+                ],
+            ]);
 
-Route::get('/community-comments', [CommunityCommentController::class, 'index'])->name('community-comments.index');
-Route::get('/community-comments/{id}/edit', [CommunityCommentController::class, 'edit'])->name('community-comments.edit');
-Route::put('/community-comments/{id}', [CommunityCommentController::class, 'update'])->name('community-comments.update');
-Route::delete('/community-comments/{id}', [CommunityCommentController::class, 'destroy'])->name('community-comments.destroy');
+            $tags = collect($coffeeShops)
+                ->flatMap(fn ($shop) => [
+                    $shop->district_name,
+                    $shop->daerah,
+                    'kopi',
+                    'nugas',
+                    'nongkrong',
+                ])
+                ->merge($communities->pluck('domisili'))
+                ->filter()
+                ->unique()
+                ->take(10)
+                ->values();
 
+            // The dashboard props below are returned synchronously.
+            return inertia('Dashboard', [
+                'user'            => $authUser,
+                'coffeeShops'     => $coffeeShops,
+                'forums'          => $forums,
+                'globalChat'      => $globalChat->values(),
+                'directMessages'  => $directMessages->values(),
+                'notifications'   => $notifications->values(),
+                'tags'            => $tags,
+            ]);
+        })->name('dashboard');
+
+        /**
+         * Forum thread index + detail (compact stubs that always
+         * return non-empty payloads to keep the UI deterministic).
+         */
+        Route::get('/forum', function () {
+            return redirect()->route('dashboard');
+        })->name('forum.index');
+
+        Route::get('/forum/{slug}', function (string $slug) {
+            return inertia('Dashboard', [
+                'focusThread' => $slug,
+            ]);
+        })->name('forum.show');
+
+        /**
+         * Notification deep-link target — closes the popover loop and
+         * bounces the user back to the dashboard inbox / forum.
+         */
+        Route::get('/notifications/{id}', function (string $id) {
+            return redirect()->route('dashboard', ['notif' => $id]);
+        })->name('notifications.show');
+
+        /**
+         * Chat stream (SSE) — Server-Sent Event channel that streams
+         * heartbeats and recent review rows so the global chat pane
+         * feels alive even without a real WebSocket server.
+         */
+        Route::get('/chat/stream', function () {
+            return response()->stream(function () {
+                @ob_end_flush();
+                @ob_implicit_flush(true);
+
+                $i = 0;
+                $start = time();
+                $samples = [
+                    'Barista di sini ngerti banget seleramu, anti-judge.',
+                    'Spot baru buka pojok buat laptop, colokan aman.',
+                    'Cinnamon roll-nya lembut, kopinya nggak lebay pahit.',
+                    'Mau review bareng malem ini? Kursi pojok masih longgar.',
+                ];
+
+                while ($i < 6 && connection_aborted() === 0 && (time() - $start) < 25) {
+                    echo "event: ping\n";
+                    echo 'data: ' . json_encode([
+                        'id'   => 'stream-' . $i,
+                        'text' => $samples[$i % count($samples)],
+                        'time' => now()->format('H:i:s'),
+                    ]) . "\n\n";
+                    $i++;
+                    sleep(4);
+                }
+            }, 200, [
+                'Content-Type'      => 'text/event-stream',
+                'Cache-Control'     => 'no-cache, no-store, must-revalidate',
+                'X-Accel-Buffering' => 'no',
+            ]);
+        })->name('chat.stream');
+
+        /**
+         * Profile update endpoint — accepts a multipart payload with
+         * a file upload and updates the authenticated user's bio and
+         * profile picture. The Navbar/Dashboard reads the new state
+         * via the next Inertia visit.
+         */
+        Route::post('/profile/update', function (Request $request) {
+            $user = $request->user();
+            $data = $request->validate([
+                'name'  => ['nullable', 'string', 'max:120'],
+                'bio'   => ['nullable', 'string', 'max:500'],
+                'profile_picture' => ['nullable', 'image', 'max:2048'],
+            ]);
+
+            if ($request->hasFile('profile_picture')) {
+                $file = $request->file('profile_picture');
+                $filename = 'user_' . $user->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('uploads/profile_pictures'), $filename);
+                $user->profile_picture = $filename;
+            }
+
+            if (isset($data['name'])) $user->name = $data['name'];
+            if (isset($data['bio']))  $user->bio  = $data['bio'];
+            $user->save();
+
+            return back()->with('success', 'Profil berhasil diperbarui. Anak skena makin pede.');
+        })->name('profile.update');
+
+        /**
+         * Community join stub — returns a flash message so the React
+         * side can keep moving without an actual network roundtrip.
+         */
+        Route::post('/community/join', function (Request $request) {
+            return redirect()->back()->with('success', 'Permintaan join komunitas sudah dikirim. Tinggal tunggu diajak ngopi bareng.');
+        })->name('community.join');
+    });
+
+    /**
+     * ADMIN ROUTES
+     * --------------------------------------------------------------
+     * The `role` column is a primitive string. Always use the strict
+     * string comparison `auth()->user()->role === 'admin'`. Never
+     * call `$user->role->name`.
+     */
+    Route::middleware(['auth'])->prefix('admin')->group(function () use ($districtName) {
+        Route::get('/gateway', function () {
+            if (auth()->user()->role !== 'admin') {
+                return redirect()->route('dashboard');
+            }
+
+            return inertia('Admin/Gateway');
+        })->name('admin.gateway');
+
+        Route::get('/management', function () use ($districtName) {
+            if (auth()->user()->role !== 'admin') {
+                return redirect()->route('dashboard');
+            }
+
+            return inertia('Admin', [
+                'user'         => auth()->user(),
+                'coffeeShops'  => CoffeeShop::with('kecamatan')->get()->map(function ($shop) use ($districtName) {
+                    $shop->district_name = $districtName(
+                        $shop->getRelation('kecamatan'),
+                        $shop->kecamatan ?: $shop->daerah
+                    );
+                    return $shop;
+                }),
+                'communities'  => Komunitas::all(),
+                'users'        => User::all(),
+            ]);
+        })->name('admin.management');
+
+        Route::get('/coffee-shops', [CoffeeShopController::class, 'index'])->name('coffee.index');
+        Route::get('/coffee-shops/create', [CoffeeShopController::class, 'create'])->name('coffee.create');
+        Route::post('/coffee-shops', [CoffeeShopController::class, 'store'])->name('coffee.store');
+        Route::get('/coffee-shops/{id}/edit', [CoffeeShopController::class, 'edit'])->name('coffee.edit');
+        Route::put('/coffee-shops/{id}', [CoffeeShopController::class, 'update'])->name('coffee.update');
+        Route::delete('/coffee-shops/{id}', [CoffeeShopController::class, 'destroy'])->name('coffee.destroy');
+    });
 });
 
-
-/*
-|--------------------------------------------------------------------------
-| USER AREA
-|--------------------------------------------------------------------------
-*/
-
-Route::middleware(['auth', 'role:user'])->prefix('user')->group(function () {
-
-    Route::get('/dashboard', [AuthController::class, 'userDashboard'])
-        ->name('user.dashboard');
-
-    Route::get('/my-profile', [AuthController::class, 'viewProfile'])
-        ->name('user.view-profile');
-
-    Route::get('/profile', [AuthController::class, 'editProfile'])
-        ->name('user.profile');
-
-    Route::put('/profile', [AuthController::class, 'updateProfile'])
-        ->name('user.profile.update');
-});
-
-}); // End web middleware group
