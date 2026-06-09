@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
-  Bell, Camera, Coffee, MessageCircleMore, MessageSquareText,
-  Send, Users, X, ShieldCheck, Plus, Info, LayoutDashboard
+  Bell, Check, MapPin, MessageCircleMore, MessageSquareText,
+  Save, Send, X, ShieldCheck, Plus
 } from 'lucide-react';
 import Navbar from '../Components/Navbar';
 import CustomCursor from '../Components/CustomCursor';
@@ -15,7 +15,7 @@ const getAvatarUrl = (user, fallbackLabel = 'Anak Skena') => {
   return `https://ui-avatars.com/api/?name=${label}&background=1A0F0A&color=FAF6F0&bold=true`;
 };
 
-const districtLabel = (cafe) => cafe?.district_name || cafe?.kecamatan?.name || cafe?.kecamatan || cafe?.daerah || '';
+
 
 export default function Dashboard({
   user,
@@ -36,7 +36,9 @@ export default function Dashboard({
   const [chatInput, setChatInput] = useState('');
   const [selectedDmId, setSelectedDmId] = useState(directMessages[0]?.id || null);
   const [notifOpen, setNotifOpen] = useState(false);
-  
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileSaved, setProfileSaved] = useState(false);
+
   const [profileForm, setProfileForm] = useState({
     name: currentUser?.name || 'Anak Skena',
     username: currentUser?.username || 'anakskena',
@@ -47,7 +49,6 @@ export default function Dashboard({
     discord: currentUser?.discord || '',
   });
   const [profilePreview, setProfilePreview] = useState(currentUser?.profile_picture || '');
-  const [profileStatus, setProfileStatus] = useState(null);
   const [dmInput, setDmInput] = useState('');
 
   // Modals State
@@ -61,42 +62,99 @@ export default function Dashboard({
   const notifRef = useRef(null);
   const forumRef = useRef(null);
   const dmRef = useRef(null);
+  const dmChatRef = useRef(null);
   const feedRef = useRef(null);
 
+  // Close notif popover on outside click
+  useEffect(() => {
+    if (!notifOpen) return;
+    const handleOutside = (e) => {
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setNotifOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [notifOpen]);
+
   useEffect(() => { setChatMessages(globalChat); }, [globalChat]);
-  useEffect(() => { setLocalDirectMessages(directMessages); }, [directMessages]);
+  useEffect(() => { 
+    setLocalDirectMessages(directMessages); 
+    // When fresh DMs arrive from backend, check if we had a temporary DM selected
+    // If so, select the real DM that corresponds to the same user
+    if (directMessages.length > 0 && selectedDmId) {
+      const isTempId = String(selectedDmId).startsWith('dm-new-');
+      if (isTempId) {
+        const userIdFromTempId = Number(String(selectedDmId).replace('dm-new-', ''));
+        const realDm = directMessages.find(dm => dm.user?.id === userIdFromTempId);
+        if (realDm) {
+          setSelectedDmId(realDm.id);
+        }
+      } else {
+        // Also check if the selected DM still exists in the fresh data
+        const exists = directMessages.some(dm => dm.id === selectedDmId);
+        if (!exists) {
+          setSelectedDmId(directMessages[0]?.id || null);
+        }
+      }
+    }
+  }, [directMessages]);
   useEffect(() => { if (chatListRef.current) chatListRef.current.scrollTop = chatListRef.current.scrollHeight; }, [chatMessages.length]);
   useEffect(() => { if (feedRef.current) feedRef.current.scrollTop = feedRef.current.scrollHeight; }, [selectedKomunitas?.replies?.length]);
+  useEffect(() => { if (dmChatRef.current) dmChatRef.current.scrollTop = dmChatRef.current.scrollHeight; }, [selectedDm?.messages?.length]);
 
-  // Connect to SSE stream
+  // Keep selectedKomunitas synchronized with updated forums data from backend
   useEffect(() => {
-    const eventSource = new EventSource('/chat/stream');
-
-    eventSource.addEventListener('ping', (e) => {
-      try {
-        const data = JSON.parse(e.data);
-        setChatMessages((prev) => {
-          // Prevent duplicates
-          if (prev.some((m) => m.id === data.id)) return prev;
-          return [
-            ...prev,
-            {
-              id: data.id,
-              user: { name: 'Radar Skena', username: 'radarskena', profile_picture: null },
-              area: 'Live Lounge',
-              text: data.text,
-              time: data.time.substring(0, 5),
-              tags: ['live'],
-            },
-          ];
-        });
-      } catch (err) {
-        console.error('Failed parsing stream message:', err);
+    if (selectedKomunitas) {
+      const updated = forums.find((f) => f.id === selectedKomunitas.id);
+      if (updated) {
+        setSelectedKomunitas(updated);
       }
-    });
+    }
+  }, [forums]);
+
+  // Connect to SSE stream with error handling
+  useEffect(() => {
+    let eventSource;
+    let retryTimer;
+
+    const connect = () => {
+      eventSource = new EventSource('/chat/stream');
+
+      eventSource.addEventListener('ping', (e) => {
+        try {
+          const data = JSON.parse(e.data);
+          setChatMessages((prev) => {
+            if (prev.some((m) => m.id === data.id)) return prev;
+            return [
+              ...prev,
+              {
+                id: data.id,
+                user: { name: 'Radar Skena', username: 'radarskena', profile_picture: null },
+                area: 'Live Lounge',
+                text: data.text,
+                time: data.time.substring(0, 5),
+                tags: ['live'],
+              },
+            ];
+          });
+        } catch (err) {
+          console.error('Failed parsing stream message:', err);
+        }
+      });
+
+      eventSource.onerror = () => {
+        eventSource.close();
+        // Retry after 8 seconds silently
+        retryTimer = setTimeout(connect, 8000);
+      };
+    };
+
+    connect();
 
     return () => {
-      eventSource.close();
+      clearTimeout(retryTimer);
+      if (eventSource) eventSource.close();
     };
   }, []);
 
@@ -117,43 +175,42 @@ export default function Dashboard({
   const handleSendDm = (e) => {
     e.preventDefault();
     if (!dmInput.trim() || !selectedDm) return;
+    
     const sentText = dmInput;
     setDmInput('');
 
-    // Optimistically update the UI messages list
-    setLocalDirectMessages(prev => {
-        return prev.map(dm => {
-            if (dm.id === selectedDm.id) {
-                // If it's a dynamic temporary ID (like dm-new-xx), we keep it until page reload or replace it
-                const newMsg = {
-                    id: `dm-temp-${Date.now()}`,
-                    text: sentText,
-                    user: {
-                        id: currentUser.id,
-                        name: currentUser.name,
-                        username: currentUser.username,
-                        profile_picture: currentUser.profile_picture,
-                    }
-                };
-                return {
-                    ...dm,
-                    last_message: sentText,
-                    messages: [...(dm.messages || []), newMsg]
-                };
-            }
-            return dm;
-        });
-    });
+    // Optimistically update the UI
+    setLocalDirectMessages(prev =>
+      prev.map(dm => {
+        if (dm.id !== selectedDm.id) return dm;
+        const newMsg = {
+          id: `dm-temp-${Date.now()}`,
+          text: sentText,
+          user: {
+            id: currentUser.id,
+            name: currentUser.name,
+            username: currentUser.username,
+            profile_picture: currentUser.profile_picture,
+          },
+        };
+        return { 
+          ...dm, 
+          last_message: sentText, 
+          messages: [...(dm.messages || []), newMsg],
+          time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+        };
+      })
+    );
+
+    // Only send to backend if it's not a fallback user
+    if (!selectedDm.user?.id || selectedDm.user.id === 99999 || String(selectedDm.id).startsWith('fallback-')) {
+      return;
+    }
 
     router.post('/dm/send', {
       receiver_id: selectedDm.user.id,
       message: sentText,
-    }, {
-      preserveScroll: true,
-      onSuccess: (page) => {
-        // Inertia will reload the page props, syncing localDirectMessages back to server state
-      },
-    });
+    }, { preserveScroll: true });
   };
 
   const handleSendChat = (e) => {
@@ -173,6 +230,28 @@ export default function Dashboard({
     setChatInput('');
   };
 
+  const handleSaveProfile = (e) => {
+    e.preventDefault();
+    if (profileSaving) return;
+    setProfileSaving(true);
+    const formData = new FormData();
+    if (profileForm.name)      formData.append('name', profileForm.name);
+    if (profileForm.bio)       formData.append('bio', profileForm.bio);
+    if (profileForm.instagram) formData.append('instagram', profileForm.instagram);
+    if (profileForm.whatsapp)  formData.append('whatsapp', profileForm.whatsapp);
+    if (profileForm.discord)   formData.append('discord', profileForm.discord);
+    router.post('/profile/update', formData, {
+      forceFormData: true,
+      preserveScroll: true,
+      onSuccess: () => {
+        setProfileSaving(false);
+        setProfileSaved(true);
+        setTimeout(() => setProfileSaved(false), 2500);
+      },
+      onError: () => setProfileSaving(false),
+    });
+  };
+
   const handleCreateKomunitas = (e) => {
     e.preventDefault();
     router.post('/komunitas/store', komunitasForm, {
@@ -187,6 +266,11 @@ export default function Dashboard({
   const handleSendKomunitasPost = (e) => {
     e.preventDefault();
     if (!komunitasPostInput.trim() || !selectedKomunitas) return;
+    // Guard: fallback entries (id starts with 'fallback-' or 'circle-') have no real DB record
+    if (String(selectedKomunitas.id).startsWith('fallback-') || String(selectedKomunitas.id).startsWith('circle-')) {
+      setKomunitasPostInput('');
+      return;
+    }
     router.post(`/komunitas/${selectedKomunitas.id}/post`, { content: komunitasPostInput }, {
       preserveScroll: true,
       onSuccess: () => setKomunitasPostInput(''),
@@ -295,17 +379,33 @@ export default function Dashboard({
                   {isAdmin && <ShieldCheck size={20} className="text-[#C19A6B]" />}
                 </div>
                 <p className="font-mono text-xs uppercase tracking-widest text-[#FAF6F0]/60 mb-2">@{profileForm.username}</p>
-                <form className="flex flex-col gap-2 w-full mt-3">
+                <form onSubmit={handleSaveProfile} className="flex flex-col gap-2 w-full mt-3">
                   <input
                     type="text"
                     value={profileForm.bio}
                     onChange={(e) => setProfileForm(s => ({ ...s, bio: e.target.value }))}
+                    placeholder="Bio singkat kamu..."
                     className="w-full bg-transparent border-b-2 border-[#FAF6F0]/30 focus:border-[#C19A6B] outline-none font-mono text-sm py-1 text-[#FAF6F0]"
                   />
                   <div className="flex gap-2">
-                    <input type="text" value={profileForm.instagram} onChange={e => setProfileForm(s => ({...s, instagram: e.target.value}))} placeholder="IG" className="flex-1 bg-transparent border-b-2 border-[#FAF6F0]/30 focus:border-[#C19A6B] outline-none font-mono text-[10px] py-1 text-[#FAF6F0]" />
-                    <input type="text" value={profileForm.whatsapp} onChange={e => setProfileForm(s => ({...s, whatsapp: e.target.value}))} placeholder="WA" className="flex-1 bg-transparent border-b-2 border-[#FAF6F0]/30 focus:border-[#C19A6B] outline-none font-mono text-[10px] py-1 text-[#FAF6F0]" />
+                    <input type="text" value={profileForm.instagram} onChange={e => setProfileForm(s => ({...s, instagram: e.target.value}))} placeholder="IG handle" className="flex-1 bg-transparent border-b-2 border-[#FAF6F0]/30 focus:border-[#C19A6B] outline-none font-mono text-[10px] py-1 text-[#FAF6F0]" />
+                    <input type="text" value={profileForm.whatsapp} onChange={e => setProfileForm(s => ({...s, whatsapp: e.target.value}))} placeholder="WA nomor" className="flex-1 bg-transparent border-b-2 border-[#FAF6F0]/30 focus:border-[#C19A6B] outline-none font-mono text-[10px] py-1 text-[#FAF6F0]" />
                     <input type="text" value={profileForm.discord} onChange={e => setProfileForm(s => ({...s, discord: e.target.value}))} placeholder="Discord ID" className="flex-1 bg-transparent border-b-2 border-[#FAF6F0]/30 focus:border-[#C19A6B] outline-none font-mono text-[10px] py-1 text-[#FAF6F0]" />
+                  </div>
+                  <div className="flex items-center gap-3 mt-1">
+                    <button
+                      type="submit"
+                      disabled={profileSaving}
+                      className="inline-flex items-center gap-2 border-2 border-[#C19A6B] bg-[#C19A6B] text-[#1A0F0A] px-3 py-1.5 font-mono text-[10px] font-black uppercase tracking-wider hover:bg-[#FAF6F0] transition-colors disabled:opacity-50"
+                    >
+                      {profileSaving ? <span className="inline-block w-3 h-3 border-2 border-[#1A0F0A] border-t-transparent rounded-full animate-spin" /> : <Save size={12} />}
+                      {profileSaving ? 'Nyimpen...' : 'Simpan Profil'}
+                    </button>
+                    {profileSaved && (
+                      <span className="inline-flex items-center gap-1 font-mono text-[10px] text-[#C19A6B] uppercase font-black animate-in fade-in">
+                        <Check size={12} /> Tersimpan!
+                      </span>
+                    )}
                   </div>
                 </form>
               </div>
@@ -400,11 +500,10 @@ export default function Dashboard({
 
                 {/* Right Pane (Chat Window) */}
                 <div className="w-2/3 flex flex-col bg-[#FAF6F0]">
-                    <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+                    <div ref={dmChatRef} className="flex-1 overflow-y-auto p-4 custom-scrollbar bg-[#e5ddd5]">
                         {selectedDm ? selectedDm.messages?.map(m => (
                             <div key={m.id} className={`mb-3 flex ${m.user?.id === currentUser?.id ? 'justify-end' : 'justify-start'}`}>
-                                <div className={`border-2 border-[#1A0F0A] p-2 text-sm max-w-[80%] ${m.user?.id === currentUser?.id ? 'bg-[#C19A6B]' : 'bg-white'}`}>
-                                    <p className="font-mono text-[9px] font-bold uppercase text-[#1A0F0A]/50 mb-1">{m.user?.name}</p>
+                                <div className={`max-w-[80%] rounded-2xl px-4 py-2 ${m.user?.id === currentUser?.id ? 'bg-[#dcf8c6] rounded-tr-none' : 'bg-white rounded-tl-none'}`}>
                                     {m.text}
                                 </div>
                             </div>
@@ -572,14 +671,14 @@ export default function Dashboard({
               {/* Feed area */}
               <div className="w-full md:w-3/4 flex flex-col bg-[#FAF6F0]">
                 <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar" ref={feedRef}>
-                  {selectedKomunitas.replies?.length === 0 ? (
+                  {(selectedKomunitas.replies ?? []).length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full opacity-50">
                       <MessageSquareText size={48} className="mb-4" />
-                      <p className="font-mono font-bold uppercase text-sm">Belum ada obrolan.</p>
+                      <p className="font-mono font-bold uppercase text-sm">Belum ada obrolan. Jadi yang pertama ngobrol!</p>
                     </div>
                   ) : (
                     <div className="space-y-6">
-                      {[...selectedKomunitas.replies].reverse().map((reply) => (
+                      {[...(selectedKomunitas.replies ?? [])].reverse().map((reply) => (
                         <div key={reply.id} className="flex gap-4">
                           <img src={reply.user?.avatar_url} alt="Avatar" className="w-10 h-10 border-2 border-[#1A0F0A] shrink-0 cursor-pointer" onClick={() => setPublicProfileUser(reply.user)} />
                           <div className="flex-1">

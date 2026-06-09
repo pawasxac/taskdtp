@@ -4,9 +4,15 @@ USERS [icon: user] {
   id bigint pk
   name string
   email string
+  profile_picture string
+  bio text
+  phone_number string
   username string
   password string
   role string
+  instagram string
+  whatsapp string
+  discord string
   email_verified_at timestamp
   deleted_at timestamp
   created_at timestamp
@@ -113,6 +119,16 @@ GATHERING_REQUESTS {
   updated_at timestamp
 }
 
+DIRECT_MESSAGES [icon: message-square] {
+  id bigint pk
+  sender_id bigint
+  receiver_id bigint
+  message text
+  read_at timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
 // Relationships
 KECAMATANS.id < COFFEE_SHOPS.kecamatan_id
 USERS.id < COFFEE_SHOP_REVIEWS.user_id
@@ -130,3 +146,6 @@ USERS.id < COMMUNITY_COMMENTS.user_id
 KOMUNITAS.id < GATHERING_REQUESTS.komunitas_id
 COFFEE_SHOPS.id < GATHERING_REQUESTS.coffee_shop_id
 USERS.id < GATHERING_REQUESTS.user_id
+
+USERS.id < DIRECT_MESSAGES.sender_id
+USERS.id < DIRECT_MESSAGES.receiver_id

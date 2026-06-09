@@ -14,11 +14,10 @@ export default function Login() {
     if (flash?.success) {
       setToast({ type: 'success', message: flash.success });
     }
-
     if (flash?.error) {
       setToast({ type: 'error', message: flash.error });
     }
-  }, [flash]);
+  }, [flash?.success, flash?.error]);
 
   useEffect(() => {
     if (!toast) {
@@ -48,11 +47,11 @@ export default function Login() {
             <div className="flex items-start gap-3">
               <div className="relative mt-0.5">
                 <span className="absolute inset-0 animate-ping rounded-full bg-[#C19A6B]/50" />
-                <CheckCircle2 size={18} className="relative z-10 text-[#1A0F0A]" />
+                <CheckCircle2 size={18} className={`relative z-10 ${toast.type === 'error' ? 'text-red-500' : 'text-[#1A0F0A]'}`} />
               </div>
               <div>
                 <p className="font-mono text-[10px] font-black uppercase tracking-[0.22em] text-[#C19A6B]">
-                  Notif Akses
+                  {toast.type === 'error' ? 'Error' : 'Notif Akses'}
                 </p>
                 <p className="mt-1 text-sm leading-6">{toast.message}</p>
               </div>
@@ -85,23 +84,6 @@ export default function Login() {
             </p>
           </div>
 
-          <div className="mt-10 grid gap-4">
-            <div className="border-2 border-white bg-white p-5 text-[#1A0F0A]">
-              <p className="font-mono text-[10px] font-black uppercase tracking-[0.22em] text-[#C19A6B]">
-                Akun tester admin
-              </p>
-              <p className="mt-3 text-base leading-7">Email: admin@kopi.com</p>
-              <p className="text-base leading-7">Password: password</p>
-            </div>
-
-            <div className="border-2 border-white bg-transparent p-5">
-              <p className="font-mono text-[10px] font-black uppercase tracking-[0.22em] text-[#C19A6B]">
-                Akun tester user
-              </p>
-              <p className="mt-3 text-base leading-7">Email: user@kopi.com</p>
-              <p className="text-base leading-7">Password: password</p>
-            </div>
-          </div>
         </section>
 
         <section className="flex items-center px-6 py-12">

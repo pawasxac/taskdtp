@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, AtSign, LockKeyhole, Mail, Sparkles, UserRound } from 'lucide-react';
+import { ArrowLeft, AtSign, CheckCircle2, LockKeyhole, Mail, Sparkles, UserRound } from 'lucide-react';
 
 export default function Register() {
   const { flash } = usePage().props;
@@ -11,10 +11,21 @@ export default function Register() {
     password: '',
     password_confirmation: '',
   });
+  const [toast, setToast] = useState(null);
+
+  useEffect(() => {
+    if (flash?.success) setToast({ type: 'success', message: flash.success });
+    if (flash?.error)   setToast({ type: 'error',   message: flash.error });
+  }, [flash?.success, flash?.error]);
+
+  useEffect(() => {
+    if (!toast) return undefined;
+    const timer = window.setTimeout(() => setToast(null), 3200);
+    return () => window.clearTimeout(timer);
+  }, [toast]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
-
     post('/register', {
       onFinish: () => reset('password', 'password_confirmation'),
     });
@@ -23,6 +34,25 @@ export default function Register() {
   return (
     <div className="min-h-screen bg-[#FAF6F0] text-[#1A0F0A] selection:bg-[#C19A6B] selection:text-[#1A0F0A]">
       <Head title="Daftar Santai" />
+
+      {toast && (
+        <div className="fixed right-6 top-6 z-50 w-full max-w-sm">
+          <div className="border-2 border-[#1A0F0A] bg-white p-4 shadow-[6px_6px_0px_0px_#1A0F0A] transition-all duration-300 ease-out">
+            <div className="flex items-start gap-3">
+              <div className="relative mt-0.5">
+                <span className="absolute inset-0 animate-ping rounded-full bg-[#C19A6B]/50" />
+                <CheckCircle2 size={18} className={`relative z-10 ${toast.type === 'error' ? 'text-red-500' : 'text-[#1A0F0A]'}`} />
+              </div>
+              <div>
+                <p className="font-mono text-[10px] font-black uppercase tracking-[0.22em] text-[#C19A6B]">
+                  {toast.type === 'error' ? 'Error' : 'Sukses'}
+                </p>
+                <p className="mt-1 text-sm leading-6">{toast.message}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="mx-auto grid min-h-screen max-w-7xl lg:grid-cols-[0.92fr_1.08fr]">
         <section className="border-b-2 border-[#1A0F0A] bg-[#1A0F0A] px-6 py-12 text-white lg:border-b-0 lg:border-r-2">

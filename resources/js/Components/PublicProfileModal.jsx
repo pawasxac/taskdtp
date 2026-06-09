@@ -1,8 +1,9 @@
-import React from 'react';
-import { X, MessageCircle, Instagram, Phone, Gamepad2, MapPin } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, MessageCircle, Instagram, Phone, Gamepad2, Copy, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function PublicProfileModal({ user, isOpen, onClose, onDmClick }) {
+  const [discordCopied, setDiscordCopied] = useState(false);
   if (!isOpen || !user) return null;
 
   const getAvatarUrl = (user) => {
@@ -46,8 +47,8 @@ export default function PublicProfileModal({ user, isOpen, onClose, onDmClick })
           {/* Profile Info */}
           <div className="pt-16 pb-6 px-6">
             <div className="mb-6">
-              <h2 className="font-clash text-2xl font-black uppercase leading-tight">{user.name}</h2>
-              <p className="font-mono text-sm text-[#1A0F0A]/60">@{user.username || user.name.toLowerCase().replace(/\s+/g, '')}</p>
+              <h2 className="font-clash text-2xl font-black uppercase leading-tight">{user.name || user.username}</h2>
+              <p className="font-mono text-sm text-[#1A0F0A]/60">@{user.username || (user.name || 'user').toLowerCase().replace(/\s+/g, '')}</p>
             </div>
 
             {user.bio && (
@@ -83,8 +84,27 @@ export default function PublicProfileModal({ user, isOpen, onClose, onDmClick })
                 )}
                 
                 {user.discord ? (
-                  <button className={btnSocial} onClick={() => alert(`Discord ID: ${user.discord}`)} title="Discord">
-                    <Gamepad2 size={20} />
+                  <button
+                    className={discordCopied ? `${btnSocial} bg-green-50 text-green-700 border-green-400` : btnSocial}
+                    onClick={() => {
+                      navigator.clipboard.writeText(user.discord).then(() => {
+                        setDiscordCopied(true);
+                        setTimeout(() => setDiscordCopied(false), 2000);
+                      }).catch(() => {
+                        // fallback for browsers without clipboard API
+                        const ta = document.createElement('textarea');
+                        ta.value = user.discord;
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                        setDiscordCopied(true);
+                        setTimeout(() => setDiscordCopied(false), 2000);
+                      });
+                    }}
+                    title={discordCopied ? 'Discord ID tersalin!' : `Salin Discord: ${user.discord}`}
+                  >
+                    {discordCopied ? <Check size={20} className="text-green-600" /> : <Gamepad2 size={20} />}
                   </button>
                 ) : (
                   <div className={`${btnSocial} opacity-50 cursor-not-allowed`} title="Belum link Discord"><Gamepad2 size={20} /></div>

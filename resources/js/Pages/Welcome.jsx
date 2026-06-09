@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
-  ArrowUpRight, CheckCircle2, ChevronDown, Coffee, Lock, MapPin,
-  MessageSquareText, Search, Sparkles, Star, Users, X, Map
+  ArrowUpRight, ChevronDown, Coffee, Lock, MapPin,
+  Search, Sparkles, Star, X, Map
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Navbar from '../Components/Navbar';
 import CustomCursor from '../Components/CustomCursor';
 
@@ -45,20 +45,20 @@ const useReveal = () => {
 
 export default function Welcome({ coffeeShops = {}, kecamatans = [], communities = [], filters = {} }) {
   useReveal();
-  const { props } = usePage();
-  const user = props?.auth?.user || null;
+  const { props: pageProps } = usePage();
+  const user = pageProps?.auth?.user || null;
 
-  // Pagination state merging
+  // We need local state only for combining load more, main data from props
   const [localCafes, setLocalCafes] = useState(coffeeShops?.data || []);
-  const [nextPageUrl, setNextPageUrl] = useState(coffeeShops?.next_page_url || null);
+  const nextPageUrl = coffeeShops?.next_page_url || null;
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  // Sync state if props change (e.g. from filtering)
+  // Sync localCafes when coffeeShops props change (for filtering)
   useEffect(() => {
     setLocalCafes(coffeeShops?.data || []);
-    setNextPageUrl(coffeeShops?.next_page_url || null);
   }, [coffeeShops]);
 
+  // Initialize filter states from props
   const [keyword, setKeyword] = useState(filters?.search || '');
   const [activeKecamatan, setActiveKecamatan] = useState(filters?.kecamatan || '');
   const [activePrice, setActivePrice] = useState(filters?.price || '');
@@ -66,23 +66,40 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
   const [activeCafe, setActiveCafe] = useState(null);
   const [guestModal, setGuestModal] = useState(false);
 
-  const isFirstMount = useRef(true);
-
-  // Debounced Filter Call
-  useEffect(() => {
-    if (isFirstMount.current) {
-      isFirstMount.current = false;
-      return;
+  // Only show intro loading screen on true first page load, not on Inertia partial visits
+  const [showIntro, setShowIntro] = useState(() => {
+    try {
+      if (sessionStorage.getItem('ngopi_intro_shown')) return false;
+      sessionStorage.setItem('ngopi_intro_shown', '1');
+      return true;
+    } catch (_) {
+      return false;
     }
-    const timer = setTimeout(() => {
-      router.get(
-        '/',
-        { search: keyword, kecamatan: activeKecamatan, price: activePrice },
-        { preserveState: true, preserveScroll: true, replace: true, only: ['coffeeShops'] }
-      );
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [keyword, activeKecamatan, activePrice]);
+  });
+
+  // Direct filter update - FORCE RELOAD to ensure data updates!
+  const updateFilters = (type, value) => {
+    // Update local state immediately
+    if (type === 'search') setKeyword(value);
+    if (type === 'kecamatan') setActiveKecamatan(value);
+    if (type === 'price') setActivePrice(value);
+
+    // Prepare the final values
+    const finalKeyword = type === 'search' ? value : keyword;
+    const finalKecamatan = type === 'kecamatan' ? value : activeKecamatan;
+    const finalPrice = type === 'price' ? value : activePrice;
+
+    // Create the URL with query params
+    const params = new URLSearchParams();
+    if (finalKeyword) params.set('search', finalKeyword);
+    if (finalKecamatan) params.set('kecamatan', finalKecamatan);
+    if (finalPrice) params.set('price', finalPrice);
+    
+    const newUrl = params.toString() ? `/?${params.toString()}` : '/';
+    
+    // FORCE FULL PAGE RELOAD - no issues!
+    window.location.href = newUrl;
+  };
 
   const handleLoadMore = () => {
     if (!nextPageUrl || isLoadingMore) return;
@@ -101,7 +118,6 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
             const uniqueNew = newCafes.filter(c => !existingIds.has(c.id));
             return [...prev, ...uniqueNew];
           });
-          setNextPageUrl(page?.props?.coffeeShops?.next_page_url || null);
           setIsLoadingMore(false);
         },
         onError: () => setIsLoadingMore(false)
@@ -134,17 +150,11 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
   }, []);
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.div 
-        key="page"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="flex flex-col min-h-screen bg-[#FAF6F0] text-[#1A0F0A] selection:bg-[#C19A6B] selection:text-[#1A0F0A]"
-      >
-        <Head title="Superior Premium Ngopi" />
-        
-        {/* Intro Loading Screen */}
+    <div className="flex flex-col min-h-screen bg-[#FAF6F0] text-[#1A0F0A] selection:bg-[#C19A6B] selection:text-[#1A0F0A]">
+      <Head title="Superior Premium Ngopi" />
+
+      {/* Intro Loading Screen — only on true first visit, not filter changes */}
+      {showIntro && (
         <motion.div
           initial={{ y: 0 }}
           animate={{ y: '-100%' }}
@@ -162,6 +172,7 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
             <p className="font-mono text-xs uppercase tracking-[0.3em] text-[#C19A6B]">Loading Vibes...</p>
           </motion.div>
         </motion.div>
+      )}
 
         <Navbar current="home" />
         <CustomCursor />
@@ -199,7 +210,7 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
 
         {/* Filter Section */}
         <section id="coffee-grid" className="px-4 md:px-8 max-w-7xl mx-auto mb-16">
-          <div className="reveal-up border-2 border-[#1A0F0A] bg-white p-6 md:p-8 flex flex-col md:flex-row gap-6 items-end">
+          <div className="border-2 border-[#1A0F0A] bg-white p-6 md:p-8 flex flex-col md:flex-row gap-6 items-end">
             <div className="flex-1 w-full">
               <label className="block font-mono text-[10px] font-black uppercase tracking-[0.16em] mb-2 text-[#C19A6B]">Keyword / Nama Kedai</label>
               <div className="relative">
@@ -207,7 +218,7 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
                 <input
                   type="text"
                   value={keyword}
-                  onChange={(e) => setKeyword(e.target.value)}
+                  onChange={(e) => updateFilters('search', e.target.value)}
                   placeholder="Ketik nama spot yang lo incer..."
                   className="w-full border-2 border-[#1A0F0A] bg-[#FAF6F0] pl-12 pr-4 py-3 text-sm outline-none focus:border-[#C19A6B] transition-colors"
                 />
@@ -219,7 +230,7 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
               <div className="relative">
                 <select
                   value={activeKecamatan}
-                  onChange={(e) => setActiveKecamatan(e.target.value)}
+                  onChange={(e) => updateFilters('kecamatan', e.target.value)}
                   className="w-full appearance-none border-2 border-[#1A0F0A] bg-[#FAF6F0] px-4 py-3 pr-10 text-sm outline-none focus:border-[#C19A6B] transition-colors"
                 >
                   <option value="">Semua Kecamatan</option>
@@ -236,7 +247,7 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
               <div className="relative">
                 <select
                   value={activePrice}
-                  onChange={(e) => setActivePrice(e.target.value)}
+                  onChange={(e) => updateFilters('price', e.target.value)}
                   className="w-full appearance-none border-2 border-[#1A0F0A] bg-[#FAF6F0] px-4 py-3 pr-10 text-sm outline-none focus:border-[#C19A6B] transition-colors"
                 >
                   <option value="">Bebas, Sultan</option>
@@ -251,15 +262,15 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
         </section>
 
         {/* Cafe Grid */}
-        <section className="px-4 md:px-8 max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <section className="px-4 md:px-8 max-w-7xl mx-auto" style={{ opacity: 1 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" style={{ opacity: 1 }}>
             {localCafes.map((cafe, idx) => (
               <button
                 type="button"
                 key={cafe.id}
                 onClick={() => setActiveCafe(cafe)}
-                className={`reveal-up group text-left border-2 border-[#1A0F0A] bg-white transition-all duration-500 ease-out hover:-translate-y-2 hover:shadow-[8px_8px_0px_0px_#1A0F0A] flex flex-col`}
-                style={{ transitionDelay: `${(idx % 4) * 50}ms` }}
+                style={{ opacity: 1 }}
+                className="group text-left border-2 border-[#1A0F0A] bg-white transition-all duration-500 ease-out hover:-translate-y-2 hover:shadow-[8px_8px_0px_0px_#1A0F0A] flex flex-col"
               >
                 <div className="h-48 overflow-hidden border-b-2 border-[#1A0F0A] relative">
                   {cafePhoto(cafe) ? (
@@ -292,7 +303,7 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
           </div>
 
           {localCafes.length === 0 && (
-            <div className="reveal-up border-2 border-[#1A0F0A] bg-white p-12 text-center">
+            <div className="border-2 border-[#1A0F0A] bg-white p-12 text-center">
               <Coffee size={48} className="mx-auto mb-4 opacity-50" />
               <h3 className="font-clash text-2xl font-black uppercase mb-2">Kedai Nggak Ketemu</h3>
               <p className="text-[#1A0F0A]/70">Coba ganti filter lu. Mungkin standarnya ketinggian buat area ini.</p>
@@ -300,7 +311,7 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
           )}
 
           {nextPageUrl && (
-            <div className="mt-12 text-center reveal-up">
+            <div className="mt-12 text-center">
               <button
                 onClick={handleLoadMore}
                 disabled={isLoadingMore}
@@ -477,7 +488,6 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
           </div>
         </div>
       )}
-      </motion.div>
-    </AnimatePresence>
+    </div>
   );
 }

@@ -93,7 +93,7 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
         }
 
         if ($price = $request->input('price')) {
-            $query->where('harga_max', '<=', $price);
+            $query->where('harga_min', '<=', $price);
         }
 
         if ($rating = $request->input('rating')) {
@@ -110,23 +110,28 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
             return $shop;
         });
 
+        // Cache static data that doesn't change often
+        $kecamatans = cache()->remember('kecamatans', 3600, fn () => Kecamatan::query()
+            ->orderBy('name')
+            ->get(['id', 'name']));
+            
+        $communities = cache()->remember('communities', 1800, fn () => Komunitas::with([
+            'posts' => fn ($q) => $q
+                ->latest()
+                ->with([
+                    'user:id,name,username,profile_picture',
+                    'comments.user:id,name,username,profile_picture',
+                ]),
+            'members.user:id,name,username,profile_picture',
+        ])
+            ->orderBy('nama_komunitas')
+            ->get());
+
         return inertia('Welcome', [
             'coffeeShops' => $paginated,
             'filters' => $request->only(['search', 'kecamatan', 'price', 'rating']),
-            'kecamatans' => Kecamatan::query()
-                ->orderBy('name')
-                ->get(['id', 'name']),
-            'communities' => Komunitas::with([
-                'posts' => fn ($q) => $q
-                    ->latest()
-                    ->with([
-                        'user:id,name,username,profile_picture',
-                        'comments.user:id,name,username,profile_picture',
-                    ]),
-                'members.user:id,name,username,profile_picture',
-            ])
-                ->orderBy('nama_komunitas')
-                ->get(),
+            'kecamatans' => $kecamatans,
+            'communities' => $communities,
         ]);
     })->name('home');
 
@@ -181,21 +186,21 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
                 });
 
             $users = User::query()
-                ->whereNull('deleted_at')
-                ->where('id', '!=', $authUser->id)
-                ->get(['id', 'name', 'username', 'email', 'profile_picture']);
+            ->whereNull('deleted_at')
+            ->where('id', '!=', $authUser->id)
+            ->get(['id', 'name', 'username', 'email', 'profile_picture']);
 
-            $communities = Komunitas::with([
-                'members.user:id,name,username,profile_picture',
-                'posts' => fn ($query) => $query
-                    ->latest()
-                    ->with([
-                        'user:id,name,username,profile_picture',
-                        'comments.user:id,name,username,profile_picture',
-                    ]),
-            ])
-                ->orderBy('nama_komunitas')
-                ->get();
+        $communities = cache()->remember('communities', 1800, fn () => Komunitas::with([
+            'members.user:id,name,username,profile_picture',
+            'posts' => fn ($q) => $q
+                ->latest()
+                ->with([
+                    'user:id,name,username,profile_picture',
+                    'comments.user:id,name,username,profile_picture',
+                ]),
+        ])
+            ->orderBy('nama_komunitas')
+            ->get());
 
             $forums = $communities->map(function ($community) use ($avatarUrl, $fallbackCover) {
                 $creator = optional($community->posts->first())->user;
@@ -213,7 +218,7 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
                     'title'           => $community->nama_komunitas,
                     'description'     => $community->deskripsi ?: 'Tempat curhat soal seduhan, colokan, dan playlist sore.',
                     'member_count'    => $community->members->count() ?: ($community->jumlah_anggota ?? 0),
-                    'reply_count'     => $community->posts->sum(fn ($post) => $post->comments->count()),
+                    'reply_count'     => $community->posts->count(),
                     'cover_image'     => $community->photo_url ?: $fallbackCover($community->nama_komunitas),
                     'domisili'        => $community->domisili,
                     'creator'         => [
@@ -228,18 +233,17 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
                         'ngopi',
                     ])->filter()->unique()->values(),
                     'replies' => $community->posts
-                        ->flatMap(fn ($post) => $post->comments)
                         ->sortByDesc('created_at')
-                        ->take(3)
+                        ->take(50)
                         ->values()
-                        ->map(fn ($comment) => [
-                            'id'      => $comment->id,
-                            'comment' => $comment->comment,
+                        ->map(fn ($post) => [
+                            'id'      => $post->id,
+                            'comment' => $post->content,
                             'user'    => [
-                                'name'            => $comment->user?->name ?: 'Anak Nongki',
-                                'username'        => $comment->user?->username ?: 'anaknongki',
-                                'profile_picture' => $comment->user?->profile_picture,
-                                'avatar_url'      => $avatarUrl($comment->user, $comment->user?->name ?: 'Anak Nongki'),
+                                'name'            => $post->user?->name ?: 'Anak Nongki',
+                                'username'        => $post->user?->username ?: 'anaknongki',
+                                'profile_picture' => $post->user?->profile_picture,
+                                'avatar_url'      => $avatarUrl($post->user, $post->user?->name ?: 'Anak Nongki'),
                             ],
                         ]),
                 ];
@@ -521,8 +525,11 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
         Route::post('/profile/update', function (Request $request) {
             $user = $request->user();
             $data = $request->validate([
-                'name'  => ['nullable', 'string', 'max:120'],
-                'bio'   => ['nullable', 'string', 'max:500'],
+                'name'            => ['nullable', 'string', 'max:120'],
+                'bio'             => ['nullable', 'string', 'max:500'],
+                'instagram'       => ['nullable', 'string', 'max:60'],
+                'whatsapp'        => ['nullable', 'string', 'max:20'],
+                'discord'         => ['nullable', 'string', 'max:60'],
                 'profile_picture' => ['nullable', 'image', 'max:2048'],
             ]);
 
@@ -533,8 +540,11 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
                 $user->profile_picture = $filename;
             }
 
-            if (isset($data['name'])) $user->name = $data['name'];
-            if (isset($data['bio']))  $user->bio  = $data['bio'];
+            if (isset($data['name']))      $user->name      = $data['name'];
+            if (isset($data['bio']))       $user->bio       = $data['bio'];
+            if (array_key_exists('instagram', $data)) $user->instagram = $data['instagram'];
+            if (array_key_exists('whatsapp',  $data)) $user->whatsapp  = $data['whatsapp'];
+            if (array_key_exists('discord',   $data)) $user->discord   = $data['discord'];
             $user->save();
 
             return back()->with('success', 'Profil berhasil diperbarui. Anak skena makin pede.');
@@ -551,36 +561,56 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
         Route::post('/komunitas/store', function (Request $request) {
             $validated = $request->validate([
                 'nama_komunitas' => 'required|string|max:255',
-                'deskripsi' => 'nullable|string',
-                'domisili' => 'nullable|string|max:255',
+                'deskripsi'      => 'nullable|string',
+                'domisili'       => 'nullable|string|max:255',
             ]);
 
             $komunitas = Komunitas::create([
                 'nama_komunitas' => $validated['nama_komunitas'],
-                'deskripsi' => $validated['deskripsi'],
-                'domisili' => $validated['domisili'],
-                'ketua' => auth()->user()->name,
-                'status' => 'aktif',
+                'deskripsi'      => $validated['deskripsi'] ?: '-',
+                'domisili'       => $validated['domisili'] ?: '-',
+                'ketua'          => auth()->user()->name,
+                'tanggal_dibentuk' => now(),
+                'status'         => 'aktif',
             ]);
 
-            $komunitas->members()->create([
-                'user_id' => auth()->id(),
-                'role' => 'leader'
-            ]);
+            // Auto-join creator as leader member
+            try {
+                $komunitas->members()->create([
+                    'user_id' => auth()->id(),
+                    'role'    => 'leader',
+                ]);
+            } catch (\Throwable $e) {
+                // members() pivot may not exist on all installs — ignore gracefully
+                \Log::warning('komunitas.members create failed: ' . $e->getMessage());
+            }
 
-            return back()->with('success', 'Komunitas berhasil dibuat!');
+            return back()->with('success', 'Komunitas "' . $validated['nama_komunitas'] . '" berhasil dibuat!');
         })->name('komunitas.store');
 
         Route::post('/komunitas/{id}/post', function (Request $request, $id) {
-            $validated = $request->validate(['content' => 'required|string']);
-            
-            $komunitas = Komunitas::findOrFail($id);
-            $komunitas->posts()->create([
-                'user_id' => auth()->id(),
-                'content' => $validated['content'],
-            ]);
+            $validated = $request->validate(['content' => 'required|string|max:2000']);
 
-            return back();
+            $komunitas = Komunitas::findOrFail($id);
+
+            // Try posts() relation first, fallback to direct table insert
+            try {
+                $komunitas->posts()->create([
+                    'user_id' => auth()->id(),
+                    'content' => $validated['content'],
+                ]);
+            } catch (\Throwable $e) {
+                // If posts() relation doesn't exist, use direct DB
+                \DB::table('community_posts')->insert([
+                    'community_id' => $komunitas->id,
+                    'user_id'      => auth()->id(),
+                    'content'      => $validated['content'],
+                    'created_at'   => now(),
+                    'updated_at'   => now(),
+                ]);
+            }
+
+            return back()->with('success', 'Pesan terkirim ke komunitas!');
         })->name('komunitas.post');
 
         Route::post('/dm/send', function (Request $request) {
