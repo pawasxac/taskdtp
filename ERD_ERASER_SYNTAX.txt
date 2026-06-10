@@ -1,3 +1,4 @@
+```eraser
 // Eraser.io - Native ERD Diagram-as-Code Syntax
 
 USERS [icon: user] {
@@ -13,6 +14,7 @@ USERS [icon: user] {
   instagram string
   whatsapp string
   discord string
+  kecamatan_id bigint fk
   email_verified_at timestamp
   deleted_at timestamp
   created_at timestamp
@@ -31,7 +33,7 @@ COFFEE_SHOPS [icon: coffee] {
   nama string
   daerah string
   kecamatan string
-  kecamatan_id bigint
+  kecamatan_id bigint fk
   alamat text
   jam_buka string
   jam_tutup string
@@ -51,8 +53,8 @@ COFFEE_SHOPS [icon: coffee] {
 
 COFFEE_SHOP_REVIEWS {
   id bigint pk
-  coffee_shop_id bigint
-  user_id bigint
+  coffee_shop_id bigint fk
+  user_id bigint fk
   rating integer
   ulasan text
   created_at timestamp
@@ -77,8 +79,8 @@ KOMUNITAS [icon: users] {
 
 COMMUNITY_MEMBERS {
   id bigint pk
-  komunitas_id bigint
-  user_id bigint
+  komunitas_id bigint fk
+  user_id bigint fk
   role string
   joined_at timestamp
   created_at timestamp
@@ -87,50 +89,36 @@ COMMUNITY_MEMBERS {
 
 COMMUNITY_POSTS {
   id bigint pk
-  komunitas_id bigint
-  user_id bigint
-  title string
+  community_id bigint fk
+  user_id bigint fk
   content text
-  photo_url string
-  created_at timestamp
-  updated_at timestamp
-}
-
-COMMUNITY_COMMENTS {
-  id bigint pk
-  post_id bigint
-  user_id bigint
-  comment text
-  created_at timestamp
-  updated_at timestamp
-}
-
-GATHERING_REQUESTS {
-  id bigint pk
-  komunitas_id bigint
-  coffee_shop_id bigint
-  user_id bigint
-  nama_kegiatan string
-  deskripsi text
-  tanggal_kegiatan date
-  waktu_kegiatan time
-  status string
+  reply_to_id bigint fk
   created_at timestamp
   updated_at timestamp
 }
 
 DIRECT_MESSAGES [icon: message-square] {
   id bigint pk
-  sender_id bigint
-  receiver_id bigint
+  sender_id bigint fk
+  receiver_id bigint fk
   message text
-  read_at timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
+GLOBAL_CHATS [icon: message-circle] {
+  id bigint pk
+  user_id bigint fk
+  message text
+  reply_to_id bigint fk
   created_at timestamp
   updated_at timestamp
 }
 
 // Relationships
 KECAMATANS.id < COFFEE_SHOPS.kecamatan_id
+KECAMATANS.id < USERS.kecamatan_id
+
 USERS.id < COFFEE_SHOP_REVIEWS.user_id
 COFFEE_SHOPS.id < COFFEE_SHOP_REVIEWS.coffee_shop_id
 
@@ -138,14 +126,11 @@ USERS.id < COMMUNITY_MEMBERS.user_id
 KOMUNITAS.id < COMMUNITY_MEMBERS.komunitas_id
 
 USERS.id < COMMUNITY_POSTS.user_id
-KOMUNITAS.id < COMMUNITY_POSTS.komunitas_id
+KOMUNITAS.id < COMMUNITY_POSTS.community_id
+COMMUNITY_POSTS.id < COMMUNITY_POSTS.reply_to_id
 
-COMMUNITY_POSTS.id < COMMUNITY_COMMENTS.post_id
-USERS.id < COMMUNITY_COMMENTS.user_id
-
-KOMUNITAS.id < GATHERING_REQUESTS.komunitas_id
-COFFEE_SHOPS.id < GATHERING_REQUESTS.coffee_shop_id
-USERS.id < GATHERING_REQUESTS.user_id
+USERS.id < GLOBAL_CHATS.user_id
+GLOBAL_CHATS.id < GLOBAL_CHATS.reply_to_id
 
 USERS.id < DIRECT_MESSAGES.sender_id
 USERS.id < DIRECT_MESSAGES.receiver_id

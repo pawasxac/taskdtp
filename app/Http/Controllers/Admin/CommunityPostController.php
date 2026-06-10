@@ -15,7 +15,7 @@ class CommunityPostController extends Controller
      */
     public function index()
     {
-        $data = CommunityPost::with(['komunitas', 'user', 'comments'])->latest()->get();
+        $data = CommunityPost::with(['komunitas', 'user', 'replyTo'])->latest()->get();
         return view('admin.community-posts.index', compact('data'));
     }
 

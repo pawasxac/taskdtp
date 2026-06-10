@@ -89,6 +89,34 @@ export default function Navbar({ current = 'home', notifications = [] }) {
     return () => window.clearInterval(timer);
   }, []);
 
+  const [localNotifications, setLocalNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+
+  useEffect(() => {
+    try {
+      const dismissed = JSON.parse(localStorage.getItem('dismissed_notifications') || '[]');
+      const filtered = (notifications || []).filter(n => !dismissed.includes(n.id));
+      setLocalNotifications(filtered);
+      setUnreadCount(filtered.length);
+    } catch (_) {
+      setLocalNotifications(notifications || []);
+      setUnreadCount((notifications || []).length);
+    }
+  }, [notifications]);
+
+  const handleDeleteNotif = (notifId) => {
+    try {
+      const dismissed = JSON.parse(localStorage.getItem('dismissed_notifications') || '[]');
+      if (!dismissed.includes(notifId)) {
+        dismissed.push(notifId);
+        localStorage.setItem('dismissed_notifications', JSON.stringify(dismissed));
+      }
+      setLocalNotifications(prev => prev.filter(n => n.id !== notifId));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (_) {}
+  };
+
   const prevNotifs = useRef(notifications);
 
   useEffect(() => {
@@ -196,17 +224,20 @@ export default function Navbar({ current = 'home', notifications = [] }) {
             </Link>
           )}
 
-          {user && notifications && (
+          {user && localNotifications && (
             <div className="relative" ref={notifRef}>
               <button
                 type="button"
-                onClick={() => setNotifOpen(!notifOpen)}
+                onClick={() => {
+                  setNotifOpen(!notifOpen);
+                  setUnreadCount(0);
+                }}
                 className="inline-flex h-9 w-9 items-center justify-center border-2 border-[#1A0F0A] bg-white shadow-[3px_3px_0px_0px_#1A0F0A] transition-all duration-150 hover:-translate-y-0.5 hover:translate-x-0.5 hover:shadow-[1px_1px_0px_0px_#1A0F0A]"
               >
                 <Bell size={16} />
-                {notifications.length > 0 && (
+                {unreadCount > 0 && (
                   <span className="absolute -right-2 -top-2 inline-flex h-5 w-5 items-center justify-center border-2 border-[#1A0F0A] bg-[#C19A6B] font-mono text-[9px] font-black">
-                    {notifications.length}
+                    {unreadCount}
                   </span>
                 )}
               </button>
@@ -217,16 +248,36 @@ export default function Navbar({ current = 'home', notifications = [] }) {
                     <button type="button" onClick={() => setNotifOpen(false)} className="magnetic hover:text-[#C19A6B]"><X size={16} /></button>
                   </div>
                   <div className="grid gap-2 max-h-64 overflow-y-auto custom-scrollbar pr-1">
-                    {notifications.length === 0 ? (
+                    {localNotifications.length === 0 ? (
                       <p className="font-mono text-[10px] text-center p-2">Belum ada notifikasi.</p>
-                    ) : notifications.map(n => (
-                      <button type="button" key={n.id} onClick={() => { setNotifOpen(false); if (n?.route) router.visit(n.route); }} className="magnetic text-left border-2 border-[#1A0F0A] bg-[#FAF6F0] p-2 hover:bg-white flex gap-2">
-                        <div className="shrink-0 mt-1"><Bell size={14} className="text-[#C19A6B]" /></div>
-                        <div>
-                          <p className="font-clash text-sm font-black uppercase">{n.title}</p>
-                          <p className="text-xs text-[#1A0F0A]/70 line-clamp-2 mt-1">{n.body}</p>
-                        </div>
-                      </button>
+                    ) : localNotifications.map(n => (
+                      <div key={n.id} className="group relative border-2 border-[#1A0F0A] bg-[#FAF6F0] p-2 hover:bg-white flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setNotifOpen(false);
+                            if (n?.route) router.visit(n.route);
+                          }}
+                          className="magnetic text-left flex-1 flex gap-2"
+                        >
+                          <div className="shrink-0 mt-1"><Bell size={14} className="text-[#C19A6B]" /></div>
+                          <div>
+                            <p className="font-clash text-sm font-black uppercase">{n.title}</p>
+                            <p className="text-xs text-[#1A0F0A]/70 line-clamp-2 mt-1">{n.body}</p>
+                          </div>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setConfirmDeleteId(n.id);
+                          }}
+                          className="shrink-0 h-fit self-center border-2 border-[#1A0F0A] p-1 bg-white hover:bg-red-500 hover:text-white transition-colors shadow-[2px_2px_0px_0px_#1A0F0A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#1A0F0A]"
+                          title="Hapus notifikasi"
+                        >
+                          <X size={10} />
+                        </button>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -314,6 +365,33 @@ export default function Navbar({ current = 'home', notifications = [] }) {
           )}
         </div>
       </div>
+      {confirmDeleteId && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[#1A0F0A]/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-sm border-2 border-[#1A0F0A] bg-[#FAF6F0] p-6 shadow-[6px_6px_0px_0px_#C19A6B] animate-in zoom-in-95 duration-200">
+            <h4 className="font-clash text-lg font-black uppercase tracking-tight mb-2 text-[#1A0F0A]">Hapus Notifikasi?</h4>
+            <p className="text-xs text-[#1A0F0A]/70 mb-6 font-mono uppercase tracking-wide">Tindakan ini tidak bisa dibatalkan, notifikasi akan disembunyikan permanen.</p>
+            <div className="flex gap-3 justify-end">
+              <button
+                type="button"
+                onClick={() => setConfirmDeleteId(null)}
+                className="magnetic border-2 border-[#1A0F0A] bg-white text-[#1A0F0A] px-4 py-2 font-mono text-[10px] font-black uppercase tracking-[0.14em] shadow-[2px_2px_0px_0px_#1A0F0A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#1A0F0A] transition-all cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  handleDeleteNotif(confirmDeleteId);
+                  setConfirmDeleteId(null);
+                }}
+                className="magnetic border-2 border-[#1A0F0A] bg-red-500 text-white px-4 py-2 font-mono text-[10px] font-black uppercase tracking-[0.14em] shadow-[2px_2px_0px_0px_#1A0F0A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#1A0F0A] transition-all cursor-pointer"
+              >
+                Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }

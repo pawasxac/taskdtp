@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { X, MessageCircle, Instagram, Phone, Gamepad2, Check } from 'lucide-react';
+import { X, MessageCircle, Instagram, Phone } from 'lucide-react';
 
 export default function PublicProfileModal({ user, isOpen, onClose, onDmClick }) {
-  const [discordCopied, setDiscordCopied] = useState(false);
   if (!isOpen || !user) return null;
 
   const getAvatarUrl = (u) => {
-    if (u?.profile_picture?.startsWith('http')) return u.profile_picture;
-    if (u?.profile_picture) return `/uploads/profile_pictures/${u.profile_picture}`;
+    const pic = u?.profile_picture;
+    if (pic?.startsWith('http') || pic?.startsWith('blob:') || pic?.startsWith('data:')) return pic;
+    if (u?.avatar_url) return u.avatar_url;
+    if (pic) return `/uploads/profile_pictures/${pic}`;
     const label = encodeURIComponent(u?.name || u?.username || 'Anak Skena');
     return `https://ui-avatars.com/api/?name=${label}&background=1A0F0A&color=FAF6F0&bold=true`;
   };
@@ -39,13 +40,23 @@ export default function PublicProfileModal({ user, isOpen, onClose, onDmClick })
           {/* Profile Info */}
           <div className="pt-16 pb-6 px-6">
             <div className="mb-6">
-              <h2 className="font-clash text-2xl font-black uppercase leading-tight">{user.name || user.username}</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="font-clash text-2xl font-black uppercase leading-tight">{user.name || user.username}</h2>
+                <span className={`inline-block w-2.5 h-2.5 rounded-full border border-[#1A0F0A] ${user.is_online ? 'bg-green-500' : 'bg-gray-400'}`} title={user.is_online ? 'Online' : 'Offline'} />
+              </div>
               <p className="font-mono text-sm text-[#1A0F0A]/60">@{user.username || (user.name || 'user').toLowerCase().replace(/\s+/g, '')}</p>
             </div>
 
             {user.bio && (
-              <div className="mb-6 border-l-2 border-[#C19A6B] pl-4">
+              <div className="mb-4 border-l-2 border-[#C19A6B] pl-4">
                 <p className="text-sm italic text-[#1A0F0A]/80">"{user.bio}"</p>
+              </div>
+            )}
+
+            {user.kecamatan && (
+              <div className="mb-6 inline-flex items-center gap-1.5 border border-[#1A0F0A]/20 bg-[#1A0F0A]/5 px-2 py-1">
+                <span className="font-mono text-[10px] font-black uppercase text-[#C19A6B]">Asal:</span>
+                <span className="font-mono text-[10px] font-bold text-[#1A0F0A] uppercase">{user.kecamatan.name}</span>
               </div>
             )}
 
@@ -58,7 +69,7 @@ export default function PublicProfileModal({ user, isOpen, onClose, onDmClick })
                 </button>
               </div>
 
-              <div className="grid grid-cols-3 gap-3 pt-2">
+              <div className="grid grid-cols-2 gap-3 pt-2">
                 {user.instagram ? (
                   <a href={`https://instagram.com/${user.instagram.replace('@', '')}`} target="_blank" rel="noreferrer" className={btnSocial} title="Instagram">
                     <Instagram size={20} />
@@ -73,33 +84,6 @@ export default function PublicProfileModal({ user, isOpen, onClose, onDmClick })
                   </a>
                 ) : (
                   <div className={`${btnSocial} opacity-50 cursor-not-allowed`} title="Belum link WA"><Phone size={20} /></div>
-                )}
-                
-                {user.discord ? (
-                  <button
-                    className={discordCopied ? `${btnSocial} bg-green-50 text-green-700 border-green-400` : btnSocial}
-                    onClick={() => {
-                      navigator.clipboard.writeText(user.discord).then(() => {
-                        setDiscordCopied(true);
-                        setTimeout(() => setDiscordCopied(false), 2000);
-                      }).catch(() => {
-                        // fallback for browsers without clipboard API
-                        const ta = document.createElement('textarea');
-                        ta.value = user.discord;
-                        document.body.appendChild(ta);
-                        ta.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(ta);
-                        setDiscordCopied(true);
-                        setTimeout(() => setDiscordCopied(false), 2000);
-                      });
-                    }}
-                    title={discordCopied ? 'Discord ID tersalin!' : `Salin Discord: ${user.discord}`}
-                  >
-                    {discordCopied ? <Check size={20} className="text-green-600" /> : <Gamepad2 size={20} />}
-                  </button>
-                ) : (
-                  <div className={`${btnSocial} opacity-50 cursor-not-allowed`} title="Belum link Discord"><Gamepad2 size={20} /></div>
                 )}
               </div>
             </div>

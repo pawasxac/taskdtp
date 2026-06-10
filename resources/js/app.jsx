@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { AuthProvider } from './Components/Shared';
+import PageLoader from './Components/PageLoader';
 import Lenis from '@studio-freight/lenis';
 import { useEffect } from 'react';
 
@@ -39,6 +40,7 @@ const AppWrapper = ({ App, props }) => {
 
     return (
         <AuthProvider initialUser={props?.initialPage?.props?.auth?.user ?? null}>
+            <PageLoader />
             <App {...props} />
         </AuthProvider>
     );

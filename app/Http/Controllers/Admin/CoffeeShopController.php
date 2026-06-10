@@ -43,6 +43,7 @@ class CoffeeShopController extends Controller
         ]);
 
         CoffeeShop::create($validated);
+        cache()->forget('dashboard_coffee_shops');
         return redirect()->route('coffee.index')->with('success', 'Data coffee shop berhasil ditambahkan!');
     }
 
@@ -90,12 +91,14 @@ class CoffeeShopController extends Controller
         }
 
         $data->update($validated);
+        cache()->forget('dashboard_coffee_shops');
         return redirect()->route('coffee.index')->with('success', 'Data coffee shop berhasil diperbarui!');
     }
 
     public function destroy($id)
     {
         CoffeeShop::findOrFail($id)->delete();
+        cache()->forget('dashboard_coffee_shops');
         return redirect()->route('coffee.index')->with('success', 'Data coffee shop berhasil dihapus!');
     }
 

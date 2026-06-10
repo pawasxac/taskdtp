@@ -17,7 +17,7 @@
                 <th>Komunitas</th>
                 <th>User</th>
                 <th>Content</th>
-                <th>Komentar</th>
+                <th>Balasan Ke</th>
                 <th>Tanggal</th>
                 <th>Aksi</th>
             </tr>
@@ -29,7 +29,7 @@
                 <td>{{ $item->komunitas->nama_komunitas ?? '-' }}</td>
                 <td>{{ $item->user->name ?? '-' }}</td>
                 <td>{{ Str::limit($item->content, 50) }}</td>
-                <td>{{ $item->comments->count() }}</td>
+                <td>{{ $item->replyTo ? 'Balasan #'.$item->replyTo->id : '-' }}</td>
                 <td>{{ $item->created_at->format('d/m/Y') }}</td>
                 <td>
                     <a href="{{ route('community-posts.edit', $item->id) }}" class="btn-edit">Edit</a>

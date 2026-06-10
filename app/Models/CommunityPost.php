@@ -16,6 +16,15 @@ class CommunityPost extends Model
         'user_id',
         'content',
         'reply_to_id',
+        'deleted_for_everyone',
+        'deleted_by_users',
+        'read_by_users',
+    ];
+
+    protected $casts = [
+        'deleted_by_users' => 'array',
+        'read_by_users' => 'array',
+        'deleted_for_everyone' => 'boolean',
     ];
 
     /**
@@ -34,13 +43,7 @@ class CommunityPost extends Model
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Get the comments for the post.
-     */
-    public function comments(): HasMany
-    {
-        return $this->hasMany(CommunityComment::class, 'post_id');
-    }
+
 
     public function replyTo(): BelongsTo
     {

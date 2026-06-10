@@ -30,6 +30,8 @@ class User extends Authenticatable
         'instagram',
         'whatsapp',
         'discord',
+        'kecamatan_id',
+        'last_seen_at',
     ];
 
     /**
@@ -52,6 +54,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'last_seen_at' => 'datetime',
         ];
     }
 
@@ -94,21 +97,9 @@ class User extends Authenticatable
         return $this->hasMany(\App\Models\CommunityPost::class);
     }
 
-    /**
-     * Get the community comments created by the user.
-     */
-    public function communityComments()
-    {
-        return $this->hasMany(\App\Models\CommunityComment::class);
-    }
 
-    /**
-     * Get the gathering requests created by the user.
-     */
-    public function gatheringRequests()
-    {
-        return $this->hasMany(\App\Models\GatheringRequest::class, 'requested_by');
-    }
+
+
 
     public function sentMessages()
     {
@@ -120,4 +111,8 @@ class User extends Authenticatable
         return $this->hasMany(DirectMessage::class, 'receiver_id');
     }
 
+    public function kecamatan()
+    {
+        return $this->belongsTo(Kecamatan::class);
+    }
 }

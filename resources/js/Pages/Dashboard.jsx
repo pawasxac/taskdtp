@@ -2,15 +2,17 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
   Bell, Check, MapPin, MessageCircleMore, MessageSquareText,
-  Save, Send, X, ShieldCheck, Plus
+  Save, Send, X, ShieldCheck, Plus, Settings, Trash2, Search, Upload
 } from 'lucide-react';
 import Navbar from '../Components/Navbar';
 import CustomCursor from '../Components/CustomCursor';
 import PublicProfileModal from '../Components/PublicProfileModal';
 
 const getAvatarUrl = (user, fallbackLabel = 'Anak Skena') => {
-  if (user?.profile_picture?.startsWith('http')) return user.profile_picture;
-  if (user?.profile_picture) return `/uploads/profile_pictures/${user.profile_picture}`;
+  const pic = user?.profile_picture;
+  if (pic?.startsWith('http') || pic?.startsWith('blob:') || pic?.startsWith('data:')) return pic;
+  if (user?.avatar_url) return user.avatar_url;
+  if (pic) return `/uploads/profile_pictures/${pic}`;
   const label = encodeURIComponent(user?.name || user?.username || fallbackLabel);
   return `https://ui-avatars.com/api/?name=${label}&background=1A0F0A&color=FAF6F0&bold=true`;
 };
@@ -34,8 +36,9 @@ export default function Dashboard({
   directMessages = [],
   notifications = [],
   tags = [],
+  kecamatans = [],
 }) {
-  const { props } = usePage();
+  const { props, url: pageUrl } = usePage();
   const auth = props?.auth || {};
   const currentUser = user || auth?.user || null;
   const isAdmin = currentUser?.role === 'admin';
@@ -55,7 +58,7 @@ export default function Dashboard({
     profile_picture: currentUser?.profile_picture || '',
     instagram: currentUser?.instagram || '',
     whatsapp: currentUser?.whatsapp || '',
-    discord: currentUser?.discord || '',
+    kecamatan_id: currentUser?.kecamatan_id || '',
   });
   const [profilePreview, setProfilePreview] = useState(currentUser?.profile_picture || '');
   const [dmInput, setDmInput] = useState('');
@@ -69,6 +72,22 @@ export default function Dashboard({
 
   const [globalReplyTo, setGlobalReplyTo] = useState(null);
   const [communityReplyTo, setCommunityReplyTo] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+
+  // Community Management States
+  const [manageKomunitasOpen, setManageKomunitasOpen] = useState(false);
+  const [manageTab, setManageTab] = useState('profile'); // 'profile' | 'members'
+  const [editKomunitasForm, setEditKomunitasForm] = useState({
+    nama_komunitas: '',
+    deskripsi: '',
+    domisili: '',
+    photo: null,
+  });
+  const [editKomunitasPreview, setEditKomunitasPreview] = useState('');
+  const [memberSearchQuery, setMemberSearchQuery] = useState('');
+  const [memberSearchResults, setMemberSearchResults] = useState([]);
+  const [manageSaving, setManageSaving] = useState(false);
+  const [kickConfirmTarget, setKickConfirmTarget] = useState(null);
 
   const renderMessageWithMentions = (text) => {
     if (!text) return null;
@@ -87,6 +106,7 @@ export default function Dashboard({
   const dmRef = useRef(null);
   const dmChatRef = useRef(null);
   const feedRef = useRef(null);
+  const lastScrolledUrl = useRef('');
 
   // Close notif popover on outside click
   useEffect(() => {
@@ -150,13 +170,42 @@ export default function Dashboard({
     }
   }, [forums]);
 
+  useEffect(() => {
+    if (selectedKomunitas) {
+      setEditKomunitasForm({
+        nama_komunitas: selectedKomunitas.title || '',
+        deskripsi: selectedKomunitas.description || '',
+        domisili: selectedKomunitas.domisili || '',
+        photo: null,
+      });
+      setEditKomunitasPreview(selectedKomunitas.cover_image || '');
+    }
+  }, [selectedKomunitas]);
+
+  // Mark direct messages as read when a thread is selected
+  useEffect(() => {
+    if (selectedDmId) {
+      const currentDm = localDirectMessages.find(d => d.id === selectedDmId);
+      if (currentDm && currentDm.user?.id && currentDm.user.id !== 99999 && !String(currentDm.id).startsWith('fallback-')) {
+        router.post('/dm/read', { contact_id: currentDm.user.id }, { preserveScroll: true });
+      }
+    }
+  }, [selectedDmId]);
+
+  // Mark community posts as read when community is selected
+  useEffect(() => {
+    if (selectedKomunitas && !String(selectedKomunitas.id).startsWith('fallback-') && !String(selectedKomunitas.id).startsWith('circle-')) {
+      router.post(`/komunitas/${selectedKomunitas.id}/read`, {}, { preserveScroll: true });
+    }
+  }, [selectedKomunitas?.id]);
+
   // Connect to SSE stream with error handling
   // Removed fake SSE stream to use real DB data
   
   // Polling for new Global Chat messages and DMs every 5 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      router.reload({ only: ['globalChat', 'directMessages'], preserveScroll: true, preserveState: true });
+      router.reload({ only: ['globalChat', 'directMessages', 'forums'], preserveScroll: true, preserveState: true });
     }, 5000);
 
     return () => clearInterval(interval);
@@ -167,10 +216,14 @@ export default function Dashboard({
     const tab = params.get('tab');
     const focus = params.get('focus');
     
-    if (tab === 'forum' && forumRef.current) {
-      forumRef.current.scrollIntoView({ behavior: 'smooth' });
-    } else if (tab === 'dm' && dmRef.current) {
-      dmRef.current.scrollIntoView({ behavior: 'smooth' });
+    // Only scroll if the search query changed (e.g. user clicked a notification)
+    if (window.location.search !== lastScrolledUrl.current) {
+      lastScrolledUrl.current = window.location.search;
+      if (tab === 'forum' && forumRef.current) {
+        forumRef.current.scrollIntoView({ behavior: 'smooth' });
+      } else if (tab === 'dm' && dmRef.current) {
+        dmRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
     }
 
     if (tab === 'forum' && focus && Array.isArray(forums)) {
@@ -181,7 +234,7 @@ export default function Dashboard({
     } else if (tab === 'dm' && focus) {
       setSelectedDmId(focus);
     }
-  }, [forums]);
+  }, [forums, pageUrl]);
 
   const selectedDm = useMemo(
     () => (Array.isArray(localDirectMessages) ? localDirectMessages.find((d) => d.id === selectedDmId) || localDirectMessages[0] : null) || null,
@@ -254,7 +307,7 @@ export default function Dashboard({
     if (profileForm.bio !== undefined && profileForm.bio !== null) formData.append('bio', profileForm.bio);
     if (profileForm.instagram !== undefined && profileForm.instagram !== null) formData.append('instagram', profileForm.instagram);
     if (profileForm.whatsapp !== undefined && profileForm.whatsapp !== null) formData.append('whatsapp', profileForm.whatsapp);
-    if (profileForm.discord !== undefined && profileForm.discord !== null) formData.append('discord', profileForm.discord);
+    if (profileForm.kecamatan_id) formData.append('kecamatan_id', profileForm.kecamatan_id);
     if (profileForm.profile_picture_file) formData.append('profile_picture', profileForm.profile_picture_file);
     router.post('/profile/update', formData, {
       forceFormData: true,
@@ -295,6 +348,83 @@ export default function Dashboard({
       preserveScroll: true,
       onSuccess: () => setKomunitasPostInput(''),
     });
+  };
+
+  const handleUpdateKomunitas = (e) => {
+    e.preventDefault();
+    if (!selectedKomunitas) return;
+    setManageSaving(true);
+
+    const formData = new FormData();
+    formData.append('nama_komunitas', editKomunitasForm.nama_komunitas);
+    formData.append('deskripsi', editKomunitasForm.deskripsi || '');
+    formData.append('domisili', editKomunitasForm.domisili);
+    if (editKomunitasForm.photo) {
+      formData.append('photo', editKomunitasForm.photo);
+    }
+
+    router.post(`/komunitas/${selectedKomunitas.id}/update`, formData, {
+      forceFormData: true,
+      preserveScroll: true,
+      onSuccess: () => {
+        setManageSaving(false);
+        setManageKomunitasOpen(false);
+      },
+      onError: () => setManageSaving(false),
+    });
+  };
+
+  const handleKickMember = (userId, memberName) => {
+    if (!selectedKomunitas) return;
+    setKickConfirmTarget({ id: userId, name: memberName });
+  };
+
+  const executeKickMember = () => {
+    if (!selectedKomunitas || !kickConfirmTarget) return;
+    router.post(`/komunitas/${selectedKomunitas.id}/kick/${kickConfirmTarget.id}`, {}, {
+      preserveScroll: true,
+      onSuccess: () => {
+        setKickConfirmTarget(null);
+      }
+    });
+  };
+
+  useEffect(() => {
+    if (!memberSearchQuery.trim() || !selectedKomunitas) {
+      setMemberSearchResults([]);
+      return;
+    }
+
+    const delayDebounceFn = setTimeout(() => {
+      fetch(`/komunitas/${selectedKomunitas.id}/search-users?q=${encodeURIComponent(memberSearchQuery)}`)
+        .then(res => res.json())
+        .then(data => {
+          setMemberSearchResults(Array.isArray(data) ? data : []);
+        })
+        .catch(err => console.error("Error searching users:", err));
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [memberSearchQuery, selectedKomunitas?.id]);
+
+  const handleAddMember = (userId) => {
+    if (!selectedKomunitas) return;
+    router.post(`/komunitas/${selectedKomunitas.id}/add-member`, { user_id: userId }, {
+      preserveScroll: true,
+      onSuccess: () => {
+        setMemberSearchQuery('');
+        setMemberSearchResults([]);
+      }
+    });
+  };
+
+  const handleDeleteMessage = (id, chatType, deleteType) => {
+    const cleanId = String(id).replace('dm-', '');
+    if (chatType === 'dm') {
+      router.post(`/dm/${cleanId}/delete`, { type: deleteType }, { preserveScroll: true });
+    } else if (chatType === 'community') {
+      router.post(`/komunitas/post/${cleanId}/delete`, { type: deleteType }, { preserveScroll: true });
+    }
   };
 
   const btnPrimary = 'magnetic inline-flex items-center justify-center gap-2 border-2 border-[#1A0F0A] bg-[#C19A6B] px-4 py-2 font-mono text-[12px] font-black uppercase tracking-[0.16em] text-[#1A0F0A] hover:bg-[#1A0F0A] hover:text-[#FAF6F0] transition-colors cursor-pointer';
@@ -338,7 +468,6 @@ export default function Dashboard({
                         avatar_url: u.profile_picture ? `/uploads/profile_pictures/${u.profile_picture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=1A0F0A&color=FAF6F0&bold=true`,
                         instagram: u.instagram || null,
                         whatsapp: u.whatsapp || null,
-                        discord: u.discord || null,
                     },
                     messages: []
                 };
@@ -356,38 +485,6 @@ export default function Dashboard({
             <h1 className="font-clash text-3xl md:text-5xl font-black uppercase">Dashboard Lounge</h1>
             <p className="font-mono text-xs font-black uppercase tracking-[0.1em] mt-1 text-[#1A0F0A]/60">Sruput, ngobrol, atur ritme.</p>
           </div>
-          <div className="relative" ref={notifRef}>
-            <button
-              onClick={() => setNotifOpen(!notifOpen)}
-              className="magnetic inline-flex h-12 w-12 items-center justify-center border-2 border-[#1A0F0A] bg-white shadow-[4px_4px_0px_0px_#1A0F0A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#1A0F0A] transition-all"
-            >
-              <Bell size={20} />
-              {notifications.length > 0 && (
-                <span className="absolute -right-2 -top-2 inline-flex h-6 w-6 items-center justify-center border-2 border-[#1A0F0A] bg-[#C19A6B] font-mono text-[10px] font-black">
-                  {notifications.length}
-                </span>
-              )}
-            </button>
-            {notifOpen && (
-              <div className="absolute right-0 top-14 z-50 w-80 border-2 border-[#1A0F0A] bg-white p-3 shadow-[6px_6px_0px_0px_#1A0F0A] animate-in slide-in-from-top-2">
-                <div className="flex items-center justify-between border-b-2 border-[#1A0F0A] pb-2 mb-2">
-                  <p className="font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#C19A6B]">Notifikasi</p>
-                  <button onClick={() => setNotifOpen(false)} className="magnetic hover:text-[#C19A6B]"><X size={16} /></button>
-                </div>
-                <div className="grid gap-2 max-h-64 overflow-y-auto custom-scrollbar pr-1">
-                  {notifications.map(n => (
-                    <button key={n.id} onClick={() => { setNotifOpen(false); if (n?.route) router.visit(n.route); }} className="magnetic text-left border-2 border-[#1A0F0A] bg-[#FAF6F0] p-2 hover:bg-white flex gap-2">
-                      <div className="shrink-0 mt-1"><Bell size={14} className="text-[#C19A6B]" /></div>
-                      <div>
-                        <p className="font-clash text-sm font-black uppercase">{n.title}</p>
-                        <p className="text-xs text-[#1A0F0A]/70 line-clamp-2 mt-1">{n.body}</p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 auto-rows-min">
@@ -397,7 +494,7 @@ export default function Dashboard({
             <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
               <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                 <img
-                  src={getAvatarUrl({ ...profileForm, profile_picture: profilePreview || profileForm.profile_picture }, profileForm.name)}
+                  src={getAvatarUrl({ ...currentUser, ...profileForm, profile_picture: profilePreview || profileForm.profile_picture }, profileForm.name)}
                   alt="Avatar"
                   className="h-24 w-24 border-2 border-[#FAF6F0] object-cover group-hover:opacity-50 transition-opacity"
                 />
@@ -417,7 +514,14 @@ export default function Dashboard({
                   />
                   {isAdmin && <ShieldCheck size={20} className="text-[#C19A6B]" />}
                 </div>
-                <p className="font-mono text-xs uppercase tracking-widest text-[#FAF6F0]/60 mb-2">@{profileForm.username}</p>
+                <div className="flex items-center gap-2 mb-2">
+                  <p className="font-mono text-xs uppercase tracking-widest text-[#FAF6F0]/60">@{profileForm.username}</p>
+                  {currentUser?.kecamatan && (
+                    <span className="font-mono text-[10px] uppercase bg-[#C19A6B] text-[#1A0F0A] px-2 py-0.5 font-bold">
+                      {currentUser.kecamatan.name}
+                    </span>
+                  )}
+                </div>
                 <form onSubmit={handleSaveProfile} className="flex flex-col gap-2 w-full mt-3">
                   <input
                     type="text"
@@ -427,9 +531,18 @@ export default function Dashboard({
                     className="w-full bg-transparent border-b-2 border-[#FAF6F0]/30 focus:border-[#C19A6B] outline-none font-mono text-sm py-1 text-[#FAF6F0]"
                   />
                   <div className="flex gap-2">
+                    <select
+                      value={profileForm.kecamatan_id}
+                      onChange={(e) => setProfileForm(s => ({ ...s, kecamatan_id: e.target.value }))}
+                      className="flex-1 bg-transparent border-b-2 border-[#FAF6F0]/30 focus:border-[#C19A6B] outline-none font-mono text-[10px] py-1 text-[#FAF6F0] min-w-[100px]"
+                    >
+                      <option value="" className="text-[#1A0F0A]">Pilih Kecamatan</option>
+                      {(kecamatans || []).map(kec => (
+                        <option key={kec.id} value={kec.id} className="text-[#1A0F0A]">{kec.name}</option>
+                      ))}
+                    </select>
                     <input type="text" value={profileForm.instagram} onChange={e => setProfileForm(s => ({...s, instagram: e.target.value}))} placeholder="IG handle" className="flex-1 bg-transparent border-b-2 border-[#FAF6F0]/30 focus:border-[#C19A6B] outline-none font-mono text-[10px] py-1 text-[#FAF6F0]" />
                     <input type="text" value={profileForm.whatsapp} onChange={e => setProfileForm(s => ({...s, whatsapp: e.target.value}))} placeholder="WA nomor" className="flex-1 bg-transparent border-b-2 border-[#FAF6F0]/30 focus:border-[#C19A6B] outline-none font-mono text-[10px] py-1 text-[#FAF6F0]" />
-                    <input type="text" value={profileForm.discord} onChange={e => setProfileForm(s => ({...s, discord: e.target.value}))} placeholder="Discord ID" className="flex-1 bg-transparent border-b-2 border-[#FAF6F0]/30 focus:border-[#C19A6B] outline-none font-mono text-[10px] py-1 text-[#FAF6F0]" />
                   </div>
                   <div className="flex items-center gap-3 mt-1">
                     <button
@@ -544,7 +657,10 @@ export default function Dashboard({
                             onClick={() => setSelectedDmId(dm.id)}
                             className={`w-full text-left p-3 border-b border-[#1A0F0A]/10 flex items-center gap-3 transition-colors ${selectedDmId === dm.id ? 'bg-[#FAF6F0]' : 'hover:bg-[#FAF6F0]'}`}
                         >
-                            <img src={getAvatarUrl(dm.user)} alt="User" className="w-10 h-10 border-2 border-[#1A0F0A] object-cover shrink-0" />
+                            <div className="relative shrink-0">
+                                <img src={getAvatarUrl(dm.user)} alt="User" className="w-10 h-10 border-2 border-[#1A0F0A] object-cover" />
+                                <span className={`absolute bottom-0 right-0 block w-2.5 h-2.5 rounded-full border border-white ${dm.user?.is_online ? 'bg-green-500' : 'bg-gray-400'}`} />
+                            </div>
                             <div className="overflow-hidden">
                                 <p className="font-mono text-[10px] font-black uppercase truncate">{dm.user?.name}</p>
                                 <p className="text-xs text-[#1A0F0A]/60 truncate">{dm.messages?.[dm.messages.length - 1]?.text || 'Mulai chat...'}</p>
@@ -555,31 +671,59 @@ export default function Dashboard({
 
                 {/* Right Pane (Chat Window) */}
                 <div className="w-2/3 flex flex-col bg-[#FAF6F0]">
+                    {selectedDm && (
+                        <div className="border-b-2 border-[#1A0F0A] px-4 py-2 bg-[#FAF6F0] flex justify-between items-center shrink-0">
+                            <div className="flex items-center gap-2">
+                                <span className="font-mono text-xs font-black uppercase">{selectedDm.user?.name}</span>
+                                <span className={`inline-block w-2.5 h-2.5 rounded-full border border-[#1A0F0A] ${selectedDm.user?.is_online ? 'bg-green-500' : 'bg-gray-400'}`} title={selectedDm.user?.is_online ? 'Online' : 'Offline'} />
+                                <span className="font-mono text-[9px] uppercase text-[#1A0F0A]/60">{selectedDm.user?.is_online ? 'Online' : 'Offline'}</span>
+                            </div>
+                            <button 
+                                onClick={() => setPublicProfileUser(selectedDm.user)}
+                                className="magnetic px-2.5 py-1 border-2 border-[#1A0F0A] bg-white text-[10px] font-mono uppercase font-black hover:bg-[#C19A6B] hover:text-[#1A0F0A] transition-colors shadow-[2px_2px_0px_0px_#1A0F0A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#1A0F0A]"
+                            >
+                                Cek Profil
+                            </button>
+                        </div>
+                    )}
                     <div ref={dmChatRef} className="flex-1 overflow-y-auto p-4 custom-scrollbar bg-[#e5ddd5]">
                         {selectedDm ? selectedDm.messages?.map(m => (
-                            <div key={m.id} className={`mb-3 flex ${m.user?.id === currentUser?.id ? 'justify-end' : 'justify-start'}`}>
-                                <div className={`max-w-[80%] rounded-2xl px-4 py-2 ${m.user?.id === currentUser?.id ? 'bg-[#dcf8c6] rounded-tr-none' : 'bg-white rounded-tl-none'}`}>
-                                    {m.text}
+                            <div key={m.id} className={`mb-3 flex ${m.user?.id === currentUser?.id ? 'justify-end' : 'justify-start'} group relative`}>
+                                <div className={`max-w-[80%] rounded-2xl px-4 py-2 ${m.user?.id === currentUser?.id ? 'bg-[#dcf8c6] rounded-tr-none' : 'bg-white rounded-tl-none'} flex flex-col`}>
+                                    <div className="break-words">{m.text}</div>
+                                    <div className="flex items-center justify-end gap-1.5 mt-1 self-end">
+                                        {m.user?.id === currentUser?.id && !m.is_deleted_for_everyone && (
+                                            <span className={`text-[10px] font-bold ${m.read_at ? 'text-blue-500' : 'text-gray-400'}`} title={m.read_at ? 'Dibaca' : 'Terkirim'}>✓✓</span>
+                                        )}
+                                        {!m.is_deleted_for_everyone && m.id && String(m.id).startsWith('dm-') && (
+                                            <button
+                                                onClick={() => setDeleteTarget({ id: m.id, chatType: 'dm', isAuthor: m.user?.id === currentUser?.id })}
+                                                className="opacity-0 group-hover:opacity-100 ml-1 text-gray-500 hover:text-red-500 text-[10px] font-mono cursor-pointer"
+                                                title="Hapus pesan"
+                                            >
+                                                Hapus
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         )) : (
                             <div className="h-full flex items-center justify-center font-mono text-xs text-[#1A0F0A]/50">Pilih obrolan di samping.</div>
                         )}
 
-                        {selectedDm?.messages?.length >= 10 && (
+                        {(selectedDm?.total_messages_count ?? selectedDm?.messages?.length ?? 0) >= 10 && (
                             <div className="mt-6 p-4 border-2 border-[#C19A6B] bg-white text-center">
                                 <p className="font-clash font-black uppercase text-[#C19A6B] mb-2">Udah 10 pesan nih!</p>
                                 <p className="text-xs mb-4">Lanjut kenalan lebih deket lewat sosmed gih.</p>
                                 <div className="flex justify-center gap-2">
                                     {selectedDm.user?.instagram && <a href={`https://instagram.com/${selectedDm.user.instagram.replace('@', '')}`} target="_blank" rel="noreferrer" className="text-[10px] font-mono border-2 border-[#1A0F0A] px-2 py-1 bg-[#1A0F0A] text-white">IG</a>}
                                     {selectedDm.user?.whatsapp && <a href={`https://wa.me/${selectedDm.user.whatsapp}`} target="_blank" rel="noreferrer" className="text-[10px] font-mono border-2 border-[#1A0F0A] px-2 py-1 bg-[#1A0F0A] text-white">WA</a>}
-                                    {selectedDm.user?.discord && <span className="text-[10px] font-mono border-2 border-[#1A0F0A] px-2 py-1 bg-white text-black">DC: {selectedDm.user.discord}</span>}
                                 </div>
                             </div>
                         )}
                     </div>
                     {selectedDm && (
-                        selectedDm.messages?.length < 10 ? (
+                        (selectedDm?.total_messages_count ?? selectedDm?.messages?.length ?? 0) < 10 ? (
                             <form onSubmit={handleSendDm} className="border-t-2 border-[#1A0F0A] flex shrink-0 bg-white">
                                 <input 
                                     type="text" 
@@ -686,8 +830,18 @@ export default function Dashboard({
                     <MapPin size={12} /> {selectedKomunitas.domisili || 'Global Area'}
                   </p>
                 </div>
-                <div className="hidden md:block bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 text-white text-xs font-mono">
-                  {selectedKomunitas.member_count} Members
+                <div className="flex items-center gap-2">
+                  {selectedKomunitas.is_leader && (
+                    <button 
+                      onClick={() => setManageKomunitasOpen(true)} 
+                      className="bg-[#C19A6B] hover:bg-[#1A0F0A] hover:text-[#FAF6F0] text-[#1A0F0A] border-2 border-[#1A0F0A] px-3 py-1.5 text-xs font-black uppercase font-mono shadow-[2px_2px_0px_0px_#1A0F0A] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0px_0px_#1A0F0A] transition-all"
+                    >
+                      Kelola Komunitas
+                    </button>
+                  )}
+                  <div className="hidden md:block bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 text-white text-xs font-mono">
+                    {selectedKomunitas.member_count} Members
+                  </div>
                 </div>
               </div>
             </div>
@@ -701,24 +855,33 @@ export default function Dashboard({
                 <div className="p-3 space-y-3">
                   {/* Owner */}
                   <div className="flex items-center gap-3 border border-[#C19A6B] bg-[#C19A6B]/10 p-2 cursor-pointer hover:bg-[#C19A6B]/20" onClick={() => setPublicProfileUser(selectedKomunitas.creator)}>
-                    <img src={selectedKomunitas.creator?.avatar_url} alt="Owner" className="w-8 h-8 object-cover border border-[#1A0F0A]" />
+                    <div className="relative shrink-0">
+                      <img src={selectedKomunitas.creator?.avatar_url} alt="Owner" className="w-8 h-8 object-cover border border-[#1A0F0A]" />
+                      <span className={`absolute bottom-0 right-0 block w-2.5 h-2.5 rounded-full border border-white ${selectedKomunitas.creator?.is_online ? 'bg-green-500' : 'bg-gray-400'}`} />
+                    </div>
                     <div className="overflow-hidden">
                       <p className="font-mono text-[10px] font-black uppercase truncate">{selectedKomunitas.creator?.name}</p>
                       <p className="text-[9px] font-mono text-[#C19A6B]">LEADER</p>
                     </div>
                   </div>
-                  {/* Fake Member list based on count */}
-                  {Array.from({ length: Math.min(selectedKomunitas.member_count - 1, 10) }).map((_, i) => (
-                    <div key={i} className="flex items-center gap-3 p-2 hover:bg-[#FAF6F0] cursor-pointer">
-                      <img src={`https://ui-avatars.com/api/?name=Member+${i}&background=eee&color=000`} alt="Member" className="w-8 h-8 object-cover border border-[#1A0F0A]/20" />
-                      <div>
-                        <p className="font-mono text-[10px] font-bold uppercase">Member {i+1}</p>
-                        <p className="text-[9px] font-mono text-[#1A0F0A]/50">MEMBER</p>
+                  {/* Actual Member list */}
+                  {(selectedKomunitas.members ?? [])
+                    .filter(m => m.id !== selectedKomunitas.creator?.id)
+                    .slice(0, 10)
+                    .map((m) => (
+                      <div key={m.id || m.username} className="flex items-center gap-3 p-2 hover:bg-[#FAF6F0] cursor-pointer" onClick={() => m.id && setPublicProfileUser(m)}>
+                        <div className="relative shrink-0">
+                          <img src={m.avatar_url} alt="Member" className="w-8 h-8 object-cover border border-[#1A0F0A]/20" />
+                          <span className={`absolute bottom-0 right-0 block w-2 h-2 rounded-full border border-white ${m.is_online ? 'bg-green-500' : 'bg-gray-400'}`} />
+                        </div>
+                        <div className="overflow-hidden">
+                          <p className="font-mono text-[10px] font-bold uppercase truncate">{m.name}</p>
+                          <p className="text-[9px] font-mono text-[#1A0F0A]/50 uppercase">{m.role || 'MEMBER'}</p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                  {selectedKomunitas.member_count > 11 && (
-                    <p className="text-center text-[10px] font-mono text-[#1A0F0A]/50 pt-2">+ {selectedKomunitas.member_count - 11} lainnya</p>
+                    ))}
+                  {(selectedKomunitas.members ?? []).filter(m => m.id !== selectedKomunitas.creator?.id).length > 10 && (
+                    <p className="text-center text-[10px] font-mono text-[#1A0F0A]/50 pt-2">+ {(selectedKomunitas.members ?? []).filter(m => m.id !== selectedKomunitas.creator?.id).length - 10} lainnya</p>
                   )}
                 </div>
               </div>
@@ -735,12 +898,18 @@ export default function Dashboard({
                     <div className="space-y-6">
                       {[...(selectedKomunitas.replies ?? [])].reverse().map((reply) => (
                         <div key={reply.id} className="flex gap-4 group relative">
-                          <img src={reply.user?.avatar_url} alt="Avatar" className="w-10 h-10 border-2 border-[#1A0F0A] shrink-0 cursor-pointer" onClick={() => setPublicProfileUser(reply.user)} />
+                          <div className="relative shrink-0">
+                            <img src={reply.user?.avatar_url} alt="Avatar" className="w-10 h-10 border-2 border-[#1A0F0A] cursor-pointer shrink-0" onClick={() => setPublicProfileUser(reply.user)} />
+                            <span className={`absolute bottom-0 right-0 block w-2.5 h-2.5 rounded-full border border-white ${reply.user?.is_online ? 'bg-green-500' : 'bg-gray-400'}`} />
+                          </div>
                           <div className="flex-1">
                             <div className="flex items-baseline gap-2 mb-1">
                               <span className="font-mono text-xs font-black uppercase cursor-pointer hover:text-[#C19A6B]" onClick={() => setPublicProfileUser(reply.user)}>
                                 {reply.user?.name}
                               </span>
+                              {reply.user?.id === currentUser?.id && !reply.is_deleted_for_everyone && (
+                                <span className={`text-[10px] font-bold ${reply.read_by_users?.some(uid => uid !== currentUser.id) ? 'text-blue-500' : 'text-gray-400'}`} title={reply.read_by_users?.some(uid => uid !== currentUser.id) ? 'Dibaca' : 'Terkirim'}>✓✓</span>
+                              )}
                             </div>
                             <div className="bg-white border-2 border-[#1A0F0A] p-3 text-sm inline-block">
                               {reply.reply_to && (
@@ -751,7 +920,18 @@ export default function Dashboard({
                               {renderMessageWithMentions(reply.comment)}
                             </div>
                           </div>
-                          <button onClick={() => setCommunityReplyTo(reply)} className="absolute top-0 right-0 mt-2 mr-2 text-[#1A0F0A]/30 hover:text-[#C19A6B] hidden group-hover:block bg-white p-1 border border-[#1A0F0A]/20"><MessageSquareText size={14}/></button>
+                          <div className="absolute top-0 right-0 mt-2 mr-2 flex gap-2 items-center">
+                            <button onClick={() => setCommunityReplyTo(reply)} className="text-[#1A0F0A]/30 hover:text-[#C19A6B] hidden group-hover:block bg-white p-1 border border-[#1A0F0A]/20"><MessageSquareText size={14}/></button>
+                            {!reply.is_deleted_for_everyone && reply.id && (
+                              <button 
+                                onClick={() => setDeleteTarget({ id: reply.id, chatType: 'community', isAuthor: reply.user?.id === currentUser?.id })} 
+                                className="text-[#1A0F0A]/30 hover:text-red-500 hidden group-hover:block bg-white p-1 border border-[#1A0F0A]/20 cursor-pointer"
+                                title="Hapus pesan"
+                              >
+                                <X size={14} />
+                              </button>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -798,6 +978,293 @@ export default function Dashboard({
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* CREATE KOMUNITAS MODAL */}
+      {createKomunitasOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#1A0F0A]/80 backdrop-blur-sm p-4" onClick={() => setCreateKomunitasOpen(false)}>
+          <div className="w-full max-w-md bg-[#FAF6F0] border-2 border-[#1A0F0A] p-6 shadow-[8px_8px_0px_0px_#C19A6B] animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="font-clash text-2xl font-black uppercase">Buat Komunitas</h3>
+              <button onClick={() => setCreateKomunitasOpen(false)}><X size={20} /></button>
+            </div>
+            <form onSubmit={handleCreateKomunitas} className="space-y-4">
+              <div>
+                <label className="block font-mono text-[10px] font-black uppercase tracking-[0.16em] mb-1">Nama Komunitas</label>
+                <input required type="text" value={komunitasForm.nama_komunitas} onChange={e => setKomunitasForm(s => ({...s, nama_komunitas: e.target.value}))} className="w-full border-2 border-[#1A0F0A] px-3 py-2 outline-none focus:border-[#C19A6B]" />
+              </div>
+              <div>
+                <label className="block font-mono text-[10px] font-black uppercase tracking-[0.16em] mb-1">Domisili / Wilayah</label>
+                <input required type="text" value={komunitasForm.domisili} onChange={e => setKomunitasForm(s => ({...s, domisili: e.target.value}))} className="w-full border-2 border-[#1A0F0A] px-3 py-2 outline-none focus:border-[#C19A6B]" />
+              </div>
+              <div>
+                <label className="block font-mono text-[10px] font-black uppercase tracking-[0.16em] mb-1">Deskripsi Singkat</label>
+                <textarea required rows="3" value={komunitasForm.deskripsi} onChange={e => setKomunitasForm(s => ({...s, deskripsi: e.target.value}))} className="w-full border-2 border-[#1A0F0A] px-3 py-2 outline-none focus:border-[#C19A6B] custom-scrollbar"></textarea>
+              </div>
+              <button type="submit" className={`${btnPrimary} w-full`}>Dirikan Komunitas</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* WHATSAPP-STYLE DELETE MESSAGE DIALOG */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-[250] flex items-center justify-center bg-[#1A0F0A]/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-sm border-2 border-[#1A0F0A] bg-[#FAF6F0] p-6 shadow-[6px_6px_0px_0px_#C19A6B] animate-in zoom-in-95 duration-200">
+            <h4 className="font-clash text-lg font-black uppercase tracking-tight mb-2 text-[#1A0F0A]">Hapus Pesan?</h4>
+            <p className="text-xs text-[#1A0F0A]/70 mb-6 font-mono uppercase tracking-wide">Pilih opsi penghapusan pesan ini.</p>
+            <div className="flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  handleDeleteMessage(deleteTarget.id, deleteTarget.chatType, 'me');
+                  setDeleteTarget(null);
+                }}
+                className="w-full border-2 border-[#1A0F0A] bg-white text-[#1A0F0A] py-2 font-mono text-[10px] font-black uppercase tracking-[0.14em] shadow-[3px_3px_0px_0px_#1A0F0A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_0px_#1A0F0A] transition-all cursor-pointer"
+              >
+                Hapus untuk saya
+              </button>
+              {deleteTarget.isAuthor && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleDeleteMessage(deleteTarget.id, deleteTarget.chatType, 'everyone');
+                    setDeleteTarget(null);
+                  }}
+                  className="w-full border-2 border-[#1A0F0A] bg-red-500 text-white py-2 font-mono text-[10px] font-black uppercase tracking-[0.14em] shadow-[3px_3px_0px_0px_#1A0F0A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_0px_#1A0F0A] transition-all cursor-pointer"
+                >
+                  Hapus untuk semua orang
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                className="w-full border-2 border-[#1A0F0A] bg-gray-200 text-[#1A0F0A] py-2 font-mono text-[10px] font-black uppercase tracking-[0.14em] hover:bg-gray-300 transition-colors cursor-pointer mt-2"
+              >
+                Batal
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MANAGE KOMUNITAS MODAL */}
+      {manageKomunitasOpen && selectedKomunitas && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[#1A0F0A]/95 backdrop-blur-md p-4" onClick={() => setManageKomunitasOpen(false)}>
+          <div className="w-full max-w-2xl bg-[#FAF6F0] border-2 border-[#1A0F0A] shadow-[8px_8px_0px_0px_#1A0F0A] flex flex-col h-[70vh] animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
+            {/* Header */}
+            <div className="p-4 border-b-2 border-[#1A0F0A] flex justify-between items-center bg-white shrink-0">
+              <div>
+                <h3 className="font-clash text-xl font-black uppercase">Kelola Komunitas</h3>
+                <p className="font-mono text-[9px] text-[#1A0F0A]/60 uppercase mt-0.5">{selectedKomunitas.title}</p>
+              </div>
+              <button onClick={() => setManageKomunitasOpen(false)} className="text-[#1A0F0A] hover:text-[#C19A6B]"><X size={20} /></button>
+            </div>
+
+            {/* Tabs Selector */}
+            <div className="flex border-b-2 border-[#1A0F0A] bg-white shrink-0">
+              <button 
+                onClick={() => setManageTab('profile')} 
+                className={`flex-1 py-3 text-xs font-mono font-black uppercase tracking-[0.1em] border-r-2 border-[#1A0F0A] ${manageTab === 'profile' ? 'bg-[#C19A6B] text-[#1A0F0A]' : 'bg-white hover:bg-gray-50'}`}
+              >
+                Edit Profil
+              </button>
+              <button 
+                onClick={() => setManageTab('members')} 
+                className={`flex-1 py-3 text-xs font-mono font-black uppercase tracking-[0.1em] ${manageTab === 'members' ? 'bg-[#C19A6B] text-[#1A0F0A]' : 'bg-white hover:bg-gray-50'}`}
+              >
+                Kelola Anggota
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-white">
+              {manageTab === 'profile' ? (
+                <form onSubmit={handleUpdateKomunitas} className="space-y-4">
+                  <div className="flex flex-col md:flex-row gap-6">
+                    {/* Cover Preview & Upload */}
+                    <div className="w-full md:w-1/3 flex flex-col items-center">
+                      <label className="block font-mono text-[10px] font-black uppercase tracking-[0.16em] mb-2 self-start">Foto Sampul</label>
+                      <div className="w-full aspect-video md:h-24 border-2 border-[#1A0F0A] relative overflow-hidden bg-gray-100 flex items-center justify-center">
+                        {editKomunitasPreview ? (
+                          <img src={editKomunitasPreview} className="w-full h-full object-cover" alt="Preview" />
+                        ) : (
+                          <span className="text-[10px] font-mono text-gray-400">Belum ada foto</span>
+                        )}
+                      </div>
+                      <label className="mt-3 cursor-pointer w-full text-center border-2 border-[#1A0F0A] py-1.5 font-mono text-[9px] font-black uppercase tracking-[0.12em] bg-gray-100 hover:bg-[#C19A6B] transition-colors">
+                        <Upload size={10} className="inline mr-1" /> Unggah Foto
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          className="hidden" 
+                          onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (file) {
+                              setEditKomunitasForm(s => ({ ...s, photo: file }));
+                              setEditKomunitasPreview(URL.createObjectURL(file));
+                            }
+                          }} 
+                        />
+                      </label>
+                    </div>
+
+                    <div className="flex-1 space-y-4">
+                      <div>
+                        <label className="block font-mono text-[10px] font-black uppercase tracking-[0.16em] mb-1">Nama Komunitas</label>
+                        <input 
+                          required 
+                          type="text" 
+                          value={editKomunitasForm.nama_komunitas} 
+                          onChange={e => setEditKomunitasForm(s => ({...s, nama_komunitas: e.target.value}))} 
+                          className="w-full border-2 border-[#1A0F0A] px-3 py-2 outline-none focus:border-[#C19A6B] text-sm" 
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-mono text-[10px] font-black uppercase tracking-[0.16em] mb-1">Domisili / Wilayah</label>
+                        <input 
+                          required 
+                          type="text" 
+                          value={editKomunitasForm.domisili} 
+                          onChange={e => setEditKomunitasForm(s => ({...s, domisili: e.target.value}))} 
+                          className="w-full border-2 border-[#1A0F0A] px-3 py-2 outline-none focus:border-[#C19A6B] text-sm" 
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-mono text-[10px] font-black uppercase tracking-[0.16em] mb-1">Deskripsi Komunitas</label>
+                    <textarea 
+                      rows="4" 
+                      value={editKomunitasForm.deskripsi} 
+                      onChange={e => setEditKomunitasForm(s => ({...s, deskripsi: e.target.value}))} 
+                      className="w-full border-2 border-[#1A0F0A] px-3 py-2 outline-none focus:border-[#C19A6B] text-sm custom-scrollbar"
+                    />
+                  </div>
+
+                  <div className="pt-2">
+                    <button 
+                      type="submit" 
+                      disabled={manageSaving}
+                      className={`${btnPrimary} w-full`}
+                    >
+                      {manageSaving ? 'Menyimpan...' : 'Simpan Perubahan'}
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div className="space-y-6">
+                  {/* Search and Add User form */}
+                  <div className="border-2 border-[#1A0F0A] p-4 bg-[#FAF6F0] relative">
+                    <h4 className="font-mono text-[10px] font-black uppercase tracking-[0.16em] mb-2">Tambah Anggota Baru</h4>
+                    <div className="relative">
+                      <div className="flex border-2 border-[#1A0F0A] bg-white items-center px-3">
+                        <Search size={16} className="text-[#1A0F0A]/50 mr-2" />
+                        <input 
+                          type="text" 
+                          value={memberSearchQuery} 
+                          onChange={e => setMemberSearchQuery(e.target.value)} 
+                          placeholder="Cari nama atau username..." 
+                          className="flex-1 py-2 outline-none text-xs bg-transparent" 
+                        />
+                        {memberSearchQuery && (
+                          <button onClick={() => setMemberSearchQuery('')}><X size={14} /></button>
+                        )}
+                      </div>
+
+                      {/* Dropdown Search Results */}
+                      {memberSearchResults.length > 0 && (
+                        <div className="absolute left-0 right-0 mt-1 border-2 border-[#1A0F0A] bg-white z-[210] shadow-[4px_4px_0px_0px_#1A0F0A] max-h-48 overflow-y-auto custom-scrollbar">
+                          {memberSearchResults.map(user => (
+                            <div key={user.id} className="flex items-center justify-between p-2 hover:bg-gray-50 border-b border-gray-100 last:border-b-0">
+                              <div className="flex items-center gap-2">
+                                <img src={user.avatar_url} alt="Avatar" className="w-6 h-6 object-cover border border-[#1A0F0A]/20" />
+                                <div className="text-[10px]">
+                                  <p className="font-bold font-mono">{user.name}</p>
+                                  <p className="text-[#1A0F0A]/50">@{user.username}</p>
+                                </div>
+                              </div>
+                              <button 
+                                onClick={() => handleAddMember(user.id)} 
+                                className="bg-[#C19A6B] hover:bg-[#1A0F0A] hover:text-[#FAF6F0] text-white border border-[#1A0F0A] px-2 py-1 text-[9px] font-mono font-bold uppercase tracking-wider"
+                              >
+                                Tambah
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {memberSearchQuery.trim() !== '' && memberSearchResults.length === 0 && (
+                        <div className="absolute left-0 right-0 mt-1 border-2 border-[#1A0F0A] bg-white z-[210] p-3 text-center text-xs font-mono text-gray-400">
+                          Tidak menemukan user...
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Members list */}
+                  <div>
+                    <h4 className="font-mono text-[10px] font-black uppercase tracking-[0.16em] mb-3">Daftar Anggota</h4>
+                    <div className="border-2 border-[#1A0F0A] divide-y-2 divide-[#1A0F0A] bg-white">
+                      {(selectedKomunitas.members ?? []).map(member => (
+                        <div key={member.id || member.username} className="flex items-center justify-between p-3">
+                          <div className="flex items-center gap-3">
+                            <div className="relative shrink-0">
+                              <img src={member.avatar_url} alt="Avatar" className="w-8 h-8 object-cover border border-[#1A0F0A]" />
+                              <span className={`absolute bottom-0 right-0 block w-2 h-2 rounded-full border border-white ${member.is_online ? 'bg-green-500' : 'bg-gray-400'}`} />
+                            </div>
+                            <div>
+                              <p className="font-mono text-[10px] font-black uppercase">{member.name}</p>
+                              <p className="text-[9px] font-mono text-[#1A0F0A]/50 uppercase">{member.role}</p>
+                            </div>
+                          </div>
+                          {member.role !== 'leader' && member.id !== currentUser?.id && (
+                            <button 
+                              onClick={() => handleKickMember(member.id, member.name)} 
+                              className="text-red-500 hover:text-red-700 p-1 bg-red-50 hover:bg-red-100 border border-red-200 transition-colors"
+                              title="Keluarkan anggota"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* KICK MEMBER CONFIRMATION DIALOG */}
+      {kickConfirmTarget && (
+        <div className="fixed inset-0 z-[260] flex items-center justify-center bg-[#1A0F0A]/85 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-sm border-2 border-[#1A0F0A] bg-[#FAF6F0] p-6 shadow-[6px_6px_0px_0px_#C19A6B] animate-in zoom-in-95 duration-200">
+            <h4 className="font-clash text-lg font-black uppercase tracking-tight mb-2 text-[#1A0F0A]">Keluarkan Anggota?</h4>
+            <p className="text-xs text-[#1A0F0A]/70 mb-6 font-mono uppercase tracking-wide">
+              Apakah Anda yakin ingin mengeluarkan <span className="text-[#C19A6B] font-bold">"{kickConfirmTarget.name}"</span> dari komunitas?
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={executeKickMember}
+                className="flex-1 border-2 border-[#1A0F0A] bg-red-500 text-white py-2 font-mono text-[10px] font-black uppercase tracking-[0.14em] shadow-[3px_3px_0px_0px_#1A0F0A] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[2px_2px_0px_0px_#1A0F0A] transition-all cursor-pointer"
+              >
+                Keluarkan
+              </button>
+              <button
+                type="button"
+                onClick={() => setKickConfirmTarget(null)}
+                className="flex-1 border-2 border-[#1A0F0A] bg-gray-200 text-[#1A0F0A] py-2 font-mono text-[10px] font-black uppercase tracking-[0.14em] hover:bg-gray-300 transition-colors cursor-pointer"
+              >
+                Batal
+              </button>
             </div>
           </div>
         </div>

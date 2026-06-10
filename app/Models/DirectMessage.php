@@ -14,6 +14,9 @@ class DirectMessage extends Model
         'receiver_id',
         'message',
         'read_at',
+        'deleted_for_sender',
+        'deleted_for_receiver',
+        'deleted_for_everyone',
     ];
 
     protected $casts = [

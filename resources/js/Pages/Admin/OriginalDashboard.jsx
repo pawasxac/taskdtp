@@ -114,8 +114,8 @@ export default function OriginalDashboard({ stats }) {
                                 <p className="font-clash text-3xl font-black">{stats.community_members_count}</p>
                             </div>
                             <div className="border border-white/20 p-4">
-                                <p className="font-mono text-[10px] text-white/50 uppercase mb-1">Gathering Requests</p>
-                                <p className="font-clash text-3xl font-black">{stats.gathering_requests_count}</p>
+                                <p className="font-mono text-[10px] text-white/50 uppercase mb-1">Global Chats</p>
+                                <p className="font-clash text-3xl font-black">{stats.global_chats_count || 0}</p>
                             </div>
                         </div>
                     </div>
@@ -131,7 +131,7 @@ export default function OriginalDashboard({ stats }) {
                             { title: 'Coffee Shops', desc: 'Kelola direktori tempat', link: '/admin/coffee-shops' },
                             { title: 'Komunitas', desc: 'Monitor forum diskusi', link: '/admin/komunitas' },
                             { title: 'Posts Moderation', desc: 'Kontrol konten forum', link: '/admin/community-posts' },
-                            { title: 'Gathering', desc: 'Persetujuan event', link: '/admin/gathering-requests' },
+                            { title: 'Global Chats', desc: 'Pantau obrolan global', link: '/admin/global-chats' },
                             { title: 'Reviews', desc: 'Moderasi ulasan kedai', link: '/admin/coffee-shop-reviews' },
                             { title: 'User Management', desc: 'Hak akses & akun', link: '/admin/login-monitor' },
                             { title: 'Area / Kecamatan', desc: 'Mapping wilayah', link: '/admin/kecamatan' },
