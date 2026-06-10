@@ -137,6 +137,9 @@ export default function OriginalDashboard({ stats }) {
                             { title: 'Area / Kecamatan', desc: 'Mapping wilayah', link: '/admin/kecamatan' },
                             { title: 'Memberships', desc: 'Data keanggotaan', link: '/admin/community-members' },
                             { title: 'Direct Messages', desc: 'Pantau pesan langsung', link: '/admin/direct-messages' },
+                            { title: 'Login Logs', desc: 'Riwayat login user', link: '/admin/login-logs' },
+                            { title: 'Conversations', desc: 'Pesan obrolan direct', link: '/admin/conversations' },
+                            { title: 'System Notifications', desc: 'Daftar notifikasi db', link: '/admin/notifications' },
                         ].map((item, i) => (
                             <a 
                                 key={i} 

@@ -19,6 +19,9 @@
         <a href="{{ route('community-posts.index') }}" class="{{ request()->routeIs('community-posts.*') ? 'active' : '' }}">Community Posts</a>
         <a href="{{ route('global-chats.index') }}" class="{{ request()->routeIs('global-chats.*') ? 'active' : '' }}">Global Chats</a>
         <a href="{{ route('direct-messages.index') }}" class="{{ request()->routeIs('direct-messages.*') ? 'active' : '' }}">Direct Messages</a>
+        <a href="{{ route('login-logs.index') }}" class="{{ request()->routeIs('login-logs.*') ? 'active' : '' }}">Login Logs</a>
+        <a href="{{ route('conversations.index') }}" class="{{ request()->routeIs('conversations.*') ? 'active' : '' }}">Conversations</a>
+        <a href="{{ route('notifications.index') }}" class="{{ request()->routeIs('notifications.*') ? 'active' : '' }}">System Notifications</a>
         <a href="{{ route('coffee-shop-reviews.index') }}" class="{{ request()->routeIs('coffee-shop-reviews.*') ? 'active' : '' }}">Reviews</a>
         <a href="{{ route('community-members.index') }}" class="{{ request()->routeIs('community-members.*') ? 'active' : '' }}">Community Members</a>
         <a href="{{ route('admin.login.monitor') }}" class="{{ request()->routeIs('admin.login.monitor') || request()->routeIs('admin.user.*') ? 'active' : '' }}">Manajemen User</a>

@@ -1016,6 +1016,9 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
         Route::resource('community-members', \App\Http\Controllers\Admin\CommunityMemberController::class);
         Route::resource('global-chats', \App\Http\Controllers\Admin\GlobalChatController::class)->only(['index', 'destroy']);
         Route::resource('direct-messages', \App\Http\Controllers\Admin\DirectMessageController::class)->only(['index', 'destroy']);
+        Route::resource('login-logs', \App\Http\Controllers\Admin\LoginLogController::class)->only(['index', 'destroy']);
+        Route::resource('conversations', \App\Http\Controllers\Admin\ConversationController::class)->only(['index', 'destroy']);
+        Route::resource('notifications', \App\Http\Controllers\Admin\NotificationController::class)->only(['index', 'destroy']);
         
         // User management routes
         Route::get('/users/create', [CoffeeShopController::class, 'createUser'])->name('admin.user.create');
