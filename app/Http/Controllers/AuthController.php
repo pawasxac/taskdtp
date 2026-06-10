@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\LoginLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -54,13 +53,6 @@ class AuthController extends Controller
         // Attempt login
         Auth::login($userExists);
         $request->session()->regenerate();
-
-        LoginLog::create([
-            'user_id' => Auth::id(),
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->header('User-Agent'),
-            'login_at' => now(),
-        ]);
 
         if (Auth::user()->role === 'admin') {
             return redirect()->route('admin.gateway');
