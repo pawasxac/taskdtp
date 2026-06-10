@@ -567,14 +567,14 @@
     </div>
     
     <script type="module">
-        // Custom Cursor Tracking
+
         const cursor = document.getElementById('custom-cursor');
-        
+
         document.addEventListener('mousemove', (e) => {
             cursor.style.transform = `translate(${e.clientX - 8}px, ${e.clientY - 8}px)`;
         });
-        
-        // User Profile Data
+
+
         const userProfiles = {
             radha: {
                 name: '@radha_studio',
@@ -601,40 +601,40 @@
                 avatarBg: '#160F0B'
             }
         };
-        
-        // Profile Card Logic
+
+
         const profileCardOverlay = document.getElementById('profileCardOverlay');
         const profileCard = document.getElementById('profileCard');
         const closeProfileCardBtn = document.getElementById('closeProfileCard');
         const userTriggers = document.querySelectorAll('.user-trigger');
-        
+
         userTriggers.forEach(trigger => {
             trigger.addEventListener('click', (e) => {
                 e.preventDefault();
                 const userId = trigger.dataset.userId;
                 const user = userProfiles[userId];
-                
+
                 if (user) {
                     document.getElementById('profileCardName').textContent = user.name;
                     document.getElementById('profileCardStatus').textContent = user.status;
                     document.getElementById('profileCardAvatar').textContent = user.avatar;
                     document.getElementById('profileCardAvatar').style.backgroundColor = user.avatarBg;
                     document.getElementById('profileCardAvatar').style.color = user.avatarBg === '#E6E1DA' || user.avatarBg === '#D4A574' ? '#160F0B' : '#FBF9F6';
-                    
+
                     profileCardOverlay.classList.add('active');
                 }
             });
         });
-        
+
         closeProfileCardBtn.addEventListener('click', () => {
             profileCardOverlay.classList.remove('active');
         });
-        
+
         profileCardOverlay.addEventListener('click', (e) => {
             if (e.target === profileCardOverlay) {
                 profileCardOverlay.classList.remove('active');
             }
         });
-    </script>
+</script>
 </body>
 </html>

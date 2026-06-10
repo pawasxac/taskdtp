@@ -7,7 +7,7 @@ export const CustomCursor = () => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Make sure we only attach GSAP if the refs exist
+
     if (!dot.current || !ring.current) return;
 
     const xToDot = gsap.quickTo(dot.current, "x", { duration: 0.1, ease: "power3" });
@@ -20,7 +20,7 @@ export const CustomCursor = () => {
       xToDot(e.clientX); yToDot(e.clientY);
       xToRing(e.clientX); yToRing(e.clientY);
     };
-    
+
     window.addEventListener('mousemove', move);
     return () => window.removeEventListener('mousemove', move);
   }, [isVisible]);

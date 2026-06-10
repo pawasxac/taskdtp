@@ -62,7 +62,7 @@ export default function PublicProfileModal({ user, isOpen, onClose, onDmClick })
 
             <div className="space-y-4">
               <p className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-[#C19A6B] border-b-2 border-[#1A0F0A]/10 pb-2">Koneksi Skena</p>
-              
+
               <div className="flex gap-3">
                 <button onClick={() => { onClose(); onDmClick(user); }} className={btnPrimary}>
                   <MessageCircle size={16} /> Kirim DM
@@ -77,7 +77,7 @@ export default function PublicProfileModal({ user, isOpen, onClose, onDmClick })
                 ) : (
                   <div className={`${btnSocial} opacity-50 cursor-not-allowed`} title="Belum link IG"><Instagram size={20} /></div>
                 )}
-                
+
                 {user.whatsapp ? (
                   <a href={`https://wa.me/${user.whatsapp.replace(/^0/, '62').replace(/\D/g, '')}`} target="_blank" rel="noreferrer" className={btnSocial} title="WhatsApp">
                     <Phone size={20} />

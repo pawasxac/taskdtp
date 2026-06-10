@@ -7,7 +7,7 @@ import { router } from '@inertiajs/react';
  * sudah ada di Welcome.jsx.
  */
 export default function PageLoader() {
-    // Helper to check if a pathname is for global chat, DM, or community chat
+
     const isExcludedPath = (path) => {
         if (!path) return false;
         return (
@@ -19,7 +19,7 @@ export default function PageLoader() {
     };
 
     const [visible, setVisible] = useState(() => {
-        // Jangan tampil saat pertama kali berada di path yang dikecualikan
+
         return !isExcludedPath(window.location.pathname);
     });
     const [fadeOut, setFadeOut] = useState(false);
@@ -29,7 +29,7 @@ export default function PageLoader() {
         let hideTimer = null;
 
         const show = () => {
-            // Jangan tampil jika path saat ini dikecualikan
+
             if (isExcludedPath(window.location.pathname)) return;
             setFadeOut(false);
             setVisible(true);
@@ -43,8 +43,8 @@ export default function PageLoader() {
             }, 400);
         };
 
-        // ── Saat refresh/first load: sembunyikan setelah 1.8 detik ──
-        // Hanya jika BUKAN di path yang dikecualikan
+
+
         let initialFade = null;
         let initialHide = null;
         if (!isExcludedPath(window.location.pathname)) {
@@ -55,18 +55,18 @@ export default function PageLoader() {
             }, 1800);
         }
 
-        // ── Setiap navigasi Inertia ──
+
         const removeStart = router.on('start', (event) => {
-            // Cek URL tujuan navigasi — jangan tampil jika menuju ke path yang dikecualikan
+
             const targetUrl = event?.detail?.visit?.url?.pathname ?? '';
             if (isExcludedPath(targetUrl)) return;
             show();
         });
         const removeFinish = router.on('finish', hide);
 
-        // ── Setiap form submit ──
+
         const handleFormSubmit = (e) => {
-            // Cek target action dari form jika ada
+
             const action = e.target?.action ? new URL(e.target.action).pathname : '';
             if (isExcludedPath(window.location.pathname) || isExcludedPath(action)) return;
             show();

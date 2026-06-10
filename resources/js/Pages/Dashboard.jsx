@@ -77,7 +77,7 @@ export default function Dashboard({
     }
   }, [props.flash]);
 
-  // Modals State
+
   const [resultModal, setResultModal] = useState(null);
   const [publicProfileUser, setPublicProfileUser] = useState(null);
   const [createKomunitasOpen, setCreateKomunitasOpen] = useState(false);
@@ -89,9 +89,9 @@ export default function Dashboard({
   const [communityReplyTo, setCommunityReplyTo] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  // Community Management States
+
   const [manageKomunitasOpen, setManageKomunitasOpen] = useState(false);
-  const [manageTab, setManageTab] = useState('profile'); // 'profile' | 'members'
+  const [manageTab, setManageTab] = useState('profile');
   const [editKomunitasForm, setEditKomunitasForm] = useState({
     nama_komunitas: '',
     deskripsi: '',
@@ -123,7 +123,7 @@ export default function Dashboard({
   const feedRef = useRef(null);
   const lastScrolledUrl = useRef('');
 
-  // Close notif popover on outside click
+
   useEffect(() => {
     if (!notifOpen) return;
     const handleOutside = (e) => {
@@ -136,22 +136,22 @@ export default function Dashboard({
   }, [notifOpen]);
 
   useEffect(() => { setChatMessages(Array.isArray(globalChat) ? globalChat : []); }, [globalChat]);
-  useEffect(() => { 
+  useEffect(() => {
     const serverDms = Array.isArray(directMessages) ? directMessages : [];
-    
+
     setLocalDirectMessages(prev => {
-      // Preserve local temporary threads that aren't synced to server yet
+
       const tempDms = prev.filter(dm => String(dm.id).startsWith('dm-new-') || String(dm.id).startsWith('dm-temp-'));
-      const activeTempDms = tempDms.filter(tempDm => 
+      const activeTempDms = tempDms.filter(tempDm =>
         !serverDms.some(serverDm => serverDm.user?.id === tempDm.user?.id)
       );
-      
-      // Also merge any new messages into existing temporary threads if necessary
+
+
       return [...activeTempDms, ...serverDms];
     });
 
-    // When fresh DMs arrive from backend, check if we had a temporary DM selected
-    // If so, select the real DM that corresponds to the same user
+
+
     if (serverDms.length > 0 && selectedDmId) {
       const isTempId = String(selectedDmId).startsWith('dm-new-');
       if (isTempId) {
@@ -161,11 +161,11 @@ export default function Dashboard({
           setSelectedDmId(realDm.id);
         }
       } else {
-        // We do NOT reset the selectedDmId if it is a temporary ID that hasn't been saved yet,
-        // so we check if the selected DM is either in the server data OR is a temp DM.
+
+
         const existsInServer = serverDms.some(dm => dm.id === selectedDmId);
         const isStillTemp = String(selectedDmId).startsWith('dm-new-') || String(selectedDmId).startsWith('dm-temp-');
-        
+
         if (!existsInServer && !isStillTemp) {
           setSelectedDmId(serverDms[0]?.id || null);
         }
@@ -175,7 +175,7 @@ export default function Dashboard({
   useEffect(() => { if (chatListRef.current) chatListRef.current.scrollTop = chatListRef.current.scrollHeight; }, [chatMessages.length]);
   useEffect(() => { if (feedRef.current) feedRef.current.scrollTop = feedRef.current.scrollHeight; }, [selectedKomunitas?.replies?.length]);
 
-  // Keep selectedKomunitas synchronized with updated forums data from backend
+
   useEffect(() => {
     if (selectedKomunitas && Array.isArray(forums)) {
       const updated = forums.find((f) => f.id === selectedKomunitas.id);
@@ -197,7 +197,7 @@ export default function Dashboard({
     }
   }, [selectedKomunitas]);
 
-  // Mark direct messages as read when a thread is selected
+
   useEffect(() => {
     if (selectedDmId) {
       const currentDm = localDirectMessages.find(d => d.id === selectedDmId);
@@ -207,17 +207,17 @@ export default function Dashboard({
     }
   }, [selectedDmId]);
 
-  // Mark community posts as read when community is selected
+
   useEffect(() => {
     if (selectedKomunitas && !String(selectedKomunitas.id).startsWith('fallback-') && !String(selectedKomunitas.id).startsWith('circle-')) {
       router.post(`/komunitas/${selectedKomunitas.id}/read`, {}, { preserveScroll: true });
     }
   }, [selectedKomunitas?.id]);
 
-  // Connect to SSE stream with error handling
-  // Removed fake SSE stream to use real DB data
-  
-  // Polling for new Global Chat messages and DMs every 5 seconds
+
+
+
+
   useEffect(() => {
     const interval = setInterval(() => {
       router.reload({ only: ['globalChat', 'directMessages', 'forums'], preserveScroll: true, preserveState: true });
@@ -230,8 +230,8 @@ export default function Dashboard({
     const params = new URLSearchParams(window.location.search);
     const tab = params.get('tab');
     const focus = params.get('focus');
-    
-    // Only scroll if the search query changed (e.g. user clicked a notification)
+
+
     if (window.location.search !== lastScrolledUrl.current) {
       lastScrolledUrl.current = window.location.search;
       if (tab === 'forum' && forumRef.current) {
@@ -261,11 +261,11 @@ export default function Dashboard({
   const handleSendDm = (e) => {
     e.preventDefault();
     if (!dmInput.trim() || !selectedDm) return;
-    
+
     const sentText = dmInput;
     setDmInput('');
 
-    // Optimistically update the UI
+
     setLocalDirectMessages(prev =>
       prev.map(dm => {
         if (dm.id !== selectedDm.id) return dm;
@@ -279,16 +279,16 @@ export default function Dashboard({
             profile_picture: currentUser.profile_picture,
           },
         };
-        return { 
-          ...dm, 
-          last_message: sentText, 
+        return {
+          ...dm,
+          last_message: sentText,
           messages: [...(dm.messages || []), newMsg],
           time: formatTime()
         };
       })
     );
 
-    // Only send to backend if it's not a fallback user
+
     if (!selectedDm.user?.id || selectedDm.user.id === 99999 || String(selectedDm.id).startsWith('fallback-')) {
       return;
     }
@@ -346,8 +346,8 @@ export default function Dashboard({
         setResultModal({
           type: 'success',
           title: 'Pengajuan Terkirim!',
-          message: isAdmin 
-            ? 'Komunitas berhasil didirikan dan langsung aktif!' 
+          message: isAdmin
+            ? 'Komunitas berhasil didirikan dan langsung aktif!'
             : 'Request pendaftaran komunitas Anda telah berhasil terkirim. Silakan tunggu persetujuan dari admin. Anda bisa memantau perkembangannya pada menu Notifikasi.'
         });
       },
@@ -364,7 +364,7 @@ export default function Dashboard({
   const handleSendKomunitasPost = (e) => {
     e.preventDefault();
     if (!komunitasPostInput.trim() || !selectedKomunitas) return;
-    // Guard: fallback entries (id starts with 'fallback-' or 'circle-') have no real DB record
+
     if (String(selectedKomunitas.id).startsWith('fallback-') || String(selectedKomunitas.id).startsWith('circle-')) {
       setKomunitasPostInput('');
       return;
@@ -488,16 +488,16 @@ export default function Dashboard({
       )}
 
       {publicProfileUser && (
-        <PublicProfileModal 
-          isOpen={!!publicProfileUser} 
-          user={publicProfileUser} 
-          onClose={() => setPublicProfileUser(null)} 
+        <PublicProfileModal
+          isOpen={!!publicProfileUser}
+          user={publicProfileUser}
+          onClose={() => setPublicProfileUser(null)}
           onDmClick={(u) => {
             const existingDm = localDirectMessages.find(dm => dm.user?.id === u.id);
             if (existingDm) {
                 setSelectedDmId(existingDm.id);
             } else {
-                // Instatiate a mock dynamic thread locally for this user
+
                 const newDmId = `dm-new-${u.id}`;
                 const newDmThread = {
                     id: newDmId,
@@ -531,7 +531,7 @@ export default function Dashboard({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 auto-rows-min">
-          
+
           {/* PROFILE CARD - spans 8 cols */}
           <div className="md:col-span-12 lg:col-span-8 border-2 border-[#1A0F0A] bg-[#1A0F0A] text-[#FAF6F0] p-5 shadow-[6px_6px_0px_0px_#C19A6B] flex flex-col justify-between">
             <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
@@ -648,7 +648,7 @@ export default function Dashboard({
                     </div>
                   )}
                   <div className="flex justify-between items-center mb-1">
-                    <span 
+                    <span
                         className="font-mono text-[10px] font-bold uppercase cursor-pointer hover:text-[#C19A6B]"
                         onClick={() => setPublicProfileUser(msg.user)}
                     >{msg.user?.name || msg.user?.username}</span>
@@ -669,11 +669,11 @@ export default function Dashboard({
                 </div>
               )}
               <div className="flex">
-                <input 
-                  type="text" 
-                  value={chatInput} 
-                  onChange={(e) => setChatInput(e.target.value)} 
-                  placeholder="Ketik santai..." 
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  placeholder="Ketik santai..."
                   className="flex-1 bg-transparent px-3 py-2 text-sm outline-none font-sans"
                 />
                 <button type="submit" className="magnetic bg-[#C19A6B] border-l-2 border-[#1A0F0A] px-4 flex items-center justify-center">
@@ -688,15 +688,15 @@ export default function Dashboard({
             <div className="border-b-2 border-[#1A0F0A] p-3 flex justify-between items-center bg-[#FAF6F0] shrink-0">
               <h3 className="font-clash text-lg font-black uppercase">Inbox DM</h3>
             </div>
-            
+
             <div className="flex flex-1 min-h-0">
                 {/* Left Sidebar (Active Convos) */}
                 <div className="w-1/3 border-r-2 border-[#1A0F0A] overflow-y-auto custom-scrollbar bg-white">
                     {localDirectMessages.length === 0 ? (
                         <p className="p-4 text-xs font-mono text-[#1A0F0A]/50">Belum ada DM.</p>
                     ) : localDirectMessages.map(dm => (
-                        <button 
-                            key={dm.id} 
+                        <button
+                            key={dm.id}
                             onClick={() => setSelectedDmId(dm.id)}
                             className={`w-full text-left p-3 border-b border-[#1A0F0A]/10 flex items-center gap-3 transition-colors ${selectedDmId === dm.id ? 'bg-[#FAF6F0]' : 'hover:bg-[#FAF6F0]'}`}
                         >
@@ -721,7 +721,7 @@ export default function Dashboard({
                                 <span className={`inline-block w-2.5 h-2.5 rounded-full border border-[#1A0F0A] ${selectedDm.user?.is_online ? 'bg-green-500' : 'bg-gray-400'}`} title={selectedDm.user?.is_online ? 'Online' : 'Offline'} />
                                 <span className="font-mono text-[9px] uppercase text-[#1A0F0A]/60">{selectedDm.user?.is_online ? 'Online' : 'Offline'}</span>
                             </div>
-                            <button 
+                            <button
                                 onClick={() => setPublicProfileUser(selectedDm.user)}
                                 className="magnetic px-2.5 py-1 border-2 border-[#1A0F0A] bg-white text-[10px] font-mono uppercase font-black hover:bg-[#C19A6B] hover:text-[#1A0F0A] transition-colors shadow-[2px_2px_0px_0px_#1A0F0A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#1A0F0A]"
                             >
@@ -768,11 +768,11 @@ export default function Dashboard({
                     {selectedDm && (
                         (selectedDm?.total_messages_count ?? selectedDm?.messages?.length ?? 0) < 10 ? (
                             <form onSubmit={handleSendDm} className="border-t-2 border-[#1A0F0A] flex shrink-0 bg-white">
-                                <input 
-                                    type="text" 
-                                    value={dmInput} 
-                                    onChange={(e) => setDmInput(e.target.value)} 
-                                    placeholder={`Balas ${selectedDm.user?.name}...`} 
+                                <input
+                                    type="text"
+                                    value={dmInput}
+                                    onChange={(e) => setDmInput(e.target.value)}
+                                    placeholder={`Balas ${selectedDm.user?.name}...`}
                                     className="flex-1 px-4 py-3 text-sm outline-none font-sans bg-transparent"
                                 />
                                 <button type="submit" className="magnetic bg-[#C19A6B] border-l-2 border-[#1A0F0A] px-6 flex items-center justify-center">
@@ -800,7 +800,7 @@ export default function Dashboard({
                 <Plus size={16} /> Buat Komunitas
               </button>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {(forums || []).map(f => (
                 <article key={f.id} className="border-2 border-[#1A0F0A] bg-[#FAF6F0] flex flex-col hover:-translate-y-1 transition-transform duration-300">
@@ -877,7 +877,7 @@ export default function Dashboard({
               <img src={selectedKomunitas.cover_image} alt="Cover" className="absolute inset-0 w-full h-full object-cover opacity-60" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#1A0F0A] to-transparent" />
               <button onClick={() => setSelectedKomunitas(null)} className="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full hover:bg-[#C19A6B] transition-colors z-10"><X size={20} /></button>
-              
+
               <div className="relative z-10 mt-auto p-4 md:p-6 flex justify-between items-end w-full">
                 <div>
                   <h2 className="font-clash text-3xl md:text-5xl font-black uppercase text-white">{selectedKomunitas.title}</h2>
@@ -887,8 +887,8 @@ export default function Dashboard({
                 </div>
                 <div className="flex items-center gap-2">
                   {selectedKomunitas.is_leader && (
-                    <button 
-                      onClick={() => setManageKomunitasOpen(true)} 
+                    <button
+                      onClick={() => setManageKomunitasOpen(true)}
                       className="bg-[#C19A6B] hover:bg-[#1A0F0A] hover:text-[#FAF6F0] text-[#1A0F0A] border-2 border-[#1A0F0A] px-3 py-1.5 text-xs font-black uppercase font-mono shadow-[2px_2px_0px_0px_#1A0F0A] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0px_0px_#1A0F0A] transition-all"
                     >
                       Kelola Komunitas
@@ -978,8 +978,8 @@ export default function Dashboard({
                           <div className="absolute top-0 right-0 mt-2 mr-2 flex gap-2 items-center">
                             <button onClick={() => setCommunityReplyTo(reply)} className="text-[#1A0F0A]/30 hover:text-[#C19A6B] hidden group-hover:block bg-white p-1 border border-[#1A0F0A]/20"><MessageSquareText size={14}/></button>
                             {!reply.is_deleted_for_everyone && reply.id && (
-                              <button 
-                                onClick={() => setDeleteTarget({ id: reply.id, chatType: 'community', isAuthor: reply.user?.id === currentUser?.id })} 
+                              <button
+                                onClick={() => setDeleteTarget({ id: reply.id, chatType: 'community', isAuthor: reply.user?.id === currentUser?.id })}
                                 className="text-[#1A0F0A]/30 hover:text-red-500 hidden group-hover:block bg-white p-1 border border-[#1A0F0A]/20 cursor-pointer"
                                 title="Hapus pesan"
                               >
@@ -1003,11 +1003,11 @@ export default function Dashboard({
                       </div>
                     )}
                     <div className="flex gap-2">
-                      <input 
-                        type="text" 
-                        value={komunitasPostInput} 
-                        onChange={(e) => setKomunitasPostInput(e.target.value)} 
-                        placeholder={`Ngobrol di ${selectedKomunitas.title}...`} 
+                      <input
+                        type="text"
+                        value={komunitasPostInput}
+                        onChange={(e) => setKomunitasPostInput(e.target.value)}
+                        placeholder={`Ngobrol di ${selectedKomunitas.title}...`}
                         className="flex-1 border-2 border-[#1A0F0A] px-4 py-2 outline-none focus:border-[#C19A6B] text-sm"
                       />
                       <button type="submit" className={`${btnPrimary} px-6`}>Kirim</button>
@@ -1016,7 +1016,7 @@ export default function Dashboard({
                 ) : (
                   <div className="border-t-2 border-[#1A0F0A] bg-[#C19A6B]/10 p-4 shrink-0 text-center">
                     <p className="font-mono text-xs uppercase mb-3 text-[#1A0F0A]/70">Gabung dulu buat ikut ngobrol</p>
-                    <button 
+                    <button
                       onClick={() => {
                         router.post(`/komunitas/${selectedKomunitas.id}/join`, {}, {
                           preserveScroll: true,
@@ -1132,14 +1132,14 @@ export default function Dashboard({
 
             {/* Tabs Selector */}
             <div className="flex border-b-2 border-[#1A0F0A] bg-white shrink-0">
-              <button 
-                onClick={() => setManageTab('profile')} 
+              <button
+                onClick={() => setManageTab('profile')}
                 className={`flex-1 py-3 text-xs font-mono font-black uppercase tracking-[0.1em] border-r-2 border-[#1A0F0A] ${manageTab === 'profile' ? 'bg-[#C19A6B] text-[#1A0F0A]' : 'bg-white hover:bg-gray-50'}`}
               >
                 Edit Profil
               </button>
-              <button 
-                onClick={() => setManageTab('members')} 
+              <button
+                onClick={() => setManageTab('members')}
                 className={`flex-1 py-3 text-xs font-mono font-black uppercase tracking-[0.1em] ${manageTab === 'members' ? 'bg-[#C19A6B] text-[#1A0F0A]' : 'bg-white hover:bg-gray-50'}`}
               >
                 Kelola Anggota
@@ -1163,17 +1163,17 @@ export default function Dashboard({
                       </div>
                       <label className="mt-3 cursor-pointer w-full text-center border-2 border-[#1A0F0A] py-1.5 font-mono text-[9px] font-black uppercase tracking-[0.12em] bg-gray-100 hover:bg-[#C19A6B] transition-colors">
                         <Upload size={10} className="inline mr-1" /> Unggah Foto
-                        <input 
-                          type="file" 
-                          accept="image/*" 
-                          className="hidden" 
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
                           onChange={(e) => {
                             const file = e.target.files[0];
                             if (file) {
                               setEditKomunitasForm(s => ({ ...s, photo: file }));
                               setEditKomunitasPreview(URL.createObjectURL(file));
                             }
-                          }} 
+                          }}
                         />
                       </label>
                     </div>
@@ -1181,21 +1181,21 @@ export default function Dashboard({
                     <div className="flex-1 space-y-4">
                       <div>
                         <label className="block font-mono text-[10px] font-black uppercase tracking-[0.16em] mb-1">Nama Komunitas</label>
-                        <input 
-                          required 
-                          type="text" 
-                          value={editKomunitasForm.nama_komunitas} 
-                          onChange={e => setEditKomunitasForm(s => ({...s, nama_komunitas: e.target.value}))} 
-                          className="w-full border-2 border-[#1A0F0A] px-3 py-2 outline-none focus:border-[#C19A6B] text-sm" 
+                        <input
+                          required
+                          type="text"
+                          value={editKomunitasForm.nama_komunitas}
+                          onChange={e => setEditKomunitasForm(s => ({...s, nama_komunitas: e.target.value}))}
+                          className="w-full border-2 border-[#1A0F0A] px-3 py-2 outline-none focus:border-[#C19A6B] text-sm"
                         />
                       </div>
                       <div>
                         <label className="block font-mono text-[10px] font-black uppercase tracking-[0.16em] mb-1">Domisili / Wilayah</label>
-                        <select 
-                          required 
-                          value={editKomunitasForm.domisili} 
-                          onChange={e => setEditKomunitasForm(s => ({...s, domisili: e.target.value}))} 
-                          className="w-full border-2 border-[#1A0F0A] px-3 py-2 outline-none focus:border-[#C19A6B] bg-white font-mono text-xs uppercase" 
+                        <select
+                          required
+                          value={editKomunitasForm.domisili}
+                          onChange={e => setEditKomunitasForm(s => ({...s, domisili: e.target.value}))}
+                          className="w-full border-2 border-[#1A0F0A] px-3 py-2 outline-none focus:border-[#C19A6B] bg-white font-mono text-xs uppercase"
                         >
                           <option value="">Pilih Wilayah (Sidoarjo)</option>
                           {(kecamatans || []).map(k => (
@@ -1210,17 +1210,17 @@ export default function Dashboard({
 
                   <div>
                     <label className="block font-mono text-[10px] font-black uppercase tracking-[0.16em] mb-1">Deskripsi Komunitas</label>
-                    <textarea 
-                      rows="4" 
-                      value={editKomunitasForm.deskripsi} 
-                      onChange={e => setEditKomunitasForm(s => ({...s, deskripsi: e.target.value}))} 
+                    <textarea
+                      rows="4"
+                      value={editKomunitasForm.deskripsi}
+                      onChange={e => setEditKomunitasForm(s => ({...s, deskripsi: e.target.value}))}
                       className="w-full border-2 border-[#1A0F0A] px-3 py-2 outline-none focus:border-[#C19A6B] text-sm custom-scrollbar"
                     />
                   </div>
 
                   <div className="pt-2">
-                    <button 
-                      type="submit" 
+                    <button
+                      type="submit"
                       disabled={manageSaving}
                       className={`${btnPrimary} w-full`}
                     >
@@ -1236,12 +1236,12 @@ export default function Dashboard({
                     <div className="relative">
                       <div className="flex border-2 border-[#1A0F0A] bg-white items-center px-3">
                         <Search size={16} className="text-[#1A0F0A]/50 mr-2" />
-                        <input 
-                          type="text" 
-                          value={memberSearchQuery} 
-                          onChange={e => setMemberSearchQuery(e.target.value)} 
-                          placeholder="Cari nama atau username..." 
-                          className="flex-1 py-2 outline-none text-xs bg-transparent" 
+                        <input
+                          type="text"
+                          value={memberSearchQuery}
+                          onChange={e => setMemberSearchQuery(e.target.value)}
+                          placeholder="Cari nama atau username..."
+                          className="flex-1 py-2 outline-none text-xs bg-transparent"
                         />
                         {memberSearchQuery && (
                           <button onClick={() => setMemberSearchQuery('')}><X size={14} /></button>
@@ -1260,8 +1260,8 @@ export default function Dashboard({
                                   <p className="text-[#1A0F0A]/50">@{user.username}</p>
                                 </div>
                               </div>
-                              <button 
-                                onClick={() => handleAddMember(user.id)} 
+                              <button
+                                onClick={() => handleAddMember(user.id)}
                                 className="bg-[#C19A6B] hover:bg-[#1A0F0A] hover:text-[#FAF6F0] text-white border border-[#1A0F0A] px-2 py-1 text-[9px] font-mono font-bold uppercase tracking-wider"
                               >
                                 Tambah
@@ -1296,8 +1296,8 @@ export default function Dashboard({
                             </div>
                           </div>
                           {member.role !== 'leader' && member.id !== currentUser?.id && (
-                            <button 
-                              onClick={() => handleKickMember(member.id, member.name)} 
+                            <button
+                              onClick={() => handleKickMember(member.id, member.name)}
                               className="text-red-500 hover:text-red-700 p-1 bg-red-50 hover:bg-red-100 border border-red-200 transition-colors"
                               title="Keluarkan anggota"
                             >

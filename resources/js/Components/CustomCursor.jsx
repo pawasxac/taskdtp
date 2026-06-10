@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 
 export default function CustomCursor() {
   useEffect(() => {
-    // Only run on non-touch devices
+
     if (typeof window === 'undefined' || !window.matchMedia('(pointer: fine)').matches) {
       return;
     }
@@ -17,19 +17,19 @@ export default function CustomCursor() {
     let ringY = mouseY;
     let isHovering = false;
 
-    // Fast mousemove tracking
+
     const handleMouseMove = (e) => {
       mouseX = e.clientX;
       mouseY = e.clientY;
-      
-      // Update dot immediately for snappiness
+
+
       dot.style.transform = `translate(calc(${mouseX}px - 50%), calc(${mouseY}px - 50%))`;
     };
 
-    // Animation loop for the lagging ring
+
     let animationFrameId;
     const render = () => {
-      // Linear interpolation (lerp) for smooth lag
+
       ringX += (mouseX - ringX) * 0.15;
       ringY += (mouseY - ringY) * 0.15;
 
@@ -39,8 +39,8 @@ export default function CustomCursor() {
       animationFrameId = requestAnimationFrame(render);
     };
 
-    // Event delegation on document.body for Magnetic Snapping
-    // This perfectly survives Inertia SPA navigations without needing to remount
+
+
     const handleMouseOver = (e) => {
       try {
         if (!(e.target instanceof Element)) return;
@@ -48,7 +48,7 @@ export default function CustomCursor() {
         if (target) {
           isHovering = true;
           document.body.classList.add('is-magnetic');
-          
+
           const rect = target.getBoundingClientRect();
           const centerX = rect.left + rect.width / 2;
           const centerY = rect.top + rect.height / 2;
@@ -86,7 +86,7 @@ export default function CustomCursor() {
     };
   }, []);
 
-  // We render the divs here. They will be styled globally by app.css.
+
   return (
     <>
       <div id="fluid-cursor-dot" />

@@ -107,7 +107,7 @@
                     return;
                 }
 
-                // Validate URL format
+
                 try {
                     new URL(url);
                     previewImage.src = url;
@@ -122,11 +122,11 @@
                 }
             });
 
-            // Show preview if there's already a value on page load
+
             if (imageUrlInput.value) {
                 imageUrlInput.dispatchEvent(new Event('input'));
             }
-        </script>
+</script>
 
         <div class="form-actions">
             <a href="{{ route('coffee.index') }}" class="btn-cancel">Batal</a>

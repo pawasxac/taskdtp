@@ -11,7 +11,7 @@ const appName = import.meta.env.VITE_APP_NAME || 'NGOPI';
 
 const AppWrapper = ({ App, props }) => {
     useEffect(() => {
-        // Safe init Lenis smooth scroll
+
         let lenis = null;
         let rafId = null;
         try {

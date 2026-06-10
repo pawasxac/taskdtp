@@ -21,8 +21,8 @@ export default function Admin({ users = [], coffeeShops = [], communities = [] }
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href);
       url.searchParams.set('tab', tabId);
-      // reset page number when switching tabs to avoid loading a page number that doesn't exist for the new tab
-      url.searchParams.delete('page'); 
+
+      url.searchParams.delete('page');
       window.history.replaceState({}, '', url.toString());
     }
   };

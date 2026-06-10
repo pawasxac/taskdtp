@@ -23,7 +23,7 @@ const getAvatarUrl = (user, fallbackLabel = 'Anak Skena') => {
   return `https://ui-avatars.com/api/?name=${label}&background=1A0F0A&color=FAF6F0&bold=true`;
 };
 
-// Hook for scroll reveals
+
 const useReveal = () => {
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -48,25 +48,25 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
   const { props: pageProps } = usePage();
   const user = pageProps?.auth?.user || null;
 
-  // We need local state only for combining load more, main data from props
+
   const [localCafes, setLocalCafes] = useState(coffeeShops?.data || []);
   const nextPageUrl = coffeeShops?.next_page_url || null;
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  // Sync localCafes when coffeeShops props change (for filtering)
+
   useEffect(() => {
     setLocalCafes(coffeeShops?.data || []);
   }, [coffeeShops]);
 
-  // Initialize filter states from props
+
   const [keyword, setKeyword] = useState(filters?.search || '');
   const [activeKecamatan, setActiveKecamatan] = useState(filters?.kecamatan || '');
   const [activePrice, setActivePrice] = useState(filters?.price || '');
-  
+
   const [activeCafe, setActiveCafe] = useState(null);
   const [guestModal, setGuestModal] = useState(false);
 
-  // Only show intro loading screen on true first page load, not on Inertia partial visits
+
   const [showIntro, setShowIntro] = useState(() => {
     try {
       if (sessionStorage.getItem('ngopi_intro_shown')) return false;
@@ -95,27 +95,27 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
     }
   }, [showIntro]);
 
-  // Direct filter update - FORCE RELOAD to ensure data updates!
+
   const updateFilters = (type, value) => {
-    // Update local state immediately
+
     if (type === 'search') setKeyword(value);
     if (type === 'kecamatan') setActiveKecamatan(value);
     if (type === 'price') setActivePrice(value);
 
-    // Prepare the final values
+
     const finalKeyword = type === 'search' ? value : keyword;
     const finalKecamatan = type === 'kecamatan' ? value : activeKecamatan;
     const finalPrice = type === 'price' ? value : activePrice;
 
-    // Create the URL with query params
+
     const params = new URLSearchParams();
     if (finalKeyword) params.set('search', finalKeyword);
     if (finalKecamatan) params.set('kecamatan', finalKecamatan);
     if (finalPrice) params.set('price', finalPrice);
-    
+
     const newUrl = params.toString() ? `/?${params.toString()}` : '/';
-    
-    // FORCE FULL PAGE RELOAD - no issues!
+
+
     window.location.href = newUrl;
   };
 
@@ -151,7 +151,7 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
   const btnSecondary =
     'magnetic inline-flex items-center justify-center gap-2 border-2 border-[#1A0F0A] bg-transparent px-6 py-3 font-mono text-[12px] font-black uppercase tracking-[0.16em] text-[#1A0F0A] transition-all duration-300 hover:bg-[#1A0F0A] hover:text-[#FAF6F0]';
 
-  // Dynamic typing effect state
+
   const [heroTextIndex, setHeroTextIndex] = useState(0);
   const heroLines = [
     "Sruput dulu, overthinking belakangan.",
@@ -192,17 +192,17 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
             <div className="inline-flex items-center gap-2 border-2 border-[#1A0F0A] px-4 py-2 font-mono text-[10px] font-black uppercase tracking-[0.2em] text-[#1A0F0A] mb-6">
               <Sparkles size={14} /> Kopi Aman, Vibes Premium
             </div>
-            
+
             <h1 className="font-clash text-4xl md:text-6xl lg:text-7xl font-black uppercase leading-[1.1] tracking-tight mb-6 h-[140px] md:h-[160px] flex items-center justify-center overflow-hidden">
               <span className="block transition-all duration-500 transform-gpu ease-out text-[#1A0F0A]">
                 {heroLines[heroTextIndex]}
               </span>
             </h1>
-            
+
             <p className="max-w-2xl text-base md:text-lg leading-relaxed text-[#1A0F0A]/80 mb-10">
               Database spot ngopi paling legit se-Sidoarjo dan Surabaya. Entah lu butuh meja pojok buat nugas semalaman, atau sekadar nyari manual brew yang niat bikinnya. Kita filterin biar lu nggak salah masuk circle.
             </p>
-            
+
             <div className="flex flex-wrap justify-center gap-4">
               <button type="button" onClick={scrollToGrid} className={btnPrimary}>
                 Cari Spot Sekarang
@@ -232,7 +232,7 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
                 />
               </div>
             </div>
-            
+
             <div className="w-full md:w-64 shrink-0">
               <label className="block font-mono text-[10px] font-black uppercase tracking-[0.16em] mb-2 text-[#C19A6B]">Area Tongkrongan</label>
               <div className="relative">
@@ -292,7 +292,7 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
                     <Star size={12} className="fill-current text-[#C19A6B]" /> {cafe.rating || 'N/A'}
                   </div>
                 </div>
-                
+
                 <div className="p-4 flex-1 flex flex-col">
                   <p className="font-mono text-[10px] font-black uppercase tracking-[0.16em] text-[#C19A6B] mb-1">{districtLabel(cafe) || 'Skena Area'}</p>
                   <h3 className="font-clash text-xl font-black uppercase mb-2 line-clamp-1">{cafe.nama}</h3>
@@ -365,11 +365,11 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
 
       {/* Fullscreen Wide Modal for Cafe Details */}
       {activeCafe && (
-        <div 
+        <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-[#1A0F0A]/90 backdrop-blur-md p-4 sm:p-8"
           onClick={() => setActiveCafe(null)}
         >
-          <div 
+          <div
             className="w-full max-w-6xl h-full max-h-[90vh] bg-[#FAF6F0] border-2 border-[#1A0F0A] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-300"
             onClick={(e) => e.stopPropagation()}
           >
@@ -379,7 +379,7 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
                 <p className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-[#C19A6B]">{districtLabel(activeCafe)}</p>
                 <h2 className="font-clash text-2xl font-black uppercase">{activeCafe.nama}</h2>
               </div>
-              <button 
+              <button
                 onClick={() => setActiveCafe(null)}
                 className="magnetic p-2 border-2 border-[#1A0F0A] hover:bg-[#1A0F0A] hover:text-white transition-colors"
               >
@@ -401,7 +401,7 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
                       </div>
                     )}
                   </div>
-                  
+
                   <div>
                     <h3 className="font-clash text-2xl font-black uppercase mb-4 flex items-center gap-2">
                       <Map size={24} /> Peta Lokasi
@@ -428,9 +428,9 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
                   <div className="border-2 border-[#1A0F0A] p-6 bg-white">
                     <p className="font-mono text-[10px] font-black uppercase tracking-[0.16em] text-[#C19A6B] mb-1">Status Operasional</p>
                     <p className="font-clash text-xl font-black">{activeCafe.jam_buka} - {activeCafe.jam_tutup}</p>
-                    
+
                     <div className="my-6 border-t-2 border-[#1A0F0A] border-dashed" />
-                    
+
                     <p className="font-mono text-[10px] font-black uppercase tracking-[0.16em] text-[#C19A6B] mb-1">Rating Skena</p>
                     <div className="flex items-center gap-2">
                       <Star size={24} className="fill-current text-[#C19A6B]" />
@@ -438,15 +438,15 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
                     </div>
 
                     <div className="my-6 border-t-2 border-[#1A0F0A] border-dashed" />
-                    
+
                     <p className="font-mono text-[10px] font-black uppercase tracking-[0.16em] text-[#C19A6B] mb-1">Budget Setup</p>
                     <p className="font-mono font-bold">Rp {formatRupiah(activeCafe.harga_min)} - Rp {formatRupiah(activeCafe.harga_max)}</p>
                   </div>
 
                   <div className="grid gap-3">
-                    <a 
+                    <a
                       href={activeCafe.latitude && activeCafe.longitude ? `https://www.google.com/maps/search/?api=1&query=${activeCafe.latitude},${activeCafe.longitude}` : '#'}
-                      target="_blank" 
+                      target="_blank"
                       rel="noreferrer"
                       className={btnPrimary + ' w-full'}
                     >
@@ -476,7 +476,7 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
                           onError: () => setIsSubmittingReview(false)
                         });
                       }} className="flex flex-col gap-2">
-                        <textarea 
+                        <textarea
                           value={reviewInput}
                           onChange={(e) => setReviewInput(e.target.value)}
                           placeholder="Tulis kata anak skena di sini..."

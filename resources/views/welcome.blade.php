@@ -429,12 +429,12 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // 1. Preloader Logic
+
             const preloader = document.getElementById('preloader');
-            // Wait slightly past the SVG animation
+
             setTimeout(() => {
                 preloader.classList.add('loaded');
-                // Trigger reveals after preloader is gone
+
                 setTimeout(() => {
                     document.querySelectorAll('.reveal-up.stagger-1, .reveal-up.stagger-2, .reveal-up.stagger-3, .reveal-up.stagger-4').forEach(el => {
                         const rect = el.getBoundingClientRect();
@@ -445,25 +445,25 @@
                 }, 400);
             }, 2500);
 
-            // 2. Cursor Logic (Graceful Degradation)
+
             const isFinePointer = window.matchMedia("(pointer: fine)").matches;
             if (isFinePointer) {
                 const dot = document.getElementById('custom-cursor-dot');
                 const ring = document.getElementById('custom-cursor-ring');
-                
+
                 let mouseX = window.innerWidth / 2;
                 let mouseY = window.innerHeight / 2;
                 let ringX = mouseX;
                 let ringY = mouseY;
-                
-                // Track mouse
+
+
                 document.addEventListener('mousemove', (e) => {
                     mouseX = e.clientX;
                     mouseY = e.clientY;
                     dot.style.transform = `translate(${mouseX}px, ${mouseY}px) translate(-50%, -50%)`;
                 });
-                
-                // Ring follow logic (requestAnimationFrame for smooth lag)
+
+
                 const render = () => {
                     ringX += (mouseX - ringX) * 0.15;
                     ringY += (mouseY - ringY) * 0.15;
@@ -471,8 +471,8 @@
                     requestAnimationFrame(render);
                 };
                 requestAnimationFrame(render);
-                
-                // Magnetic targets
+
+
                 const magneticTargets = document.querySelectorAll('.magnetic-target, .btn-premium');
                 magneticTargets.forEach(target => {
                     target.addEventListener('mouseenter', () => {
@@ -482,17 +482,17 @@
                     target.addEventListener('mouseleave', () => {
                         ring.classList.remove('magnetic');
                         dot.style.opacity = '1';
-                        // Reset transforms that might have been added by magnetic pull
+
                         target.style.transform = '';
                     });
-                    
-                    // Button pull effect
+
+
                     if(target.classList.contains('btn-premium') || target.tagName === 'A') {
                         target.addEventListener('mousemove', (e) => {
                             const rect = target.getBoundingClientRect();
                             const x = e.clientX - rect.left - rect.width / 2;
                             const y = e.clientY - rect.top - rect.height / 2;
-                            // Only apply if it's a small button, avoid big cards
+
                             if(rect.width < 300) {
                                 target.style.transform = `translate(${x * 0.2}px, ${y * 0.2}px) scale(1.02)`;
                             }
@@ -501,23 +501,23 @@
                 });
             }
 
-            // 3. Scroll Reveal & Parallax
+
             const revealElements = document.querySelectorAll('.reveal-up');
             const heroImg = document.getElementById('hero-img');
-            
+
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         entry.target.classList.add('active');
-                        // Optional: unobserve after reveal
-                        // observer.unobserve(entry.target);
+
+
                     }
                 });
             }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
-            
+
             revealElements.forEach(el => observer.observe(el));
-            
-            // Parallax
+
+
             window.addEventListener('scroll', () => {
                 const scrollY = window.scrollY;
                 if (scrollY < window.innerHeight) {
@@ -525,28 +525,28 @@
                 }
             }, { passive: true });
 
-            // 4. 3D Tilt Logic
+
             const tiltCards = document.querySelectorAll('.tilt-card-wrapper');
             if (isFinePointer) {
                 tiltCards.forEach(card => {
                     const inner = card.querySelector('.tilt-card-inner');
-                    
+
                     card.addEventListener('mousemove', (e) => {
                         const rect = card.getBoundingClientRect();
                         const x = e.clientX - rect.left;
                         const y = e.clientY - rect.top;
-                        
+
                         const centerX = rect.width / 2;
                         const centerY = rect.height / 2;
-                        
-                        // Limits: +/- 8 degrees
+
+
                         const rotateX = ((y - centerY) / centerY) * -8;
                         const rotateY = ((x - centerX) / centerX) * 8;
-                        
-                        inner.style.transition = 'none'; // remove transition during move
+
+                        inner.style.transition = 'none';
                         inner.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
                     });
-                    
+
                     card.addEventListener('mouseleave', () => {
                         inner.style.transition = 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
                         inner.style.transform = 'rotateX(0deg) rotateY(0deg)';
@@ -554,11 +554,11 @@
                 });
             }
 
-            // 5. Modal Logic
+
             const modal = document.getElementById('detailModal');
             const closeModalBtn = document.getElementById('closeModal');
             const cafeButtons = document.querySelectorAll('.cafe-detail-btn');
-            
+
             const cafeData = {
                 volks: {
                     title: 'VOLKS COFFEE',
@@ -577,10 +577,10 @@
                     text: 'Type-Focused Contemporary Coffee Shop. Desain minimalis dengan perpustakaan kopi dan komunitas penulis. Tempat sempurna untuk brainstorming dan kolaborasi kreatif.'
                 }
             };
-            
+
             cafeButtons.forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    e.preventDefault(); // Stop default jump
+                    e.preventDefault();
                     const cafe = btn.dataset.cafe;
                     const data = cafeData[cafe];
                     document.getElementById('modalTitle').textContent = data.title;
@@ -592,17 +592,17 @@
                     }
                 });
             });
-            
+
             closeModalBtn.addEventListener('click', () => {
                 modal.classList.remove('active');
             });
-            
+
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) {
                     modal.classList.remove('active');
                 }
             });
         });
-    </script>
+</script>
 </body>
 </html>

@@ -28,16 +28,16 @@ export default function Auth({ type = 'login' }) {
       <Head title={type === 'login' ? 'Login' : 'Register'} />
       {/* 50vw Image - Editorial Grayscale */}
       <div className="hidden md:block w-1/2 relative border-r border-borderline">
-        <img 
-          src="https://images.unsplash.com/photo-1559525839-b184a4d698c7?q=80&w=2000&auto=format&fit=crop" 
-          alt="Auth Editorial" 
+        <img
+          src="https://images.unsplash.com/photo-1559525839-b184a4d698c7?q=80&w=2000&auto=format&fit=crop"
+          alt="Auth Editorial"
           className="object-cover w-full h-full grayscale mix-blend-multiply"
         />
         <div className="absolute top-6 left-6 font-mono text-xs font-bold uppercase bg-alabaster p-2 border border-borderline shadow-[4px_4px_0_0_#160F0B]">
           SYS_AUTH_NODE // {type.toUpperCase()}
         </div>
       </div>
-      
+
       {/* 50vw Form - Brutalist but Controlled */}
       <div className="w-full md:w-1/2 flex flex-col justify-center items-center p-8 lg:p-16 relative bg-alabaster">
         <Link href="/" className="absolute top-6 right-6 font-mono text-xs font-bold uppercase border border-borderline px-6 py-2 hover:bg-espresso hover:text-alabaster transition-colors shadow-sm text-espresso">
@@ -50,23 +50,23 @@ export default function Auth({ type = 'login' }) {
           </h1>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-8 mb-10 text-espresso">
-            <input 
-              type="text" 
-              placeholder="USERNAME SKENA" 
+            <input
+              type="text"
+              placeholder="USERNAME SKENA"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="w-full bg-transparent border-b-2 border-borderline focus:border-espresso outline-none py-3 font-mono text-xl font-bold uppercase transition-colors"
             />
             {type === 'register' && (
-              <input 
-                type="text" 
-                placeholder="INVITE CODE" 
+              <input
+                type="text"
+                placeholder="INVITE CODE"
                 className="w-full bg-transparent border-b-2 border-borderline focus:border-espresso outline-none py-3 font-mono text-xl font-bold uppercase transition-colors"
               />
             )}
-            <input 
-              type="password" 
-              placeholder="PASSWORD" 
+            <input
+              type="password"
+              placeholder="PASSWORD"
               className="w-full bg-transparent border-b-2 border-borderline focus:border-espresso outline-none py-3 font-mono text-xl font-bold uppercase transition-colors"
             />
             <button type="submit" className="w-full bg-espresso text-alabaster py-5 font-clash text-2xl font-black uppercase hover:bg-[var(--color-terracotta)] hover:text-espresso border-2 border-espresso transition-all mt-4 shadow-[6px_6px_0_0_#D66838] hover:shadow-none hover:translate-x-1 hover:translate-y-1">

@@ -27,7 +27,7 @@
                     error: e.reason ? e.reason.stack : null
                 }));
             });
-        </script>
+</script>
         <title inertia>{{ config('app.name', 'NGOPI') }}</title>
 
         <!-- Fonts & Styling -->

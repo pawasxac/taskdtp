@@ -1,8 +1,8 @@
 import React from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { 
-    Coffee, Users, MessageSquare, Star, 
-    MapPin, Activity, List, ArrowUpRight, BarChart 
+import {
+    Coffee, Users, MessageSquare, Star,
+    MapPin, Activity, List, ArrowUpRight, BarChart
 } from 'lucide-react';
 import Navbar from '../../Components/Navbar';
 
@@ -18,9 +18,9 @@ export default function OriginalDashboard({ stats }) {
         <div className="min-h-screen bg-[#FAF6F0] text-[#1A0F0A] selection:bg-[#C19A6B] selection:text-[#1A0F0A]">
             <Head title="Skena Command Center" />
             <Navbar current="admin" />
-            
+
             <main className="px-4 py-12 md:px-8 max-w-7xl mx-auto space-y-16">
-                
+
                 {/* Header Section */}
                 <div className="border-b-4 border-[#1A0F0A] pb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                     <div>
@@ -140,9 +140,9 @@ export default function OriginalDashboard({ stats }) {
                             { title: 'Conversations', desc: 'Pesan obrolan direct', link: '/admin/conversations' },
                             { title: 'System Notifications', desc: 'Daftar notifikasi db', link: '/admin/notifications' },
                         ].map((item, i) => (
-                            <a 
-                                key={i} 
-                                href={item.link} 
+                            <a
+                                key={i}
+                                href={item.link}
                                 className="group block border-2 border-[#1A0F0A] bg-white p-5 hover:bg-[#C19A6B] hover:text-[#1A0F0A] transition-colors"
                             >
                                 <h4 className="font-clash text-lg font-black uppercase mb-1 flex justify-between items-center">

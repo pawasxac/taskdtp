@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState, createContext, useContext } from 'react';
 import gsap from 'gsap';
 
-// ==========================================
-// 1. MOCK DATA & SKENA LORE
-// ==========================================
+
+
+
 export const MOCK_CAFES = [
   { id: 'c1', name: 'VOLKS COFFEE', area: 'Surabaya Barat', vibe: 'Industrial Brutalism', beans: 'Ethiopia Yirgacheffe', rating: 4.8 },
   { id: 'c2', name: 'TITIK KOMA', area: 'Surabaya Pusat', vibe: 'Minimalist Zen', beans: 'Gayo Aceh', rating: 4.5 },
@@ -32,9 +32,9 @@ export const MOCK_RADAR_LOGS = [
   "[14:15:20] SYS: Purging idle connections"
 ];
 
-// ==========================================
-// 2. AUTHENTICATION CONTEXT
-// ==========================================
+
+
+
 export const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
@@ -52,9 +52,9 @@ export const AuthProvider = ({ children, initialUser = null }) => {
   );
 };
 
-// ==========================================
-// 3. GLOBAL COMPONENTS
-// ==========================================
+
+
+
 export const CustomCursor = () => {
   const dot = useRef(null);
   const ring = useRef(null);

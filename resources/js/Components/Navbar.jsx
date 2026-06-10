@@ -45,8 +45,8 @@ const navLinkClass = (active) =>
 export default function Navbar({ current = 'home', notifications = [] }) {
   const { props } = usePage();
   const auth = props?.auth || {};
-  // CRITICAL: role is a primitive string. Use strict string comparison
-  // everywhere; never call auth?.user?.role?.name.
+
+
   const user = auth?.user || null;
   const isAdmin = user?.role === 'admin';
 
@@ -122,12 +122,12 @@ export default function Navbar({ current = 'home', notifications = [] }) {
   const prevNotifs = useRef(activeNotifications);
 
   useEffect(() => {
-    // Check for new notifications by comparing IDs
+
     if (prevNotifs.current && activeNotifications && activeNotifications.length > prevNotifs.current.length) {
       const newNotifs = activeNotifications.filter(n => !prevNotifs.current.some(pn => pn.id === n.id));
       if (newNotifs.length > 0) {
         setNotifOpen(true);
-        // Optionally auto-close after 5 seconds if you don't interact with it
+
         const timer = setTimeout(() => {
           setNotifOpen(false);
         }, 5000);
@@ -162,7 +162,7 @@ export default function Navbar({ current = 'home', notifications = [] }) {
     setOpen(false);
 
     try {
-      // Pre-clear any user-bound cached state to avoid ghost avatars.
+
       window.sessionStorage.removeItem('rs:active_dm');
       window.sessionStorage.removeItem('rs:focus_thread');
     } catch (_) {
