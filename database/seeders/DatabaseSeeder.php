@@ -60,7 +60,7 @@ class DatabaseSeeder extends Seeder
                 [
                     'name'              => $account['name'],
                     'username'          => $account['username'],
-                    'password'          => Hash::make($account['password']),
+                    'password'          => $account['password'],
                     'role'              => $account['role'],
                     'bio'               => $account['bio'],
                     'phone_number'      => $account['phone'],

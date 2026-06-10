@@ -4,7 +4,7 @@ import {
   ArrowUpRight, ChevronDown, Coffee, Lock, MapPin,
   Search, Sparkles, Star, X, Map
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+
 import Navbar from '../Components/Navbar';
 import CustomCursor from '../Components/CustomCursor';
 
@@ -76,6 +76,24 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
       return false;
     }
   });
+  const [fadeOutIntro, setFadeOutIntro] = useState(false);
+  const [reviewInput, setReviewInput] = useState('');
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+
+  useEffect(() => {
+    if (showIntro) {
+      const fadeTimer = setTimeout(() => {
+        setFadeOutIntro(true);
+      }, 2000);
+      const removeTimer = setTimeout(() => {
+        setShowIntro(false);
+      }, 2500);
+      return () => {
+        clearTimeout(fadeTimer);
+        clearTimeout(removeTimer);
+      };
+    }
+  }, [showIntro]);
 
   // Direct filter update - FORCE RELOAD to ensure data updates!
   const updateFilters = (type, value) => {
@@ -155,23 +173,13 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
 
       {/* Intro Loading Screen — only on true first visit, not filter changes */}
       {showIntro && (
-        <motion.div
-          initial={{ y: 0 }}
-          animate={{ y: '-100%' }}
-          transition={{ duration: 0.8, delay: 1.5, ease: [0.76, 0, 0.24, 1] }}
-          className="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-[#1A0F0A] text-[#FAF6F0]"
-        >
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="flex flex-col items-center gap-4"
-          >
+        <div className={`fixed inset-0 z-[999] flex flex-col items-center justify-center bg-[#1A0F0A] text-[#FAF6F0] transition-opacity duration-500 ease-in-out ${fadeOutIntro ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+          <div className="flex flex-col items-center gap-4">
             <Coffee size={48} className="text-[#C19A6B] animate-bounce" />
             <h1 className="font-clash text-4xl font-black uppercase tracking-widest">NGOPI</h1>
             <p className="font-mono text-xs uppercase tracking-[0.3em] text-[#C19A6B]">Loading Vibes...</p>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
 
         <Navbar current="home" />
@@ -444,9 +452,45 @@ export default function Welcome({ coffeeShops = {}, kecamatans = [], communities
                     >
                       Buka Google Maps <ArrowUpRight size={16} />
                     </a>
-                    <button onClick={() => user ? router.visit('/dashboard') : setGuestModal(true)} className={btnSecondary + ' w-full'}>
-                      Tinggalkan Review
-                    </button>
+                  </div>
+
+                  {/* Leave Review Form */}
+                  <div className="mt-4">
+                    {user ? (
+                      <form onSubmit={(e) => {
+                        e.preventDefault();
+                        if (!reviewInput.trim() || isSubmittingReview) return;
+                        setIsSubmittingReview(true);
+                        router.post(`/coffee-shops/${activeCafe.id}/review`, { review: reviewInput }, {
+                          preserveScroll: true,
+                          onSuccess: () => {
+                            const newReview = {
+                              id: Date.now(),
+                              review: reviewInput,
+                              user: user
+                            };
+                            setActiveCafe(prev => ({ ...prev, reviews: [newReview, ...(prev.reviews || [])] }));
+                            setReviewInput('');
+                            setIsSubmittingReview(false);
+                          },
+                          onError: () => setIsSubmittingReview(false)
+                        });
+                      }} className="flex flex-col gap-2">
+                        <textarea 
+                          value={reviewInput}
+                          onChange={(e) => setReviewInput(e.target.value)}
+                          placeholder="Tulis kata anak skena di sini..."
+                          className="w-full border-2 border-[#1A0F0A] p-2 bg-[#FAF6F0] text-sm min-h-[80px] outline-none focus:border-[#C19A6B] custom-scrollbar"
+                        ></textarea>
+                        <button type="submit" disabled={isSubmittingReview} className={btnSecondary + ' w-full'}>
+                          {isSubmittingReview ? 'Mengirim...' : 'Kirim Review'}
+                        </button>
+                      </form>
+                    ) : (
+                      <button onClick={() => setGuestModal(true)} className={btnSecondary + ' w-full'}>
+                        Tinggalkan Review
+                      </button>
+                    )}
                   </div>
 
                   {/* Quick Reviews */}

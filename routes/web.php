@@ -75,7 +75,7 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
     Route::get('/', function (Request $request) use ($districtName) {
         $query = CoffeeShop::with([
             'kecamatan',
-            'reviews.user:id,name,username,profile_picture',
+            'reviews' => fn($q) => $q->latest()->limit(3)->with('user:id,name,username,profile_picture'),
         ])->where('is_active', true);
 
         if ($search = $request->input('search')) {
@@ -172,7 +172,7 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
 
             $coffeeShops = CoffeeShop::with([
                 'kecamatan',
-                'reviews.user:id,name,username,profile_picture',
+                'reviews' => fn($q) => $q->latest()->limit(3)->with('user:id,name,username,profile_picture'),
             ])
                 ->where('is_active', true)
                 ->orderByDesc('rating')
@@ -185,10 +185,7 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
                     return $shop;
                 });
 
-            $users = User::query()
-            ->whereNull('deleted_at')
-            ->where('id', '!=', $authUser->id)
-            ->get(['id', 'name', 'username', 'email', 'profile_picture']);
+
 
         $communities = cache()->remember('communities', 1800, fn () => Komunitas::with([
             'members.user:id,name,username,profile_picture',
@@ -197,12 +194,13 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
                 ->with([
                     'user:id,name,username,profile_picture',
                     'comments.user:id,name,username,profile_picture',
+                    'replyTo.user:id,name,username,profile_picture',
                 ]),
         ])
             ->orderBy('nama_komunitas')
             ->get());
 
-            $forums = $communities->map(function ($community) use ($avatarUrl, $fallbackCover) {
+            $forums = $communities->map(function ($community) use ($avatarUrl, $fallbackCover, $authUser) {
                 $creator = optional($community->posts->first())->user;
                 $fallbackUser = (object) [
                     'name'     => $community->ketua ?: 'Penjaga Tongkrongan',
@@ -218,6 +216,7 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
                     'title'           => $community->nama_komunitas,
                     'description'     => $community->deskripsi ?: 'Tempat curhat soal seduhan, colokan, dan playlist sore.',
                     'member_count'    => $community->members->count() ?: ($community->jumlah_anggota ?? 0),
+                    'is_member'       => $community->members->where('user_id', $authUser?->id)->isNotEmpty(),
                     'reply_count'     => $community->posts->count(),
                     'cover_image'     => $community->photo_url ?: $fallbackCover($community->nama_komunitas),
                     'domisili'        => $community->domisili,
@@ -245,6 +244,16 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
                                 'profile_picture' => $post->user?->profile_picture,
                                 'avatar_url'      => $avatarUrl($post->user, $post->user?->name ?: 'Anak Nongki'),
                             ],
+                            'reply_to' => $post->replyTo ? [
+                                'id'      => $post->replyTo->id,
+                                'comment' => $post->replyTo->content,
+                                'user'    => [
+                                    'name'            => $post->replyTo->user?->name ?: 'Anak Nongki',
+                                    'username'        => $post->replyTo->user?->username ?: 'anaknongki',
+                                    'profile_picture' => $post->replyTo->user?->profile_picture,
+                                    'avatar_url'      => $avatarUrl($post->replyTo->user, $post->replyTo->user?->name ?: 'Anak Nongki'),
+                                ],
+                            ] : null,
                         ]),
                 ];
             })->values();
@@ -283,57 +292,50 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
                 }));
             }
 
-            $globalChat = collect();
-
-            foreach ($coffeeShops->take(5) as $shop) {
-                foreach ($shop->reviews->take(1) as $review) {
-                    $globalChat->push([
-                        'id'         => 'review-' . $review->id,
-                        'user'       => [
-                            'name'            => $review->user?->name ?: 'Anak Kopi',
-                            'username'        => $review->user?->username ?: 'anakkopi',
-                            'profile_picture' => $review->user?->profile_picture,
-                            'avatar_url'      => $avatarUrl($review->user, $review->user?->name ?: 'Anak Kopi'),
-                        ],
-                        'area'       => $shop->district_name ?: $shop->daerah ?: 'Sidoarjo',
-                        'text'       => $review->review ?: "Baru nyoba {$shop->nama}, tempatnya adem dan nggak bikin buru-buru pulang.",
-                        'time'       => optional($review->created_at)->format('H:i') ?: now()->format('H:i'),
-                        'tags'       => collect([$shop->district_name, 'review'])->filter()->values(),
-                        'cafe_id'    => $shop->id,
-                        'cafe_name'  => $shop->nama,
-                    ]);
-                }
-            }
-
-            if ($globalChat->isEmpty()) {
-                $globalChat = collect([
-                    [
-                        'id'    => 'seed-chat-1',
-                        'user'  => [
-                            'name'            => $authUser->name,
-                            'username'        => $authUser->username,
-                            'profile_picture' => $authUser->profile_picture,
-                            'avatar_url'      => $avatarUrl($authUser),
-                        ],
-                        'area'  => 'Global Lounge',
-                        'text'  => 'Siapa yang punya rekomendasi spot buat nugas sambil cari cinnamon roll yang beneran niat?',
-                        'time'  => now()->subMinutes(12)->format('H:i'),
-                        'tags'  => ['lounge', 'nugas'],
-                        'cafe_id'    => null,
-                        'cafe_name'  => null,
+            $realChats = \App\Models\GlobalChat::with(['user', 'replyTo.user'])->orderByDesc('created_at')->take(50)->get()->reverse();
+            $globalChat = $realChats->map(function ($chat) use ($avatarUrl) {
+                return [
+                    'id'         => 'chat-' . $chat->id,
+                    'user'       => [
+                        'id'              => $chat->user?->id,
+                        'name'            => $chat->user?->name ?: 'Anonim',
+                        'username'        => $chat->user?->username ?: 'anonim',
+                        'profile_picture' => $chat->user?->profile_picture,
+                        'avatar_url'      => $avatarUrl($chat->user, $chat->user?->name ?: 'Anonim'),
+                        'instagram'       => $chat->user?->instagram,
+                        'whatsapp'        => $chat->user?->whatsapp,
+                        'discord'         => $chat->user?->discord,
                     ],
-                ]);
-            }
+                    'area'       => 'Global Lounge',
+                    'text'       => $chat->message,
+                    'time'       => $chat->created_at->format('H:i'),
+                    'tags'       => ['lounge'],
+                    'reply_to'   => $chat->replyTo ? [
+                        'id'      => $chat->replyTo->id,
+                        'text'    => $chat->replyTo->message,
+                        'user'    => [
+                            'name'            => $chat->replyTo->user?->name ?: 'Anonim',
+                            'username'        => $chat->replyTo->user?->username ?: 'anonim',
+                            'profile_picture' => $chat->replyTo->user?->profile_picture,
+                            'avatar_url'      => $avatarUrl($chat->replyTo->user, $chat->replyTo->user?->name ?: 'Anonim'),
+                        ],
+                    ] : null,
+                ];
+            })->values();
 
             $realDms = \App\Models\DirectMessage::where('sender_id', $authUser->id)
                 ->orWhere('receiver_id', $authUser->id)
-                ->with(['sender:id,name,username,profile_picture,instagram,whatsapp,discord', 'receiver:id,name,username,profile_picture,instagram,whatsapp,discord'])
+                ->with(['sender', 'receiver']) // Load full relations to be safe
                 ->orderBy('created_at', 'asc')
                 ->get();
             
             $dmGroups = [];
             foreach ($realDms as $msg) {
                 $contact = $msg->sender_id === $authUser->id ? $msg->receiver : $msg->sender;
+                
+                // Skip if contact is null (orphaned message)
+                if (!$contact) continue;
+
                 if (!isset($dmGroups[$contact->id])) {
                     $dmGroups[$contact->id] = [
                         'id' => $contact->id,
@@ -348,22 +350,24 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
                             'discord' => $contact->discord,
                         ],
                         'messages' => [],
-                        'time' => $msg->created_at->format('H:i'),
-                        'last_message' => $msg->message,
                     ];
                 }
+
+                $msgSender = $msg->sender;
+                if (!$msgSender) continue;
+
                 $dmGroups[$contact->id]['messages'][] = [
                     'id' => 'dm-' . $msg->id,
                     'text' => $msg->message,
                     'user' => [
-                        'id' => $msg->sender->id,
-                        'name' => $msg->sender->name,
-                        'username' => $msg->sender->username,
-                        'profile_picture' => $msg->sender->profile_picture,
-                        'avatar_url' => $avatarUrl($msg->sender),
+                        'id' => $msgSender->id,
+                        'name' => $msgSender->name,
+                        'username' => $msgSender->username,
+                        'profile_picture' => $msgSender->profile_picture,
+                        'avatar_url' => $avatarUrl($msgSender),
                     ],
                 ];
-                $dmGroups[$contact->id]['time'] = $msg->created_at->format('H:i');
+                $dmGroups[$contact->id]['time'] = $msg->created_at ? $msg->created_at->format('H:i') : now()->format('H:i');
                 $dmGroups[$contact->id]['last_message'] = $msg->message;
             }
             $directMessages = collect(array_values($dmGroups))->sortByDesc('time')->values();
@@ -405,56 +409,100 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
              * Notification items with deep-link routes so the React
              * popover can navigate to the right destination on click.
              */
-            $notifications = collect([
-                [
-                    'id'    => 'notif-1',
-                    'type'  => 'Forum',
-                    'title' => 'Ada balasan baru di komunitas favoritmu.',
-                    'body'  => 'Seseorang baru nimbrung di obrolan soal tempat ngopi yang aman buat laptop dan rapat mendadak.',
-                    'route' => '/dashboard',
-                    'cta'   => 'Buka Forum',
-                ],
-                [
-                    'id'    => 'notif-2',
-                    'type'  => 'DM',
-                    'title' => 'Inbox kamu lagi gerak.',
-                    'body'  => 'Ada ajakan nongkrong masuk. Tinggal pilih: gas sekarang atau pura-pura sibuk dulu.',
-                    'route' => '/dashboard',
-                    'cta'   => 'Cek DM',
-                ],
-                [
-                    'id'    => 'notif-3',
-                    'type'  => 'Radar',
-                    'title' => 'Spot rating tinggi lagi rame dicari.',
-                    'body'  => 'Beberapa kedai dengan rating manis lagi naik daun. Cocok buat hunting sore ini.',
-                    'route' => '/',
-                    'cta'   => 'Lihat Spotlight',
-                ],
-            ]);
+            $notifications = collect();
 
-            $tags = collect($coffeeShops)
-                ->flatMap(fn ($shop) => [
-                    $shop->district_name,
-                    $shop->daerah,
-                    'kopi',
-                    'nugas',
-                    'nongkrong',
-                ])
-                ->merge($communities->pluck('domisili'))
-                ->filter()
-                ->unique()
-                ->take(10)
-                ->values();
+            // Recent DMs
+            $recentDMs = \App\Models\DirectMessage::where('receiver_id', $authUser->id)
+                ->orderBy('created_at', 'desc')
+                ->take(3)
+                ->get();
+
+            foreach ($recentDMs as $dm) {
+                $sender = \App\Models\User::find($dm->sender_id);
+                if (!$sender) continue;
+                $notifications->push([
+                    'id'    => 'notif-dm-' . $dm->id,
+                    'type'  => 'DM',
+                    'title' => 'Pesan baru dari ' . $sender->name,
+                    'body'  => str($dm->message)->limit(50),
+                    'route' => '/dashboard?tab=dm&focus=' . $dm->sender_id,
+                    'cta'   => 'Balas DM',
+                ]);
+            }
+
+            // Global Chat Mentions & Replies
+            $globalChatNotifs = \App\Models\GlobalChat::with('user')
+                ->where('user_id', '!=', $authUser->id)
+                ->where(function($q) use ($authUser) {
+                    $q->whereHas('replyTo', function($rq) use ($authUser) {
+                        $rq->where('user_id', $authUser->id);
+                    })->orWhere('message', 'like', '%@' . $authUser->username . '%');
+                })
+                ->orderBy('created_at', 'desc')
+                ->take(3)
+                ->get();
+
+            foreach ($globalChatNotifs as $chat) {
+                $notifications->push([
+                    'id'    => 'notif-global-' . $chat->id,
+                    'type'  => 'Lounge',
+                    'title' => 'Seseorang menyebutmu di Lounge',
+                    'body'  => $chat->user?->name . ': ' . str($chat->message)->limit(50),
+                    'route' => '/dashboard',
+                    'cta'   => 'Lihat Lounge',
+                ]);
+            }
+
+            // Recent Community Posts
+            $joinedCommunityIds = \DB::table('community_members')
+                ->where('user_id', $authUser->id)
+                ->pluck('community_id');
+
+            $recentCommunityPosts = \App\Models\CommunityPost::whereIn('community_id', $joinedCommunityIds)
+                ->where('user_id', '!=', $authUser->id)
+                ->orderBy('created_at', 'desc')
+                ->take(3)
+                ->get();
+
+            foreach ($recentCommunityPosts as $post) {
+                $community = \App\Models\Komunitas::find($post->community_id);
+                $sender = \App\Models\User::find($post->user_id);
+                if (!$community || !$sender) continue;
+                $notifications->push([
+                    'id'    => 'notif-forum-' . $post->id,
+                    'type'  => 'Forum',
+                    'title' => 'Obrolan di ' . $community->nama_komunitas,
+                    'body'  => $sender->name . ': ' . str($post->content)->limit(50),
+                    'route' => '/dashboard?tab=forum&focus=' . $post->community_id,
+                    'cta'   => 'Ikut Nimbrung',
+                ]);
+            }
+
+            // Fallback if empty
+            if ($notifications->isEmpty()) {
+                $notifications = collect([
+                    [
+                        'id'    => 'notif-3',
+                        'type'  => 'Radar',
+                        'title' => 'Spot rating tinggi lagi rame dicari.',
+                        'body'  => 'Beberapa kedai dengan rating manis lagi naik daun. Cocok buat hunting sore ini.',
+                        'route' => '/',
+                        'cta'   => 'Lihat Spotlight',
+                    ],
+                ]);
+            }
+
+            $tags = collect(['kopi', 'nugas', 'nongkrong', 'skena', 'roastery', 'manual brew', 'v60', 'espresso', 'latte', 'cold brew']);
 
             // The dashboard props below are returned synchronously.
             return inertia('Dashboard', [
                 'user'            => $authUser,
-                'coffeeShops'     => $coffeeShops,
-                'forums'          => $forums,
-                'globalChat'      => $globalChat->values(),
-                'directMessages'  => $directMessages->values(),
-                'notifications'   => $notifications->values(),
-                'tags'            => $tags,
+                'coffeeShops'     => $coffeeShops ?? [],
+                'forums'          => $forums ?? [],
+                'globalChat'      => $globalChat ? $globalChat->values() : [],
+                'directMessages'  => $directMessages ? $directMessages->values() : [],
+                'notifications'   => $notifications ? $notifications->values() : [],
+                'tags'            => $tags ?? [],
             ]);
         })->name('dashboard');
 
@@ -467,9 +515,7 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
         })->name('forum.index');
 
         Route::get('/forum/{slug}', function (string $slug) {
-            return inertia('Dashboard', [
-                'focusThread' => $slug,
-            ]);
+            return redirect()->route('dashboard', ['tab' => 'forum', 'focus' => $slug]);
         })->name('forum.show');
 
         /**
@@ -481,40 +527,22 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
         })->name('notifications.show');
 
         /**
-         * Chat stream (SSE) — Server-Sent Event channel that streams
-         * heartbeats and recent review rows so the global chat pane
-         * feels alive even without a real WebSocket server.
+         * Global Chat submit endpoint.
          */
-        Route::get('/chat/stream', function () {
-            return response()->stream(function () {
-                @ob_end_flush();
-                @ob_implicit_flush(true);
-
-                $i = 0;
-                $start = time();
-                $samples = [
-                    'Barista di sini ngerti banget seleramu, anti-judge.',
-                    'Spot baru buka pojok buat laptop, colokan aman.',
-                    'Cinnamon roll-nya lembut, kopinya nggak lebay pahit.',
-                    'Mau review bareng malem ini? Kursi pojok masih longgar.',
-                ];
-
-                while ($i < 6 && connection_aborted() === 0 && (time() - $start) < 25) {
-                    echo "event: ping\n";
-                    echo 'data: ' . json_encode([
-                        'id'   => 'stream-' . $i,
-                        'text' => $samples[$i % count($samples)],
-                        'time' => now()->format('H:i:s'),
-                    ]) . "\n\n";
-                    $i++;
-                    sleep(4);
-                }
-            }, 200, [
-                'Content-Type'      => 'text/event-stream',
-                'Cache-Control'     => 'no-cache, no-store, must-revalidate',
-                'X-Accel-Buffering' => 'no',
+        Route::post('/chat/send', function (Request $request) {
+            $validated = $request->validate([
+                'message' => 'required|string|max:1000',
+                'reply_to_id' => 'nullable|exists:global_chats,id',
             ]);
-        })->name('chat.stream');
+
+            \App\Models\GlobalChat::create([
+                'user_id' => auth()->id(),
+                'message' => $validated['message'],
+                'reply_to_id' => $validated['reply_to_id'] ?? null,
+            ]);
+
+            return back()->with('success', 'Pesan terkirim ke Global Lounge.');
+        })->name('chat.send');
 
         /**
          * Profile update endpoint — accepts a multipart payload with
@@ -554,9 +582,21 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
          * Community join stub — returns a flash message so the React
          * side can keep moving without an actual network roundtrip.
          */
-        Route::post('/community/join', function (Request $request) {
-            return redirect()->back()->with('success', 'Permintaan join komunitas sudah dikirim. Tinggal tunggu diajak ngopi bareng.');
-        })->name('community.join');
+        Route::post('/komunitas/{id}/join', function (Request $request, $id) {
+            $komunitas = Komunitas::findOrFail($id);
+            try {
+                \DB::table('community_members')->insertOrIgnore([
+                    'community_id' => $komunitas->id,
+                    'user_id' => auth()->id(),
+                    'role' => 'member',
+                    'joined_at' => now(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                cache()->forget('communities');
+            } catch (\Throwable $e) {}
+            return redirect()->back()->with('success', 'Kamu sudah tergabung di komunitas ini!');
+        })->name('komunitas.join');
 
         Route::post('/komunitas/store', function (Request $request) {
             $validated = $request->validate([
@@ -585,11 +625,17 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
                 \Log::warning('komunitas.members create failed: ' . $e->getMessage());
             }
 
+            // Clear the communities cache so the new community appears immediately on the dashboard
+            cache()->forget('communities');
+
             return back()->with('success', 'Komunitas "' . $validated['nama_komunitas'] . '" berhasil dibuat!');
         })->name('komunitas.store');
 
         Route::post('/komunitas/{id}/post', function (Request $request, $id) {
-            $validated = $request->validate(['content' => 'required|string|max:2000']);
+            $validated = $request->validate([
+                'content' => 'required|string|max:2000',
+                'reply_to_id' => 'nullable|exists:community_posts,id',
+            ]);
 
             $komunitas = Komunitas::findOrFail($id);
 
@@ -598,6 +644,7 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
                 $komunitas->posts()->create([
                     'user_id' => auth()->id(),
                     'content' => $validated['content'],
+                    'reply_to_id' => $validated['reply_to_id'] ?? null,
                 ]);
             } catch (\Throwable $e) {
                 // If posts() relation doesn't exist, use direct DB
@@ -605,10 +652,13 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
                     'community_id' => $komunitas->id,
                     'user_id'      => auth()->id(),
                     'content'      => $validated['content'],
+                    'reply_to_id'  => $validated['reply_to_id'] ?? null,
                     'created_at'   => now(),
                     'updated_at'   => now(),
                 ]);
             }
+
+            cache()->forget('communities');
 
             return back()->with('success', 'Pesan terkirim ke komunitas!');
         })->name('komunitas.post');
@@ -638,6 +688,23 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
 
             return back()->with('success', 'Pesan terkirim.');
         })->name('dm.send');
+
+        Route::post('/coffee-shops/{id}/review', function (Request $request, $id) {
+            $validated = $request->validate([
+                'review' => 'required|string|max:1000',
+            ]);
+
+            \DB::table('coffee_shop_reviews')->insert([
+                'coffee_shop_id' => $id,
+                'user_id' => auth()->id(),
+                'rating' => 5, // Default rating
+                'review' => $validated['review'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            return back()->with('success', 'Review berhasil ditambahkan.');
+        })->name('coffee-shops.review');
     });
 
     /**

@@ -15,6 +15,15 @@ const getAvatarUrl = (user, fallbackLabel = 'Anak Skena') => {
   return `https://ui-avatars.com/api/?name=${label}&background=1A0F0A&color=FAF6F0&bold=true`;
 };
 
+const formatTime = () => {
+  try {
+    return new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  } catch (e) {
+    const d = new Date();
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  }
+};
+
 
 
 export default function Dashboard({
@@ -31,10 +40,10 @@ export default function Dashboard({
   const currentUser = user || auth?.user || null;
   const isAdmin = currentUser?.role === 'admin';
 
-  const [localDirectMessages, setLocalDirectMessages] = useState(directMessages);
-  const [chatMessages, setChatMessages] = useState(globalChat);
+  const [localDirectMessages, setLocalDirectMessages] = useState(Array.isArray(directMessages) ? directMessages : []);
+  const [chatMessages, setChatMessages] = useState(Array.isArray(globalChat) ? globalChat : []);
   const [chatInput, setChatInput] = useState('');
-  const [selectedDmId, setSelectedDmId] = useState(directMessages[0]?.id || null);
+  const [selectedDmId, setSelectedDmId] = useState(Array.isArray(directMessages) && directMessages.length > 0 ? directMessages[0]?.id : null);
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileSaved, setProfileSaved] = useState(false);
@@ -58,6 +67,20 @@ export default function Dashboard({
   const [selectedKomunitas, setSelectedKomunitas] = useState(null);
   const [komunitasPostInput, setKomunitasPostInput] = useState('');
 
+  const [globalReplyTo, setGlobalReplyTo] = useState(null);
+  const [communityReplyTo, setCommunityReplyTo] = useState(null);
+
+  const renderMessageWithMentions = (text) => {
+    if (!text) return null;
+    const parts = text.split(/(@\w+)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('@')) {
+        return <span key={i} className="text-[#C19A6B] font-bold">{part}</span>;
+      }
+      return <span key={i}>{part}</span>;
+    });
+  };
+
   const chatListRef = useRef(null);
   const notifRef = useRef(null);
   const forumRef = useRef(null);
@@ -77,35 +100,49 @@ export default function Dashboard({
     return () => document.removeEventListener('mousedown', handleOutside);
   }, [notifOpen]);
 
-  useEffect(() => { setChatMessages(globalChat); }, [globalChat]);
+  useEffect(() => { setChatMessages(Array.isArray(globalChat) ? globalChat : []); }, [globalChat]);
   useEffect(() => { 
-    setLocalDirectMessages(directMessages); 
+    const serverDms = Array.isArray(directMessages) ? directMessages : [];
+    
+    setLocalDirectMessages(prev => {
+      // Preserve local temporary threads that aren't synced to server yet
+      const tempDms = prev.filter(dm => String(dm.id).startsWith('dm-new-') || String(dm.id).startsWith('dm-temp-'));
+      const activeTempDms = tempDms.filter(tempDm => 
+        !serverDms.some(serverDm => serverDm.user?.id === tempDm.user?.id)
+      );
+      
+      // Also merge any new messages into existing temporary threads if necessary
+      return [...activeTempDms, ...serverDms];
+    });
+
     // When fresh DMs arrive from backend, check if we had a temporary DM selected
     // If so, select the real DM that corresponds to the same user
-    if (directMessages.length > 0 && selectedDmId) {
+    if (serverDms.length > 0 && selectedDmId) {
       const isTempId = String(selectedDmId).startsWith('dm-new-');
       if (isTempId) {
         const userIdFromTempId = Number(String(selectedDmId).replace('dm-new-', ''));
-        const realDm = directMessages.find(dm => dm.user?.id === userIdFromTempId);
+        const realDm = serverDms.find(dm => dm.user?.id === userIdFromTempId);
         if (realDm) {
           setSelectedDmId(realDm.id);
         }
       } else {
-        // Also check if the selected DM still exists in the fresh data
-        const exists = directMessages.some(dm => dm.id === selectedDmId);
-        if (!exists) {
-          setSelectedDmId(directMessages[0]?.id || null);
+        // We do NOT reset the selectedDmId if it is a temporary ID that hasn't been saved yet,
+        // so we check if the selected DM is either in the server data OR is a temp DM.
+        const existsInServer = serverDms.some(dm => dm.id === selectedDmId);
+        const isStillTemp = String(selectedDmId).startsWith('dm-new-') || String(selectedDmId).startsWith('dm-temp-');
+        
+        if (!existsInServer && !isStillTemp) {
+          setSelectedDmId(serverDms[0]?.id || null);
         }
       }
     }
   }, [directMessages]);
   useEffect(() => { if (chatListRef.current) chatListRef.current.scrollTop = chatListRef.current.scrollHeight; }, [chatMessages.length]);
   useEffect(() => { if (feedRef.current) feedRef.current.scrollTop = feedRef.current.scrollHeight; }, [selectedKomunitas?.replies?.length]);
-  useEffect(() => { if (dmChatRef.current) dmChatRef.current.scrollTop = dmChatRef.current.scrollHeight; }, [selectedDm?.messages?.length]);
 
   // Keep selectedKomunitas synchronized with updated forums data from backend
   useEffect(() => {
-    if (selectedKomunitas) {
+    if (selectedKomunitas && Array.isArray(forums)) {
       const updated = forums.find((f) => f.id === selectedKomunitas.id);
       if (updated) {
         setSelectedKomunitas(updated);
@@ -114,63 +151,44 @@ export default function Dashboard({
   }, [forums]);
 
   // Connect to SSE stream with error handling
+  // Removed fake SSE stream to use real DB data
+  
+  // Polling for new Global Chat messages and DMs every 5 seconds
   useEffect(() => {
-    let eventSource;
-    let retryTimer;
+    const interval = setInterval(() => {
+      router.reload({ only: ['globalChat', 'directMessages'], preserveScroll: true, preserveState: true });
+    }, 5000);
 
-    const connect = () => {
-      eventSource = new EventSource('/chat/stream');
-
-      eventSource.addEventListener('ping', (e) => {
-        try {
-          const data = JSON.parse(e.data);
-          setChatMessages((prev) => {
-            if (prev.some((m) => m.id === data.id)) return prev;
-            return [
-              ...prev,
-              {
-                id: data.id,
-                user: { name: 'Radar Skena', username: 'radarskena', profile_picture: null },
-                area: 'Live Lounge',
-                text: data.text,
-                time: data.time.substring(0, 5),
-                tags: ['live'],
-              },
-            ];
-          });
-        } catch (err) {
-          console.error('Failed parsing stream message:', err);
-        }
-      });
-
-      eventSource.onerror = () => {
-        eventSource.close();
-        // Retry after 8 seconds silently
-        retryTimer = setTimeout(connect, 8000);
-      };
-    };
-
-    connect();
-
-    return () => {
-      clearTimeout(retryTimer);
-      if (eventSource) eventSource.close();
-    };
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
-    const tab = new URLSearchParams(window.location.search).get('tab');
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    const focus = params.get('focus');
+    
     if (tab === 'forum' && forumRef.current) {
       forumRef.current.scrollIntoView({ behavior: 'smooth' });
     } else if (tab === 'dm' && dmRef.current) {
       dmRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, []);
+
+    if (tab === 'forum' && focus && Array.isArray(forums)) {
+      const community = forums.find(f => f.community_slug === focus || String(f.id) === focus);
+      if (community) {
+        setSelectedKomunitas(community);
+      }
+    } else if (tab === 'dm' && focus) {
+      setSelectedDmId(focus);
+    }
+  }, [forums]);
 
   const selectedDm = useMemo(
-    () => localDirectMessages.find((d) => d.id === selectedDmId) || localDirectMessages[0] || null,
+    () => (Array.isArray(localDirectMessages) ? localDirectMessages.find((d) => d.id === selectedDmId) || localDirectMessages[0] : null) || null,
     [localDirectMessages, selectedDmId]
   );
+
+  useEffect(() => { if (dmChatRef.current) dmChatRef.current.scrollTop = dmChatRef.current.scrollHeight; }, [selectedDm?.messages?.length]);
 
   const handleSendDm = (e) => {
     e.preventDefault();
@@ -197,7 +215,7 @@ export default function Dashboard({
           ...dm, 
           last_message: sentText, 
           messages: [...(dm.messages || []), newMsg],
-          time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+          time: formatTime()
         };
       })
     );
@@ -216,18 +234,15 @@ export default function Dashboard({
   const handleSendChat = (e) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
-    setChatMessages((m) => [
-      ...m,
-      {
-        id: `chat-${Date.now()}`,
-        user: { name: profileForm.name, username: profileForm.username, profile_picture: profileForm.profile_picture },
-        area: 'Global Lounge',
-        text: chatInput,
-        time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-        tags: ['baru'],
-      },
-    ]);
+
+    const text = chatInput;
     setChatInput('');
+    const replyId = globalReplyTo?.id?.replace('chat-', '');
+    setGlobalReplyTo(null);
+
+    router.post('/chat/send', { message: text, reply_to_id: replyId }, {
+      preserveScroll: true,
+    });
   };
 
   const handleSaveProfile = (e) => {
@@ -236,10 +251,11 @@ export default function Dashboard({
     setProfileSaving(true);
     const formData = new FormData();
     if (profileForm.name)      formData.append('name', profileForm.name);
-    if (profileForm.bio)       formData.append('bio', profileForm.bio);
-    if (profileForm.instagram) formData.append('instagram', profileForm.instagram);
-    if (profileForm.whatsapp)  formData.append('whatsapp', profileForm.whatsapp);
-    if (profileForm.discord)   formData.append('discord', profileForm.discord);
+    if (profileForm.bio !== undefined && profileForm.bio !== null) formData.append('bio', profileForm.bio);
+    if (profileForm.instagram !== undefined && profileForm.instagram !== null) formData.append('instagram', profileForm.instagram);
+    if (profileForm.whatsapp !== undefined && profileForm.whatsapp !== null) formData.append('whatsapp', profileForm.whatsapp);
+    if (profileForm.discord !== undefined && profileForm.discord !== null) formData.append('discord', profileForm.discord);
+    if (profileForm.profile_picture_file) formData.append('profile_picture', profileForm.profile_picture_file);
     router.post('/profile/update', formData, {
       forceFormData: true,
       preserveScroll: true,
@@ -271,26 +287,39 @@ export default function Dashboard({
       setKomunitasPostInput('');
       return;
     }
-    router.post(`/komunitas/${selectedKomunitas.id}/post`, { content: komunitasPostInput }, {
+
+    const replyId = communityReplyTo?.id;
+    setCommunityReplyTo(null);
+
+    router.post(`/komunitas/${selectedKomunitas.id}/post`, { content: komunitasPostInput, reply_to_id: replyId }, {
       preserveScroll: true,
       onSuccess: () => setKomunitasPostInput(''),
     });
   };
 
   const btnPrimary = 'magnetic inline-flex items-center justify-center gap-2 border-2 border-[#1A0F0A] bg-[#C19A6B] px-4 py-2 font-mono text-[12px] font-black uppercase tracking-[0.16em] text-[#1A0F0A] hover:bg-[#1A0F0A] hover:text-[#FAF6F0] transition-colors cursor-pointer';
-  const btnSecondary = 'magnetic inline-flex items-center justify-center gap-2 border-2 border-[#1A0F0A] bg-transparent px-4 py-2 font-mono text-[12px] font-black uppercase tracking-[0.16em] text-[#1A0F0A] hover:bg-[#1A0F0A] hover:text-[#FAF6F0] transition-colors cursor-pointer';
+  const fileInputRef = useRef(null);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setProfilePreview(URL.createObjectURL(file));
+      setProfileForm(s => ({ ...s, profile_picture_file: file }));
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#FAF6F0] text-[#1A0F0A] selection:bg-[#C19A6B] selection:text-[#1A0F0A]">
       <Head title="Dashboard Roastery Skena" />
-      <Navbar current="dashboard" />
+      <Navbar current="dashboard" notifications={notifications} />
       <CustomCursor />
 
-      <PublicProfileModal 
-        isOpen={!!publicProfileUser} 
-        user={publicProfileUser} 
-        onClose={() => setPublicProfileUser(null)} 
-        onDmClick={(u) => {
+      {publicProfileUser && (
+        <PublicProfileModal 
+          isOpen={!!publicProfileUser} 
+          user={publicProfileUser} 
+          onClose={() => setPublicProfileUser(null)} 
+          onDmClick={(u) => {
             const existingDm = localDirectMessages.find(dm => dm.user?.id === u.id);
             if (existingDm) {
                 setSelectedDmId(existingDm.id);
@@ -299,7 +328,7 @@ export default function Dashboard({
                 const newDmId = `dm-new-${u.id}`;
                 const newDmThread = {
                     id: newDmId,
-                    time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+                    time: formatTime(),
                     last_message: 'Mulai percakapan...',
                     user: {
                         id: u.id,
@@ -317,8 +346,9 @@ export default function Dashboard({
                 setSelectedDmId(newDmId);
             }
             if (dmRef.current) dmRef.current.scrollIntoView({ behavior: 'smooth' });
-        }}
-      />
+          }}
+        />
+      )}
 
       <main className="pt-24 pb-12 px-4 md:px-8 max-w-[1440px] mx-auto">
         <div className="flex items-center justify-between mb-6">
@@ -365,17 +395,26 @@ export default function Dashboard({
           {/* PROFILE CARD - spans 8 cols */}
           <div className="md:col-span-12 lg:col-span-8 border-2 border-[#1A0F0A] bg-[#1A0F0A] text-[#FAF6F0] p-5 shadow-[6px_6px_0px_0px_#C19A6B] flex flex-col justify-between">
             <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
-              <div className="relative group">
+              <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                 <img
                   src={getAvatarUrl({ ...profileForm, profile_picture: profilePreview || profileForm.profile_picture }, profileForm.name)}
                   alt="Avatar"
-                  className="h-24 w-24 border-2 border-[#FAF6F0] object-cover cursor-pointer"
-                  onClick={() => setPublicProfileUser(currentUser)}
+                  className="h-24 w-24 border-2 border-[#FAF6F0] object-cover group-hover:opacity-50 transition-opacity"
                 />
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                   <p className="font-mono text-[10px] font-black uppercase bg-[#1A0F0A]/80 px-2 py-1">Ganti</p>
+                </div>
+                <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
               </div>
-              <div className="flex-1">
+              <div className="flex-1 w-full">
                 <div className="flex items-center gap-2 mb-1">
-                  <h2 className="font-clash text-3xl font-black uppercase tracking-wide cursor-pointer" onClick={() => setPublicProfileUser(currentUser)}>{profileForm.name}</h2>
+                  <input
+                    type="text"
+                    value={profileForm.name}
+                    onChange={(e) => setProfileForm(s => ({ ...s, name: e.target.value }))}
+                    className="font-clash text-2xl md:text-3xl font-black uppercase tracking-wide bg-transparent outline-none border-b-2 border-transparent focus:border-[#C19A6B] text-[#FAF6F0] placeholder-[#FAF6F0]/50"
+                    placeholder="NAMA KAMU"
+                  />
                   {isAdmin && <ShieldCheck size={20} className="text-[#C19A6B]" />}
                 </div>
                 <p className="font-mono text-xs uppercase tracking-widest text-[#FAF6F0]/60 mb-2">@{profileForm.username}</p>
@@ -446,7 +485,12 @@ export default function Dashboard({
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar" ref={chatListRef}>
               {chatMessages.map(msg => (
-                <div key={msg.id} className="border border-[#1A0F0A]/20 bg-[#FAF6F0] p-2">
+                <div key={msg.id} className="border border-[#1A0F0A]/20 bg-[#FAF6F0] p-2 relative group">
+                  {msg.reply_to && (
+                    <div className="border-l-2 border-[#C19A6B] pl-2 mb-2 text-xs text-[#1A0F0A]/60 bg-white p-1 line-clamp-1">
+                       <span className="font-bold text-[#1A0F0A]">@{msg.reply_to.user?.username}:</span> {msg.reply_to.text}
+                    </div>
+                  )}
                   <div className="flex justify-between items-center mb-1">
                     <span 
                         className="font-mono text-[10px] font-bold uppercase cursor-pointer hover:text-[#C19A6B]"
@@ -454,21 +498,32 @@ export default function Dashboard({
                     >{msg.user?.name || msg.user?.username}</span>
                     <span className="font-mono text-[9px] text-[#1A0F0A]/50">{msg.time}</span>
                   </div>
-                  <p className="text-sm leading-snug">{msg.text}</p>
+                  <p className="text-sm leading-snug">{renderMessageWithMentions(msg.text)}</p>
+                  <button onClick={() => setGlobalReplyTo(msg)} className="absolute top-2 right-2 text-[#1A0F0A]/30 hover:text-[#C19A6B] hidden group-hover:block bg-white p-1 border border-[#1A0F0A]/20 rounded"><MessageSquareText size={14}/></button>
                 </div>
               ))}
             </div>
-            <form onSubmit={handleSendChat} className="border-t-2 border-[#1A0F0A] flex shrink-0">
-              <input 
-                type="text" 
-                value={chatInput} 
-                onChange={(e) => setChatInput(e.target.value)} 
-                placeholder="Ketik santai..." 
-                className="flex-1 bg-transparent px-3 py-2 text-sm outline-none font-sans"
-              />
-              <button type="submit" className="magnetic bg-[#C19A6B] border-l-2 border-[#1A0F0A] px-4 flex items-center justify-center">
-                <Send size={14} />
-              </button>
+            <form onSubmit={handleSendChat} className="border-t-2 border-[#1A0F0A] flex flex-col shrink-0 bg-white">
+              {globalReplyTo && (
+                <div className="bg-[#FAF6F0] px-3 py-2 flex items-center justify-between border-b border-[#1A0F0A]/20">
+                  <div className="text-xs truncate">
+                    <span className="font-bold text-[#C19A6B]">Membalas {globalReplyTo.user?.name}:</span> {globalReplyTo.text}
+                  </div>
+                  <button type="button" onClick={() => setGlobalReplyTo(null)} className="text-[#1A0F0A]/50 hover:text-[#1A0F0A]"><X size={14}/></button>
+                </div>
+              )}
+              <div className="flex">
+                <input 
+                  type="text" 
+                  value={chatInput} 
+                  onChange={(e) => setChatInput(e.target.value)} 
+                  placeholder="Ketik santai..." 
+                  className="flex-1 bg-transparent px-3 py-2 text-sm outline-none font-sans"
+                />
+                <button type="submit" className="magnetic bg-[#C19A6B] border-l-2 border-[#1A0F0A] px-4 flex items-center justify-center">
+                  <Send size={14} />
+                </button>
+              </div>
             </form>
           </div>
 
@@ -560,7 +615,7 @@ export default function Dashboard({
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {forums.map(f => (
+              {(forums || []).map(f => (
                 <article key={f.id} className="border-2 border-[#1A0F0A] bg-[#FAF6F0] flex flex-col hover:-translate-y-1 transition-transform duration-300">
                   <div className="h-32 bg-[#1A0F0A] border-b-2 border-[#1A0F0A] relative overflow-hidden">
                     <img src={f.cover_image} className="w-full h-full object-cover opacity-80" alt="Cover" />
@@ -679,7 +734,7 @@ export default function Dashboard({
                   ) : (
                     <div className="space-y-6">
                       {[...(selectedKomunitas.replies ?? [])].reverse().map((reply) => (
-                        <div key={reply.id} className="flex gap-4">
+                        <div key={reply.id} className="flex gap-4 group relative">
                           <img src={reply.user?.avatar_url} alt="Avatar" className="w-10 h-10 border-2 border-[#1A0F0A] shrink-0 cursor-pointer" onClick={() => setPublicProfileUser(reply.user)} />
                           <div className="flex-1">
                             <div className="flex items-baseline gap-2 mb-1">
@@ -688,24 +743,60 @@ export default function Dashboard({
                               </span>
                             </div>
                             <div className="bg-white border-2 border-[#1A0F0A] p-3 text-sm inline-block">
-                              {reply.comment}
+                              {reply.reply_to && (
+                                <div className="border-l-2 border-[#C19A6B] pl-2 mb-2 text-xs text-[#1A0F0A]/60 bg-[#FAF6F0] p-1">
+                                   <span className="font-bold text-[#1A0F0A]">@{reply.reply_to.user?.username}:</span> {reply.reply_to.comment}
+                                </div>
+                              )}
+                              {renderMessageWithMentions(reply.comment)}
                             </div>
                           </div>
+                          <button onClick={() => setCommunityReplyTo(reply)} className="absolute top-0 right-0 mt-2 mr-2 text-[#1A0F0A]/30 hover:text-[#C19A6B] hidden group-hover:block bg-white p-1 border border-[#1A0F0A]/20"><MessageSquareText size={14}/></button>
                         </div>
                       ))}
                     </div>
                   )}
                 </div>
-                <form onSubmit={handleSendKomunitasPost} className="border-t-2 border-[#1A0F0A] bg-white p-4 shrink-0 flex gap-2">
-                  <input 
-                    type="text" 
-                    value={komunitasPostInput} 
-                    onChange={(e) => setKomunitasPostInput(e.target.value)} 
-                    placeholder={`Ngobrol di ${selectedKomunitas.title}...`} 
-                    className="flex-1 border-2 border-[#1A0F0A] px-4 py-2 outline-none focus:border-[#C19A6B] text-sm"
-                  />
-                  <button type="submit" className={`${btnPrimary} px-6`}>Kirim</button>
-                </form>
+                {selectedKomunitas.is_member ? (
+                  <form onSubmit={handleSendKomunitasPost} className="border-t-2 border-[#1A0F0A] bg-white p-4 shrink-0 flex flex-col gap-2">
+                    {communityReplyTo && (
+                      <div className="bg-[#FAF6F0] px-3 py-2 flex items-center justify-between border border-[#1A0F0A]/20 text-xs">
+                        <div className="truncate">
+                          <span className="font-bold text-[#C19A6B]">Membalas {communityReplyTo.user?.name}:</span> {communityReplyTo.comment}
+                        </div>
+                        <button type="button" onClick={() => setCommunityReplyTo(null)} className="text-[#1A0F0A]/50 hover:text-[#1A0F0A] ml-2"><X size={14}/></button>
+                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      <input 
+                        type="text" 
+                        value={komunitasPostInput} 
+                        onChange={(e) => setKomunitasPostInput(e.target.value)} 
+                        placeholder={`Ngobrol di ${selectedKomunitas.title}...`} 
+                        className="flex-1 border-2 border-[#1A0F0A] px-4 py-2 outline-none focus:border-[#C19A6B] text-sm"
+                      />
+                      <button type="submit" className={`${btnPrimary} px-6`}>Kirim</button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="border-t-2 border-[#1A0F0A] bg-[#C19A6B]/10 p-4 shrink-0 text-center">
+                    <p className="font-mono text-xs uppercase mb-3 text-[#1A0F0A]/70">Gabung dulu buat ikut ngobrol</p>
+                    <button 
+                      onClick={() => {
+                        router.post(`/komunitas/${selectedKomunitas.id}/join`, {}, {
+                          preserveScroll: true,
+                          onSuccess: () => {
+                            router.reload({ only: ['forums'] });
+                            setSelectedKomunitas(prev => ({ ...prev, is_member: true, member_count: prev.member_count + 1 }));
+                          }
+                        });
+                      }}
+                      className={btnPrimary}
+                    >
+                      Gabung Komunitas
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

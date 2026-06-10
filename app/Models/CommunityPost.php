@@ -15,6 +15,7 @@ class CommunityPost extends Model
         'community_id',
         'user_id',
         'content',
+        'reply_to_id',
     ];
 
     /**
@@ -39,6 +40,11 @@ class CommunityPost extends Model
     public function comments(): HasMany
     {
         return $this->hasMany(CommunityComment::class, 'post_id');
+    }
+
+    public function replyTo(): BelongsTo
+    {
+        return $this->belongsTo(CommunityPost::class, 'reply_to_id');
     }
 }
 

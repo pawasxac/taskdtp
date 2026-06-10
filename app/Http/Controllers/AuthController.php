@@ -114,7 +114,7 @@ class AuthController extends Controller
             'name' => $request->name,
             'username' => $request->username,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => $request->password,
             'role' => 'user',
         ]);
 
@@ -199,7 +199,7 @@ class AuthController extends Controller
                 'new_password' => 'min:6|confirmed'
             ]);
 
-            $user->password = bcrypt($request->new_password);
+            $user->password = $request->new_password;
         }
 
         $user->save();

@@ -29,4 +29,9 @@ Route::name('api.')->group(function () {
     Route::apiResource('coffee-shops', CoffeeShopController::class);
     Route::apiResource('komunitas-resource', KomunitasController::class);
 });
+
+Route::post('/log-error', function (Request $request) {
+    \Log::error('BROWSER_JS_ERROR: ' . json_encode($request->all(), JSON_PRETTY_PRINT));
+    return response()->json(['status' => 'logged']);
+});
  

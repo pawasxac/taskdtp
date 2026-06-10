@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
-import { X, MessageCircle, Instagram, Phone, Gamepad2, Copy, Check } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { X, MessageCircle, Instagram, Phone, Gamepad2, Check } from 'lucide-react';
 
 export default function PublicProfileModal({ user, isOpen, onClose, onDmClick }) {
   const [discordCopied, setDiscordCopied] = useState(false);
   if (!isOpen || !user) return null;
 
-  const getAvatarUrl = (user) => {
-    if (user?.profile_picture?.startsWith('http')) return user.profile_picture;
-    if (user?.profile_picture) return `/uploads/profile_pictures/${user.profile_picture}`;
-    const label = encodeURIComponent(user?.name || user?.username || 'Anak Skena');
+  const getAvatarUrl = (u) => {
+    if (u?.profile_picture?.startsWith('http')) return u.profile_picture;
+    if (u?.profile_picture) return `/uploads/profile_pictures/${u.profile_picture}`;
+    const label = encodeURIComponent(u?.name || u?.username || 'Anak Skena');
     return `https://ui-avatars.com/api/?name=${label}&background=1A0F0A&color=FAF6F0&bold=true`;
   };
 
@@ -19,21 +18,14 @@ export default function PublicProfileModal({ user, isOpen, onClose, onDmClick })
     'inline-flex items-center justify-center gap-2 border-2 border-[#1A0F0A] bg-white p-3 hover:bg-[#1A0F0A] hover:text-[#FAF6F0] transition-colors';
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[200] flex items-center justify-center bg-[#1A0F0A]/80 backdrop-blur-sm p-4"
-        onClick={onClose}
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-[#1A0F0A]/80 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md bg-[#FAF6F0] border-2 border-[#1A0F0A] shadow-[8px_8px_0px_0px_#C19A6B] overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+        onClick={(e) => e.stopPropagation()}
       >
-        <motion.div
-          initial={{ y: 50, opacity: 0, scale: 0.95 }}
-          animate={{ y: 0, opacity: 1, scale: 1 }}
-          exit={{ y: 20, opacity: 0, scale: 0.95 }}
-          className="w-full max-w-md bg-[#FAF6F0] border-2 border-[#1A0F0A] shadow-[8px_8px_0px_0px_#C19A6B] overflow-hidden"
-          onClick={(e) => e.stopPropagation()}
-        >
           {/* Header Cover Area */}
           <div className="h-24 bg-[#1A0F0A] relative flex justify-end p-4">
             <button onClick={onClose} className="text-[#FAF6F0] hover:text-[#C19A6B] transition-colors bg-black/20 p-1 rounded-full backdrop-blur-sm h-fit">
@@ -112,8 +104,7 @@ export default function PublicProfileModal({ user, isOpen, onClose, onDmClick })
               </div>
             </div>
           </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+      </div>
+    </div>
   );
 }

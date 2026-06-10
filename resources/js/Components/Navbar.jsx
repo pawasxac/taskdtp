@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import {
+  Bell,
   ChevronDown,
   Clock3,
   Coffee,
@@ -8,6 +9,7 @@ import {
   LayoutDashboard,
   LogOut,
   ShieldCheck,
+  X,
 } from 'lucide-react';
 
 /**
@@ -40,14 +42,7 @@ const navLinkClass = (active) =>
       : 'bg-white text-[#1A0F0A] shadow-[3px_3px_0px_0px_#1A0F0A] hover:-translate-y-0.5 hover:translate-x-0.5 hover:shadow-[1px_1px_0px_0px_#1A0F0A]'
   }`;
 
-/**
- * Global navigation header used by every active view.
- * Compact, brutalist, with a live WIB clock, public Home link,
- * a Dashboard link, an Admin Control Gate (visible only when
- * auth.user.role === 'admin'), and a robust logout that
- * never traps the user in a routing loop.
- */
-export default function Navbar({ current = 'home' }) {
+export default function Navbar({ current = 'home', notifications = [] }) {
   const { props } = usePage();
   const auth = props?.auth || {};
   // CRITICAL: role is a primitive string. Use strict string comparison
@@ -55,35 +50,70 @@ export default function Navbar({ current = 'home' }) {
   const user = auth?.user || null;
   const isAdmin = user?.role === 'admin';
 
+  const [clock, setClock] = useState(() => {
+    try {
+      return new Date().toLocaleTimeString('id-ID', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Asia/Jakarta',
+      });
+    } catch (e) {
+      const d = new Date();
+      return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    }
+  });
   const [open, setOpen] = useState(false);
-  const [clock, setClock] = useState(() =>
-    new Date().toLocaleTimeString('id-ID', {
-      hour: '2-digit',
-      minute: '2-digit',
-      timeZone: 'Asia/Jakarta',
-    })
-  );
+
+  const [notifOpen, setNotifOpen] = useState(false);
 
   const menuRef = useRef(null);
+  const notifRef = useRef(null);
 
   useEffect(() => {
-    const tick = () =>
-      setClock(
-        new Date().toLocaleTimeString('id-ID', {
-          hour: '2-digit',
-          minute: '2-digit',
-          timeZone: 'Asia/Jakarta',
-        })
-      );
+    const tick = () => {
+      try {
+        setClock(
+          new Date().toLocaleTimeString('id-ID', {
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZone: 'Asia/Jakarta',
+          })
+        );
+      } catch (e) {
+        const d = new Date();
+        setClock(`${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`);
+      }
+    };
     tick();
     const timer = window.setInterval(tick, 1000);
     return () => window.clearInterval(timer);
   }, []);
 
+  const prevNotifs = useRef(notifications);
+
+  useEffect(() => {
+    // Check for new notifications by comparing IDs
+    if (prevNotifs.current && notifications && notifications.length > prevNotifs.current.length) {
+      const newNotifs = notifications.filter(n => !prevNotifs.current.some(pn => pn.id === n.id));
+      if (newNotifs.length > 0) {
+        setNotifOpen(true);
+        // Optionally auto-close after 5 seconds if you don't interact with it
+        const timer = setTimeout(() => {
+          setNotifOpen(false);
+        }, 5000);
+        return () => clearTimeout(timer);
+      }
+    }
+    prevNotifs.current = notifications;
+  }, [notifications]);
+
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setOpen(false);
+      }
+      if (notifRef.current && !notifRef.current.contains(event.target)) {
+        setNotifOpen(false);
       }
     };
     document.addEventListener('mousedown', handleOutsideClick);
@@ -164,6 +194,44 @@ export default function Navbar({ current = 'home' }) {
               <ShieldCheck size={14} />
               Admin Gate
             </Link>
+          )}
+
+          {user && notifications && (
+            <div className="relative" ref={notifRef}>
+              <button
+                type="button"
+                onClick={() => setNotifOpen(!notifOpen)}
+                className="inline-flex h-9 w-9 items-center justify-center border-2 border-[#1A0F0A] bg-white shadow-[3px_3px_0px_0px_#1A0F0A] transition-all duration-150 hover:-translate-y-0.5 hover:translate-x-0.5 hover:shadow-[1px_1px_0px_0px_#1A0F0A]"
+              >
+                <Bell size={16} />
+                {notifications.length > 0 && (
+                  <span className="absolute -right-2 -top-2 inline-flex h-5 w-5 items-center justify-center border-2 border-[#1A0F0A] bg-[#C19A6B] font-mono text-[9px] font-black">
+                    {notifications.length}
+                  </span>
+                )}
+              </button>
+              {notifOpen && (
+                <div className="absolute right-0 top-12 z-50 w-80 border-2 border-[#1A0F0A] bg-white p-3 shadow-[6px_6px_0px_0px_#1A0F0A] animate-in slide-in-from-top-2">
+                  <div className="flex items-center justify-between border-b-2 border-[#1A0F0A] pb-2 mb-2">
+                    <p className="font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#C19A6B]">Notifikasi</p>
+                    <button type="button" onClick={() => setNotifOpen(false)} className="magnetic hover:text-[#C19A6B]"><X size={16} /></button>
+                  </div>
+                  <div className="grid gap-2 max-h-64 overflow-y-auto custom-scrollbar pr-1">
+                    {notifications.length === 0 ? (
+                      <p className="font-mono text-[10px] text-center p-2">Belum ada notifikasi.</p>
+                    ) : notifications.map(n => (
+                      <button type="button" key={n.id} onClick={() => { setNotifOpen(false); if (n?.route) router.visit(n.route); }} className="magnetic text-left border-2 border-[#1A0F0A] bg-[#FAF6F0] p-2 hover:bg-white flex gap-2">
+                        <div className="shrink-0 mt-1"><Bell size={14} className="text-[#C19A6B]" /></div>
+                        <div>
+                          <p className="font-clash text-sm font-black uppercase">{n.title}</p>
+                          <p className="text-xs text-[#1A0F0A]/70 line-clamp-2 mt-1">{n.body}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           )}
 
           {user ? (
