@@ -93,17 +93,19 @@ export default function Navbar({ current = 'home', notifications = [] }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
+  const activeNotifications = (notifications && notifications.length > 0) ? notifications : (props.notifications || []);
+
   useEffect(() => {
     try {
       const dismissed = JSON.parse(localStorage.getItem('dismissed_notifications') || '[]');
-      const filtered = (notifications || []).filter(n => !dismissed.includes(n.id));
+      const filtered = (activeNotifications || []).filter(n => !dismissed.includes(n.id));
       setLocalNotifications(filtered);
       setUnreadCount(filtered.length);
     } catch (_) {
-      setLocalNotifications(notifications || []);
-      setUnreadCount((notifications || []).length);
+      setLocalNotifications(activeNotifications || []);
+      setUnreadCount((activeNotifications || []).length);
     }
-  }, [notifications]);
+  }, [activeNotifications]);
 
   const handleDeleteNotif = (notifId) => {
     try {
@@ -117,12 +119,12 @@ export default function Navbar({ current = 'home', notifications = [] }) {
     } catch (_) {}
   };
 
-  const prevNotifs = useRef(notifications);
+  const prevNotifs = useRef(activeNotifications);
 
   useEffect(() => {
     // Check for new notifications by comparing IDs
-    if (prevNotifs.current && notifications && notifications.length > prevNotifs.current.length) {
-      const newNotifs = notifications.filter(n => !prevNotifs.current.some(pn => pn.id === n.id));
+    if (prevNotifs.current && activeNotifications && activeNotifications.length > prevNotifs.current.length) {
+      const newNotifs = activeNotifications.filter(n => !prevNotifs.current.some(pn => pn.id === n.id));
       if (newNotifs.length > 0) {
         setNotifOpen(true);
         // Optionally auto-close after 5 seconds if you don't interact with it
@@ -132,8 +134,8 @@ export default function Navbar({ current = 'home', notifications = [] }) {
         return () => clearTimeout(timer);
       }
     }
-    prevNotifs.current = notifications;
-  }, [notifications]);
+    prevNotifs.current = activeNotifications;
+  }, [activeNotifications]);
 
   useEffect(() => {
     const handleOutsideClick = (event) => {

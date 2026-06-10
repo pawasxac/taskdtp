@@ -69,6 +69,7 @@
             <select name="status" id="status" class="form-control" required>
                 <option value="aktif" {{ old('status', $data->status) == 'aktif' ? 'selected' : '' }}>Aktif</option>
                 <option value="nonaktif" {{ old('status', $data->status) == 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
+                <option value="pending" {{ old('status', $data->status) == 'pending' ? 'selected' : '' }}>Pending</option>
             </select>
             @error('status')
                 <span class="error">{{ $message }}</span>

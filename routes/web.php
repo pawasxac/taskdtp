@@ -124,6 +124,7 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
                 ]),
             'members.user:id,name,username,profile_picture,kecamatan_id', 'members.user.kecamatan:id,name',
         ])
+            ->where('status', 'aktif')
             ->orderBy('nama_komunitas')
             ->get());
 
@@ -202,6 +203,7 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
                                 'replyTo.user:id,name,username,profile_picture,kecamatan_id,last_seen_at', 'replyTo.user.kecamatan:id,name',
                             ]),
                     ])
+                        ->where('status', 'aktif')
                         ->orderBy('nama_komunitas')
                         ->get();
 
@@ -501,6 +503,56 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
                         ]);
                     }
 
+                    // Dynamic Community Request Notifications
+                    if ($authUser->role === 'admin') {
+                        $pendingKomunitas = \App\Models\Komunitas::where('status', 'pending')->latest()->get();
+                        foreach ($pendingKomunitas as $kom) {
+                            $notifications->push([
+                                'id'    => 'notif-pending-komunitas-' . $kom->id,
+                                'type'  => 'Admin',
+                                'title' => 'Request Komunitas Baru',
+                                'body'  => 'User "' . $kom->ketua . '" mengajukan komunitas baru: "' . $kom->nama_komunitas . '".',
+                                'route' => '/admin/management?tab=communities',
+                                'cta'   => 'Tinjau Pengajuan',
+                            ]);
+                        }
+                    } else {
+                        // Regular user pending requests
+                        $userPending = \App\Models\Komunitas::where('status', 'pending')
+                            ->where('ketua', $authUser->name)
+                            ->latest()
+                            ->get();
+                        foreach ($userPending as $kom) {
+                            $notifications->push([
+                                'id'    => 'notif-user-pending-' . $kom->id,
+                                'type'  => 'Komunitas',
+                                'title' => 'Pengajuan Tertunda',
+                                'body'  => 'Pengajuan "' . $kom->nama_komunitas . '" sedang menunggu persetujuan admin.',
+                                'route' => '/dashboard',
+                                'cta'   => 'Pantau',
+                            ]);
+                        }
+
+                        // Regular user approved (active) requests created in the last 3 days
+                        $userApproved = \App\Models\Komunitas::where('status', 'aktif')
+                            ->where('created_at', '>=', now()->subDays(3))
+                            ->whereHas('members', function ($q) use ($authUser) {
+                                $q->where('user_id', $authUser->id)->where('role', 'leader');
+                            })
+                            ->latest()
+                            ->get();
+                        foreach ($userApproved as $kom) {
+                            $notifications->push([
+                                'id'    => 'notif-user-approved-' . $kom->id,
+                                'type'  => 'Komunitas',
+                                'title' => 'Pengajuan Disetujui!',
+                                'body'  => 'Komunitas "' . $kom->nama_komunitas . '" telah disetujui admin dan kini aktif.',
+                                'route' => '/dashboard?tab=forum&focus=' . $kom->id,
+                                'cta'   => 'Buka Forum',
+                            ]);
+                        }
+                    }
+
                     if ($notifications->isEmpty()) {
                         $notifications = collect([
                             [
@@ -623,13 +675,15 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
                 'domisili'       => 'nullable|string|max:255',
             ]);
 
+            $isAdmin = auth()->user()->role === 'admin';
+
             $komunitas = Komunitas::create([
                 'nama_komunitas' => $validated['nama_komunitas'],
                 'deskripsi'      => $validated['deskripsi'] ?: '-',
                 'domisili'       => $validated['domisili'] ?: '-',
                 'ketua'          => auth()->user()->name,
                 'tanggal_dibentuk' => now(),
-                'status'         => 'aktif',
+                'status'         => $isAdmin ? 'aktif' : 'pending',
             ]);
 
             // Auto-join creator as leader member
@@ -646,7 +700,8 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
             // Clear the communities cache so the new community appears immediately on the dashboard
             cache()->forget('communities');
 
-            return back()->with('success', 'Komunitas "' . $validated['nama_komunitas'] . '" berhasil dibuat!');
+            $msg = $isAdmin ? 'Komunitas "' . $validated['nama_komunitas'] . '" berhasil dibuat!' : 'Pengajuan pembuatan komunitas "' . $validated['nama_komunitas'] . '" berhasil dikirim dan menunggu persetujuan admin.';
+            return back()->with('success', $msg);
         })->name('komunitas.store');
 
         Route::post('/komunitas/{id}/post', function (Request $request, $id) {
@@ -928,7 +983,7 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
                 return redirect()->route('dashboard');
             }
 
-            $coffeeShops = CoffeeShop::with('kecamatan')->paginate(15);
+            $coffeeShops = CoffeeShop::with('kecamatan')->latest()->paginate(15);
             $coffeeShops->getCollection()->transform(function ($shop) use ($districtName) {
                 $shop->district_name = $districtName(
                     $shop->getRelation('kecamatan'),
@@ -940,8 +995,8 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
             return inertia('Admin', [
                 'user'         => auth()->user(),
                 'coffeeShops'  => $coffeeShops,
-                'communities'  => Komunitas::paginate(15),
-                'users'        => User::paginate(15),
+                'communities'  => Komunitas::latest()->paginate(15),
+                'users'        => User::latest()->paginate(15),
             ]);
         })->name('admin.management');
 
@@ -970,6 +1025,25 @@ Route::middleware(['web'])->group(function () use ($avatarUrl, $fallbackCover, $
         Route::delete('/users/{id}', [CoffeeShopController::class, 'destroyUser'])->name('admin.user.destroy');
 
         Route::get('/login-monitor', [CoffeeShopController::class, 'loginMonitor'])->name('admin.login.monitor');
+
+        Route::post('/komunitas/{id}/approve', function ($id) {
+            $komunitas = Komunitas::findOrFail($id);
+            $komunitas->status = 'aktif';
+            $komunitas->save();
+
+            cache()->forget('communities');
+
+            return back()->with('success', 'Komunitas "' . $komunitas->nama_komunitas . '" berhasil disetujui!');
+        })->name('admin.komunitas.approve');
+
+        Route::post('/komunitas/{id}/reject', function ($id) {
+            $komunitas = Komunitas::findOrFail($id);
+            $komunitas->delete();
+
+            cache()->forget('communities');
+
+            return back()->with('success', 'Pengajuan komunitas berhasil ditolak.');
+        })->name('admin.komunitas.reject');
     });
 });
 

@@ -62,8 +62,23 @@ export default function Dashboard({
   });
   const [profilePreview, setProfilePreview] = useState(currentUser?.profile_picture || '');
   const [dmInput, setDmInput] = useState('');
+  const [alert, setAlert] = useState(null);
+
+  useEffect(() => {
+    if (props.flash?.success) {
+      setAlert({ type: 'success', message: props.flash.success });
+      const timer = setTimeout(() => setAlert(null), 5000);
+      return () => clearTimeout(timer);
+    }
+    if (props.flash?.error) {
+      setAlert({ type: 'error', message: props.flash.error });
+      const timer = setTimeout(() => setAlert(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [props.flash]);
 
   // Modals State
+  const [resultModal, setResultModal] = useState(null);
   const [publicProfileUser, setPublicProfileUser] = useState(null);
   const [createKomunitasOpen, setCreateKomunitasOpen] = useState(false);
   const [komunitasForm, setKomunitasForm] = useState({ nama_komunitas: '', deskripsi: '', domisili: '' });
@@ -328,6 +343,20 @@ export default function Dashboard({
       onSuccess: () => {
         setCreateKomunitasOpen(false);
         setKomunitasForm({ nama_komunitas: '', deskripsi: '', domisili: '' });
+        setResultModal({
+          type: 'success',
+          title: 'Pengajuan Terkirim!',
+          message: isAdmin 
+            ? 'Komunitas berhasil didirikan dan langsung aktif!' 
+            : 'Request pendaftaran komunitas Anda telah berhasil terkirim. Silakan tunggu persetujuan dari admin. Anda bisa memantau perkembangannya pada menu Notifikasi.'
+        });
+      },
+      onError: (errors) => {
+        setResultModal({
+          type: 'error',
+          title: 'Pengajuan Gagal',
+          message: Object.values(errors).join('\n') || 'Terjadi kesalahan saat mendirikan komunitas.'
+        });
       }
     });
   };
@@ -443,6 +472,20 @@ export default function Dashboard({
       <Head title="Dashboard Roastery Skena" />
       <Navbar current="dashboard" notifications={notifications} />
       <CustomCursor />
+
+      {/* FLASH TOAST NOTIFICATION */}
+      {alert && (
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[300] w-[90%] max-w-md animate-in slide-in-from-top-4 duration-300">
+          <div className={`border-2 border-[#1A0F0A] p-4 font-mono text-xs font-black uppercase tracking-wide flex justify-between items-center shadow-[4px_4px_0px_0px_#1A0F0A] ${
+            alert.type === 'success' ? 'bg-[#C19A6B] text-[#1A0F0A]' : 'bg-red-500 text-white'
+          }`}>
+            <span>{alert.message}</span>
+            <button onClick={() => setAlert(null)} className="ml-4 hover:scale-110 transition-transform">
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {publicProfileUser && (
         <PublicProfileModal 
@@ -801,7 +844,19 @@ export default function Dashboard({
               </div>
               <div>
                 <label className="block font-mono text-[10px] font-black uppercase tracking-[0.16em] mb-1">Domisili / Wilayah</label>
-                <input required type="text" value={komunitasForm.domisili} onChange={e => setKomunitasForm(s => ({...s, domisili: e.target.value}))} className="w-full border-2 border-[#1A0F0A] px-3 py-2 outline-none focus:border-[#C19A6B]" />
+                <select
+                  required
+                  value={komunitasForm.domisili}
+                  onChange={e => setKomunitasForm(s => ({...s, domisili: e.target.value}))}
+                  className="w-full border-2 border-[#1A0F0A] px-3 py-2 outline-none focus:border-[#C19A6B] bg-white font-mono text-xs uppercase"
+                >
+                  <option value="">Pilih Wilayah (Sidoarjo)</option>
+                  {(kecamatans || []).map(k => (
+                    <option key={k.id} value={k.name}>
+                      {k.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block font-mono text-[10px] font-black uppercase tracking-[0.16em] mb-1">Deskripsi Singkat</label>
@@ -997,7 +1052,19 @@ export default function Dashboard({
               </div>
               <div>
                 <label className="block font-mono text-[10px] font-black uppercase tracking-[0.16em] mb-1">Domisili / Wilayah</label>
-                <input required type="text" value={komunitasForm.domisili} onChange={e => setKomunitasForm(s => ({...s, domisili: e.target.value}))} className="w-full border-2 border-[#1A0F0A] px-3 py-2 outline-none focus:border-[#C19A6B]" />
+                <select
+                  required
+                  value={komunitasForm.domisili}
+                  onChange={e => setKomunitasForm(s => ({...s, domisili: e.target.value}))}
+                  className="w-full border-2 border-[#1A0F0A] px-3 py-2 outline-none focus:border-[#C19A6B] bg-white font-mono text-xs uppercase"
+                >
+                  <option value="">Pilih Wilayah (Sidoarjo)</option>
+                  {(kecamatans || []).map(k => (
+                    <option key={k.id} value={k.name}>
+                      {k.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block font-mono text-[10px] font-black uppercase tracking-[0.16em] mb-1">Deskripsi Singkat</label>
@@ -1124,13 +1191,19 @@ export default function Dashboard({
                       </div>
                       <div>
                         <label className="block font-mono text-[10px] font-black uppercase tracking-[0.16em] mb-1">Domisili / Wilayah</label>
-                        <input 
+                        <select 
                           required 
-                          type="text" 
                           value={editKomunitasForm.domisili} 
                           onChange={e => setEditKomunitasForm(s => ({...s, domisili: e.target.value}))} 
-                          className="w-full border-2 border-[#1A0F0A] px-3 py-2 outline-none focus:border-[#C19A6B] text-sm" 
-                        />
+                          className="w-full border-2 border-[#1A0F0A] px-3 py-2 outline-none focus:border-[#C19A6B] bg-white font-mono text-xs uppercase" 
+                        >
+                          <option value="">Pilih Wilayah (Sidoarjo)</option>
+                          {(kecamatans || []).map(k => (
+                            <option key={k.id} value={k.name}>
+                              {k.name}
+                            </option>
+                          ))}
+                        </select>
                       </div>
                     </div>
                   </div>
@@ -1266,6 +1339,27 @@ export default function Dashboard({
                 Batal
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* RESULT MODAL POPUP */}
+      {resultModal && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-[#1A0F0A]/85 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-sm border-2 border-[#1A0F0A] bg-[#FAF6F0] p-6 shadow-[6px_6px_0px_0px_#C19A6B] animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+            <h4 className="font-clash text-xl font-black uppercase tracking-tight mb-2 text-[#1A0F0A]">
+              {resultModal.title}
+            </h4>
+            <p className="text-xs text-[#1A0F0A]/80 mb-6 font-mono uppercase tracking-wide leading-relaxed">
+              {resultModal.message}
+            </p>
+            <button
+              type="button"
+              onClick={() => setResultModal(null)}
+              className="w-full border-2 border-[#1A0F0A] bg-[#C19A6B] text-[#1A0F0A] py-2.5 font-mono text-[10px] font-black uppercase tracking-[0.14em] shadow-[4px_4px_0px_0px_#1A0F0A] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[3px_3px_0px_0px_#1A0F0A] transition-all cursor-pointer"
+            >
+              OK, Mengerti
+            </button>
           </div>
         </div>
       )}

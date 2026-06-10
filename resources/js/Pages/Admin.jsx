@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, usePage, router } from '@inertiajs/react';
 import { ShieldAlert, MapPin, Users, Coffee, Activity, ArrowLeft } from 'lucide-react';
 import Navbar from '../Components/Navbar';
 import CustomCursor from '../Components/CustomCursor';
@@ -8,7 +8,35 @@ export default function Admin({ users = [], coffeeShops = [], communities = [] }
   const { auth } = usePage().props;
   const user = auth?.user || null;
 
-  const [activeTab, setActiveTab] = useState('users');
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('tab') || 'users';
+    }
+    return 'users';
+  });
+
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', tabId);
+      // reset page number when switching tabs to avoid loading a page number that doesn't exist for the new tab
+      url.searchParams.delete('page'); 
+      window.history.replaceState({}, '', url.toString());
+    }
+  };
+
+  const getPaginatedUrl = (url, tabId) => {
+    if (!url) return '#';
+    try {
+      const parsed = new URL(url, window.location.origin);
+      parsed.searchParams.set('tab', tabId);
+      return parsed.pathname + parsed.search;
+    } catch (e) {
+      return url;
+    }
+  };
 
   if (!user || user.role !== 'admin') return null;
 
@@ -77,7 +105,7 @@ export default function Admin({ users = [], coffeeShops = [], communities = [] }
             {tabs.map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabChange(tab.id)}
                 className={`magnetic shrink-0 flex items-center gap-2 px-6 py-4 font-mono text-[10px] font-black uppercase tracking-wider border-r-2 border-[#1A0F0A] transition-colors ${
                   activeTab === tab.id ? 'bg-[#1A0F0A] text-[#FAF6F0]' : 'bg-transparent text-[#1A0F0A] hover:bg-[#1A0F0A]/10'
                 }`}
@@ -118,7 +146,7 @@ export default function Admin({ users = [], coffeeShops = [], communities = [] }
               {users?.links && (
                 <div className="flex justify-end gap-2 p-4 bg-white border-t border-[#1A0F0A]/10">
                   {users.links.map(link => (
-                    <Link key={link.label} href={link.url || '#'} dangerouslySetInnerHTML={{ __html: link.label }} className={`px-3 py-1 text-xs font-mono uppercase border border-[#1A0F0A] ${link.active ? 'bg-[#1A0F0A] text-white' : 'bg-white hover:bg-[#FAF6F0]'}`} />
+                    <Link key={link.label} href={getPaginatedUrl(link.url, 'users')} dangerouslySetInnerHTML={{ __html: link.label }} className={`px-3 py-1 text-xs font-mono uppercase border border-[#1A0F0A] ${link.active ? 'bg-[#1A0F0A] text-white' : 'bg-white hover:bg-[#FAF6F0]'}`} />
                   ))}
                 </div>
               )}
@@ -163,7 +191,7 @@ export default function Admin({ users = [], coffeeShops = [], communities = [] }
               {coffeeShops?.links && (
                 <div className="flex justify-end gap-2 p-4 bg-white border-t border-[#1A0F0A]/10">
                   {coffeeShops.links.map(link => (
-                    <Link key={link.label} href={link.url || '#'} dangerouslySetInnerHTML={{ __html: link.label }} className={`px-3 py-1 text-xs font-mono uppercase border border-[#1A0F0A] ${link.active ? 'bg-[#1A0F0A] text-white' : 'bg-white hover:bg-[#FAF6F0]'}`} />
+                    <Link key={link.label} href={getPaginatedUrl(link.url, 'shops')} dangerouslySetInnerHTML={{ __html: link.label }} className={`px-3 py-1 text-xs font-mono uppercase border border-[#1A0F0A] ${link.active ? 'bg-[#1A0F0A] text-white' : 'bg-white hover:bg-[#FAF6F0]'}`} />
                   ))}
                 </div>
               )}
@@ -194,8 +222,35 @@ export default function Admin({ users = [], coffeeShops = [], communities = [] }
                         </span>
                       </td>
                       <td className="p-4 flex gap-2">
-                        <button className="px-3 py-1 border border-[#1A0F0A] text-[10px] font-bold uppercase hover:bg-[#1A0F0A] hover:text-white transition-colors">Edit</button>
-                        <button className="px-3 py-1 border border-red-600 text-red-600 text-[10px] font-bold uppercase hover:bg-red-600 hover:text-white transition-colors">Del</button>
+                        {kom.status === 'pending' ? (
+                          <>
+                            <button
+                              onClick={() => {
+                                if (confirm(`Setujui pembuatan komunitas "${kom.nama_komunitas}"?`)) {
+                                  router.post(`/admin/komunitas/${kom.id}/approve`);
+                                }
+                              }}
+                              className="px-3 py-1 border border-[#1A0F0A] bg-emerald-600 hover:bg-[#1A0F0A] text-white text-[10px] font-bold uppercase transition-colors"
+                            >
+                              Setujui
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (confirm(`Tolak dan hapus pengajuan komunitas "${kom.nama_komunitas}"?`)) {
+                                  router.post(`/admin/komunitas/${kom.id}/reject`);
+                                }
+                              }}
+                              className="px-3 py-1 border border-red-600 bg-red-600 hover:bg-[#1A0F0A] text-white text-[10px] font-bold uppercase transition-colors"
+                            >
+                              Tolak
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button className="px-3 py-1 border border-[#1A0F0A] text-[10px] font-bold uppercase hover:bg-[#1A0F0A] hover:text-white transition-colors">Edit</button>
+                            <button className="px-3 py-1 border border-red-600 text-red-600 text-[10px] font-bold uppercase hover:bg-red-600 hover:text-white transition-colors">Del</button>
+                          </>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -207,7 +262,7 @@ export default function Admin({ users = [], coffeeShops = [], communities = [] }
               {communities?.links && (
                 <div className="flex justify-end gap-2 p-4 bg-white border-t border-[#1A0F0A]/10">
                   {communities.links.map(link => (
-                    <Link key={link.label} href={link.url || '#'} dangerouslySetInnerHTML={{ __html: link.label }} className={`px-3 py-1 text-xs font-mono uppercase border border-[#1A0F0A] ${link.active ? 'bg-[#1A0F0A] text-white' : 'bg-white hover:bg-[#FAF6F0]'}`} />
+                    <Link key={link.label} href={getPaginatedUrl(link.url, 'communities')} dangerouslySetInnerHTML={{ __html: link.label }} className={`px-3 py-1 text-xs font-mono uppercase border border-[#1A0F0A] ${link.active ? 'bg-[#1A0F0A] text-white' : 'bg-white hover:bg-[#FAF6F0]'}`} />
                   ))}
                 </div>
               )}

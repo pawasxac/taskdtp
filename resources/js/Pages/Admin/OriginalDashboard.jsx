@@ -136,6 +136,7 @@ export default function OriginalDashboard({ stats }) {
                             { title: 'User Management', desc: 'Hak akses & akun', link: '/admin/login-monitor' },
                             { title: 'Area / Kecamatan', desc: 'Mapping wilayah', link: '/admin/kecamatan' },
                             { title: 'Memberships', desc: 'Data keanggotaan', link: '/admin/community-members' },
+                            { title: 'Direct Messages', desc: 'Pantau pesan langsung', link: '/admin/direct-messages' },
                         ].map((item, i) => (
                             <a 
                                 key={i} 

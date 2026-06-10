@@ -38,7 +38,7 @@ class KomunitasController extends Controller
             'tanggal_dibentuk' => 'required|date',
             'jumlah_anggota' => 'required|integer|min:0',
             'kontak' => 'nullable|string|max:255',
-            'status' => 'required|in:aktif,nonaktif',
+            'status' => 'required|in:aktif,nonaktif,pending',
         ]);
 
         Komunitas::create($validated);
@@ -79,7 +79,7 @@ class KomunitasController extends Controller
             'tanggal_dibentuk' => 'required|date',
             'jumlah_anggota' => 'required|integer|min:0',
             'kontak' => 'nullable|string|max:255',
-            'status' => 'required|in:aktif,nonaktif',
+            'status' => 'required|in:aktif,nonaktif,pending',
         ]);
 
         $data->update($validated);
